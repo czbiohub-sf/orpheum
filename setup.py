@@ -21,9 +21,6 @@ test_requirements = [
     'pytest', 'coverage', "flake8"
 ]
 
-print(find_packages(exclude=["tests", "*.tests", "*.tests.*",
-                                    "tests.*", "test_*"]))
-
 setup(
     name='khtools',
     version='0.1.0',

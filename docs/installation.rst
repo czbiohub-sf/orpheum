@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ easy_install kh-tools
+    $ easy_install khtools
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv kh-tools
-    $ pip install kh-tools
+    $ mkvirtualenv khtools
+    $ pip install khtools

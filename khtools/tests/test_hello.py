@@ -12,7 +12,7 @@ from click.testing import CliRunner
 
 
 def test_hello():
-    from kh-tools.hello import hello
+    from khtools.hello import hello
 
     runner = CliRunner()
     result = runner.invoke(hello, input="Rosalind Franklin")
@@ -22,7 +22,7 @@ def test_hello():
 
 
 def test_hello_name():
-    from kh-tools.hello import hello
+    from khtools.hello import hello
 
     runner = CliRunner()
     result = runner.invoke(hello, ["--name", "Rosalind"])
@@ -32,7 +32,7 @@ def test_hello_name():
 
 
 def test_hello_count():
-    from kh-tools.hello import hello
+    from khtools.hello import hello
 
     runner = CliRunner()
     result = runner.invoke(hello, ["--count", "10",
