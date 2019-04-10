@@ -10,7 +10,7 @@ from functools import partial
 import click
 
 # Within-module imports
-from kh-tools.hello import hello
+from khtools.hello import hello
 
 
 click.option = partial(click.option, show_default=True)

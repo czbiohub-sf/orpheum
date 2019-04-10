@@ -3,9 +3,9 @@
 
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup, find_packages
 
 
 with open('README.md') as readme_file:
@@ -21,24 +21,24 @@ test_requirements = [
     'pytest', 'coverage', "flake8"
 ]
 
+print(find_packages(exclude=["tests", "*.tests", "*.tests.*",
+                                    "tests.*", "test_*"]))
+
 setup(
-    name='kh-tools',
+    name='khtools',
     version='0.1.0',
     description="Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices",
     long_description=readme + '\n\n' + history,
     author="Olga Botvinnik",
     author_email='olga.botvinnik@czbiohub.org',
-    url='https://github.com/czbiohub/kh-tools',
-    packages=[
-        'kh-tools',
-    ],
-    package_dir={'kh-tools':
-                 'kh-tools'},
+    url='https://github.com/czbiohub/khtools',
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*",
+                                    "tests.*", "test_*"]),
     include_package_data=True,
     install_requires=requirements,
     license="MIT",
     zip_safe=False,
-    keywords='kh-tools',
+    keywords='khtools',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -50,7 +50,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'kh-tools = kh-tools.commandline:cli'
+            'khtools = khtools.commandline:cli'
         ]
     },
     test_suite='tests',

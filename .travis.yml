@@ -25,4 +25,4 @@ deploy:
   provider: pypi
   on:
     tags: true
-    repo: czbiohub/kh-tools
+    repo: czbiohub/khtools

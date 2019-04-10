@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# kh-tools documentation build configuration file, created by
+# khtools documentation build configuration file, created by
 # sphinx-quickstart on Tue Jul  9 22:26:36 2013.
 #
 # This file is execfile()d with the current directory set to its
@@ -208,7 +208,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'kh-tools.tex',
+    ('index', 'khtools.tex',
      u'Kmer-hashing tools Documentation',
      u'Chan Zuckerberg Biohub', 'manual'),
 ]
@@ -239,7 +239,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'kh-tools',
+    ('index', 'khtools',
      u'Kmer-hashing tools Documentation',
      [u'Chan Zuckerberg Biohub'], 1)
 ]
@@ -254,10 +254,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents= [
-    ('index', 'kh-tools',
+    ('index', 'khtools',
      u'Kmer-hashing tools Documentation',
      u'Chan Zuckerberg Biohub',
-     'kh-tools',
+     'khtools',
      'One line description of project.',
      'Miscellaneous'),
 ]

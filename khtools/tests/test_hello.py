@@ -5,7 +5,7 @@
 test_hello
 ----------------------------------
 
-Tests for `kh-tools` module.
+Tests for `khtools` module.
 """
 
 from click.testing import CliRunner
