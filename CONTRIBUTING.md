@@ -10,7 +10,7 @@ Types of Contributions
 
 ### Report Bugs
 
-Report bugs at <https://github.com/>czbiohub/kh-tools/issues.
+Report bugs at <https://github.com/>czbiohub/khtools/issues.
 
 If you are reporting a bug, please include:
 
@@ -34,7 +34,7 @@ even on the web in blog posts, articles, and such.
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at <https://github.com/>czbiohub/kh-tools/issues.
+The best way to send feedback is to file an issue at <https://github.com/>czbiohub/khtools/issues.
 
 If you are proposing a feature:
 
@@ -45,18 +45,18 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up kh-tools for
+Ready to contribute? Here's how to set up khtools for
 local development.
 
-1.  Fork the kh-tools repo on GitHub.
+1.  Fork the khtools repo on GitHub.
 2.  Clone your fork locally:
 
-        $ git clone git@github.com:your_name_here/kh-tools.git
+        $ git clone git@github.com:your_name_here/khtools.git
 
 3.  Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
 
-        $ mkvirtualenv kh-tools
-        $ cd kh-tools/
+        $ mkvirtualenv khtools
+        $ cd khtools/
         $ python setup.py develop
 
 4.  Create a branch for local development:
@@ -67,7 +67,7 @@ local development.
 
 5.  When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox:
 
-        $ flake8 kh-tools tests
+        $ flake8 khtools tests
         $ py.test
         $ tox
 
@@ -89,7 +89,7 @@ Before you submit a pull request, check that it meets these guidelines:
 1.  The pull request should include tests.
 2.  If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in README.rst.
 3.  The pull request should work for Python 3.6 and 3.7. Check
-    <https://travis-ci.org/>czbiohub/kh-tools/pull\_requests and make sure that the tests pass
+    <https://travis-ci.org/>czbiohub/khtools/pull\_requests and make sure that the tests pass
     for all supported Python versions.
 
 Tips
@@ -97,4 +97,4 @@ Tips
 
 To run a subset of tests:
 
-    $ python -m unittest tests.test_kh-tools
+    $ python -m unittest tests.test_khtools

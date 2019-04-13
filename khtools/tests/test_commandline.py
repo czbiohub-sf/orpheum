@@ -12,7 +12,7 @@ from click.testing import CliRunner
 
 
 def test_cli():
-    from kh-tools.commandline import cli
+    from khtools.commandline import cli
 
     runner = CliRunner()
     result = runner.invoke(cli)
@@ -21,7 +21,7 @@ def test_cli():
 
 
 def test_cli_short_help():
-    from kh-tools.commandline import cli
+    from khtools.commandline import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-h"])
@@ -30,7 +30,7 @@ def test_cli_short_help():
 
 
 def test_cli_long_help():
-    from kh-tools.commandline import cli
+    from khtools.commandline import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])

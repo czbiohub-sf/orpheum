@@ -8,11 +8,11 @@ test:
 	py.test
 
 coverage:
-	coverage run --source kh-tools --omit="*/test*" --module py.test
+	coverage run --source khtools --omit="*/test*" --module py.test
 	coverage report --show-missing
 
 lint:
-	flake8 --exclude docs kh-tools
+	flake8 --exclude docs khtools
 
 conda_install:
 	conda install --file conda_requirements.txt
