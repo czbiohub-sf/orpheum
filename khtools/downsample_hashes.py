@@ -5,8 +5,8 @@ import time
 
 import pandas as pd
 
-from sourmash_compare_utils import compare_all_pairs
-from sourmash_utils import filter_siglist
+from . import sourmash_compare_utils import compare_all_pairs
+from . import sourmash_utils import filter_siglist
 
 
 
