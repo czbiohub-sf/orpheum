@@ -1,7 +1,7 @@
 import os
 
 
-import jupyter_utils
+from . import jupyter_utils
 
 
 
