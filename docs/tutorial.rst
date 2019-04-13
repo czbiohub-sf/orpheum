@@ -1,6 +1,6 @@
 .. _tutorial:
 
-kh-tools Tutorial
+khtools Tutorial
 =================
 
 Installation

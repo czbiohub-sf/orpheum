@@ -9,13 +9,13 @@ Kmer-hashing tools
 [![image](https://img.shields.io/pypi/v/%7B%7B%20cookiecutter.repo_name%20%7D%7D.svg)](https://pypi.python.org/pypi/%7B%7B%20cookiecutter.repo_name%20%7D%7D)
 
 
-What is kh-tools?
+What is khtools?
 -------------------------------------
 
 Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices
 
 -   Free software: MIT license
--   Documentation: <https://>czbiohub.github.io/kh-tools
+-   Documentation: <https://>czbiohub.github.io/khtools
 
 Installation
 ------------
@@ -23,8 +23,8 @@ Installation
 To install this code, clone this github repository and use pip to install
 
 ```
-git clone <https://github.com/>czbiohub/kh-tools.git 
-cd kh-tools 
+git clone <https://github.com/>czbiohub/khtools.git 
+cd khtools 
 
 # The "." means "install *this*, the folder where I am now"
 pip install . 

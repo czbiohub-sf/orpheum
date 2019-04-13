@@ -17,7 +17,7 @@ def folder():
 
 
 def test_sanitize_path():
-    from kh-tools.os_utils import sanitize_path
+    from khtools.os_utils import sanitize_path
 
     test = sanitize_path('.')
     true = os.path.abspath('.')
@@ -25,21 +25,21 @@ def test_sanitize_path():
 
 
 def test_maybe_add_slash(folder):
-    from kh-tools.os_utils import maybe_add_slash
+    from khtools.os_utils import maybe_add_slash
 
     test = maybe_add_slash(folder)
     assert test == 'test-folder/'
 
 
 def test_get_stdout_from_command():
-    from kh-tools.os_utils import get_stdout_from_command
+    from khtools.os_utils import get_stdout_from_command
     command = ['echo', 'asdf']
     stdout = get_stdout_from_command(command)
     assert stdout == ['asdf']
 
 
 def test_get_stdout_stderr_from_command():
-    from kh-tools.os_utils import get_stdout_stderr_from_command
+    from khtools.os_utils import get_stdout_stderr_from_command
 
     command = ['sed', 'asdf']
     stdout, stderr = get_stdout_stderr_from_command(command)
