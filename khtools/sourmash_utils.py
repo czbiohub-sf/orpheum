@@ -10,7 +10,7 @@ from scipy.spatial.distance import pdist
 import seaborn as sns
 
 
-from extract_metadata import extract_cell_metadata
+from .extract_metadata import extract_cell_metadata
 
 keys_for_length = ('mins',)
 
