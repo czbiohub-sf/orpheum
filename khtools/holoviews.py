@@ -144,13 +144,15 @@ def get_similarity_graphs(csv_template, metadata,
                                           figure_folder,
                                           sketch_id, title)
 
+        # hv.extension('matplotlib')
+
         graph_hv = hv.Graph.from_networkx(graph, pos)
 
         graph_hv = graph_hv.opts(node_size=10, edge_line_width=1, cmap='Set2',
                                  node_color=dim("species"),
                                  node_line_color='gray')
         bundled = bundle_graph(graph_hv)
-        hv.save(bundled, 'asdf.pdf', backend='matplotlib')
+        # hv.save(bundled, '.pdf', backend='matplotlib')
         graph_dict[(molecule, ksize, log2sketchsize)] = bundled
 
 
