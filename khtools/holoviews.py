@@ -5,17 +5,13 @@ import warnings
 import holoviews as hv
 from holoviews import opts, dim
 from holoviews.operation.datashader import datashade, bundle_graph
-import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
-import seaborn as sns
-%matplotlib inline
 
 # My handwritten modules
 from .s3_utils import savefig
 from . import knn
 from . import sourmash_utils
-from . import sourmash_compare_utils
 
 
 # don't warn me about too many figures open
