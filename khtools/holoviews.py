@@ -28,13 +28,7 @@ COLOR_COLS = ['species', 'cell_label', ]
 
 PALETTES = dict(species='Set2', cell_label='tab20')
 
-s3_folder = 's3://olgabot-maca/nf-kmer-similarity/human_mouse_zebrafish/'
 SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
-template = s3_folder + f
-'similarities_{sketch_id_template}.csv'
-
-# bundled_graphs = []
-# graph_dict = {}
 
 N_NEIGHBORS = 5
 
