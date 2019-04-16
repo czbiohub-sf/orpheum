@@ -148,8 +148,8 @@ def get_similarity_graphs(csv_template, metadata,
 
         graph_hv = hv.Graph.from_networkx(graph, pos)
 
-        graph_hv = graph_hv.opts(node_size=10, edge_line_width=1, cmap='Set2',
-                                 node_color=dim("species"),
+        graph_hv = graph_hv.opts(node_size=10, edge_linewidth=1, cmap='Set2',
+                                 node_color=dim(groupby),
                                  node_line_color='gray')
         bundled = bundle_graph(graph_hv)
         # hv.save(bundled, '.pdf', backend='matplotlib')
@@ -192,7 +192,7 @@ def draw_holoviews_graphs(graph_dict):
     kwargs = dict(width=800, height=800, xaxis=None, yaxis=None)
     opts.defaults(opts.Nodes(**kwargs), opts.Graph(**kwargs))
 
-    kwargs = dict(node_size=10, edge_line_width=1, cmap='Set2',
+    kwargs = dict(node_size=10, edge_linewidth=1, cmap='Set2',
                   node_color=dim("species"),
                   node_line_color='gray', width=600, height=600, xaxis=None,
                   yaxis=None)
