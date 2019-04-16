@@ -132,15 +132,18 @@ def get_similarity_graphs(csv_template, metadata,
                 f"log2sketchsize: {log2sketchsize}"
 
         if plaidplot:
-            g = sourmash_utils.plaidplot(similarities,
-                                         metric='cosine',
-                                         row_categories=categories,
-                                         col_categories=categories,
-                                         row_palette=palettes,
-                                         col_palette=palettes)
-            g.fig.suptitle(title)
-            png = f'{figure_folder}/{sketch_id}_plaidplot.png'
-            savefig(g, png, dpi=150)
+            try:
+                g = sourmash_utils.plaidplot(similarities,
+                                             metric='cosine',
+                                             row_categories=categories,
+                                             col_categories=categories,
+                                             row_palette=palettes,
+                                             col_palette=palettes)
+                g.fig.suptitle(title)
+                png = f'{figure_folder}/{sketch_id}_plaidplot.png'
+                savefig(g, png, dpi=150)
+            except FloatingPointError:
+                print(f"\tCouldn't compute linkage")
 
         graph, pos = build_graph_and_plot(similarities, metadata,
                                           n_neighbors, color_cols, palettes,
