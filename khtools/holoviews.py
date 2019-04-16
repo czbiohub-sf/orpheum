@@ -124,7 +124,7 @@ def get_similarity_graphs(csv_template, metadata,
         try:
             similarities = pd.read_csv(csv)
         except FileNotFoundError:
-            print(f"file {csv} not found")
+            warnings.warn(f"file {csv} not found")
             # File doesn't exist yet
             continue
         similarities.index = similarities.columns
@@ -146,7 +146,8 @@ def get_similarity_graphs(csv_template, metadata,
                 png = f'{figure_folder}/{sketch_id}_plaidplot.png'
                 savefig(g, png, dpi=150)
             except FloatingPointError:
-                print(f"\tCouldn't compute linkage")
+                warnings.warn("\tCouldn't compute linkage -- no plaidplot " \
+                              "generated")
 
         graph, pos = build_graph_and_plot(similarities, metadata,
                                           n_neighbors, color_cols, palettes,
