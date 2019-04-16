@@ -12,23 +12,11 @@ import seaborn as sns
 %matplotlib inline
 
 # My handwritten modules
-from aguamenti.s3_utils import write_s3
+from .s3_utils import savefig
 from . import knn
 from . import sourmash_utils
 from . import sourmash_compare_utils
 
-
-hv.extension('bokeh')
-
-defaults = dict(width=400, height=400, padding=0.1)
-hv.opts.defaults(
-    opts.EdgePaths(**defaults), opts.Graph(**defaults), opts.Nodes(**defaults))
-
-import common
-
-figure_folder = common.get_figure_folder()
-! mkdir -p $figure_folder
-figure_folder
 
 # don't warn me about too many figures open
 import matplotlib.pyplot as plt
@@ -40,10 +28,9 @@ KSIZES = 9, 12, 15, 21
 LOG2SKETCHSIZES = 10, 12, 14, 16
 MOLECULES = 'dna', 'protein'
 
-color_cols = ['species', 'cell_label', ]
-categories = metadata_source_name[color_cols]
+COLOR_COLS = ['species', 'cell_label', ]
 
-palettes = dict(species='Set2', cell_label='tab20')
+PALETTES = dict(species='Set2', cell_label='tab20')
 
 s3_folder = 's3://olgabot-maca/nf-kmer-similarity/human_mouse_zebrafish/'
 SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
@@ -53,7 +40,7 @@ template = s3_folder + f
 # bundled_graphs = []
 # graph_dict = {}
 
-n_neighbors = 5
+N_NEIGHBORS = 5
 
 
 def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
@@ -73,19 +60,69 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
             warnings.simplefilter("ignore")
             knn.draw_graph(graph, edge_color='black', label_col=label, pos=pos)
         ax.set_title(title)
-        png = f
-        '{figure_folder}/{figure_prefix}_graph_nneighbors-{n_neighbors}_colorby-{label}.png'
-        fig.savefig(png, dpi=150)
+        figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
+        png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'
+        savefig(fig, png, dpi=150)
+    return graph, pos
 
 
-def read_similarity_matrices(csv_template, ksizes=KSIZES,
-                             log2sketchsizes=LOG2SKETCHSIZES,
-                             molecules=MOLECULES,
-                             sketch_id_template=SKETCH_ID_TEMPLATE):
+def get_similarity_graphs(csv_template, metadata,
+                          figure_folder,
+                          groupby='species',
+                          ksizes=KSIZES,
+                          log2sketchsizes=LOG2SKETCHSIZES,
+                          molecules=MOLECULES,
+                          sketch_id_template=SKETCH_ID_TEMPLATE,
+                          n_neighbors=N_NEIGHBORS,
+                          plaidplot=False, palettes=PALETTES,
+                          color_cols=COLOR_COLS):
+    """Read similarity csvs and create holoviews graphs
+
+    Parameters
+    ----------
+    csv_template : str
+        format-string to insert molecule, ksize, and log2sketchsize values
+        into to get csv. e.g.:
+        'similarities_molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}.csv'
+    metadata : pandas.DataFrame
+        Sample-by-feature metadata encoding additional information about
+        samples, such as species, cell type label, or tissue
+    groupby : str
+        Which column of the metadata to groupby to get sub-graphs for
+    ksizes : tuple of int
+        Which k-mer sizes to look for similarity files for,
+        default (9, 12, 15, 21)
+    log2sketchsizes : tuple of int
+        Which log2 sketch sizes to look for similarity files for,
+        default (10, 12, 14, 16)
+    molecules : tuple of str
+        Which molecules to use, default both 'dna' and 'protein'
+    sketch_id_template : str
+        String to use as a unique identifier for the sketch, e.g.
+        'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
+    plaidplot : bool
+        If true, make a clustered heatmap with the sides labeled with the
+        color_cols
+    palettes : dict
+        Column name (must be in 'metadata') to palette name mapping
+    color_cols : list
+        Column names in 'metadata' to color by
+
+    Returns
+    -------
+    graph_dict : dict of holoviews.Graph
+        (molecule, ksize, log2sketchsize) : holoviews.Graph mapping for all
+        similarity matrices found. To be used by 'draw_holoviews_graphs'
+
+    """
     iterable = itertools.product(molecules, ksizes, log2sketchsizes)
+    graph_dict = {}
 
-    for ksize, log2sketchsize in iterable:
-        template_kwargs = dict(ksize=ksize, log2sketchsize=log2sketchsize)
+    categories = metadata[color_cols]
+
+    for molecule, ksize, log2sketchsize in iterable:
+        template_kwargs = dict(molecule=molecule, ksize=ksize,
+                               log2sketchsize=log2sketchsize)
         sketch_id = sketch_id_template.format(**template_kwargs)
         print(sketch_id.replace('-', ": ").replace("_", ", "))
         csv = csv_template.format(**template_kwargs)
@@ -98,53 +135,76 @@ def read_similarity_matrices(csv_template, ksizes=KSIZES,
         similarities.index = similarities.columns
         print(similarities.shape)
 
-        title = f
-        "ksize: {ksize}, log2sketchsize: {log2sketchsize}"
+        title = f"molecule: {molecule}, ksize: {ksize}, " \
+                f"log2sketchsize: {log2sketchsize}"
 
-        palette = dict(species='tab10', cell_ontology_class='husl')
+        if plaidplot:
+            g = sourmash_utils.plaidplot(similarities,
+                                         metric='cosine',
+                                         row_categories=categories,
+                                         col_categories=categories,
+                                         row_palette=palettes,
+                                         col_palette=palettes)
+            g.fig.suptitle(title)
+            png = f'{figure_folder}/{sketch_id}_plaidplot.png'
+            savefig(g, png, dpi=150)
 
-        #     g = sourmash_utils.plaidplot(similarities,
-        #                                  metric='cosine', row_categories=categories,
-        #                              col_categories=categories, row_palette=palettes, col_palette=palettes)
-        #     g.fig.suptitle(title)
-        #     png = f'{figure_folder}/{sketch_id}_plaidplot.png'
-        #     g.savefig(png, dpi=150)
+        graph, pos = build_graph_and_plot(similarities, metadata,
+                                          n_neighbors, color_cols, palettes,
+                                          figure_folder,
+                                          sketch_id, title)
 
-        build_graph_and_plot(similarities, metadata_source_name,
-                             n_neighbors, color_cols, palettes, figure_folder,
-                             sketch_id, title)
+        graph_hv = hv.Graph.from_networkx(graph, pos)
 
-        #     graph = knn.nearest_neighbor_graph(similarities, metadata_source_name, n_neighbors=n_neighbors,
-        #                                       color_cols=color_cols, palettes=palettes)
+        graph_hv = graph_hv.opts(node_size=10, edge_line_width=1, cmap='Set2',
+                                 node_color=dim("species"),
+                                 node_line_color='gray')
+        bundled = bundle_graph(graph_hv)
+        hv.save(bundled, 'asdf.pdf', backend='matplotlib')
+        graph_dict[(molecule, ksize, log2sketchsize)] = bundled
 
-        #     pos = nx.spring_layout(graph, seed=0)
 
-        #     for label in color_cols:
-        #         fig, ax = plt.subplots()
-        #         knn.draw_graph(graph, edge_color='black', label_col=label, pos=pos)
-        #         ax.set_title(title)
-        #         png = f'{figure_folder}/{sketch_id}_graph_nneighbors-{n_neighbors}_colorby-{label}.png'
-        #         fig.savefig(png, dpi=150)
+        if groupby is not None:
+            # make within-group (e.g. within-species) graphs
+            for species, df in metadata.groupby(groupby):
+                data = similarities.loc[df.index, df.index]
+                figure_prefix = f"{sketch_id}_{species}"
+                graph_title = f"{title} ({species})"
+                build_graph_and_plot(
+                    data, df, n_neighbors, color_cols, palettes, figure_folder,
+                    figure_prefix, graph_title)
 
-        # make within-species graphs
-        for species, df in metadata_source_name.groupby('species'):
-            data = similarities.loc[df.index, df.index]
-            build_graph_and_plot(data, df,
-                                 n_neighbors, color_cols, palettes, figure_folder,
-                                 f
-            "{sketch_id}_{species}", title = f
-            "{title} ({species})")
-
-            #     graph_hv = hv.Graph.from_networkx(graph, pos)
-
-            #     graph_hv = graph_hv.opts(node_size=10, edge_line_width=1, cmap='Set2', node_color=dim("species"),
-            #                           node_line_color='gray')
-            #     bundled = bundle_graph(graph_hv)
-            #     hv.save(bundled, 'asdf.pdf', backend='matplotlib')
-            #     bundled_graphs.append(bundled)
-            #     graph_dict[(ksize, log2sketchsize)] = bundled
-
-            # graph_dict = dict(zip(iterable, bundled_graphs))
+    return graph_dict
 
 
 
+def draw_holoviews_graphs(graph_dict):
+    # use first key to determine default settings
+    first_key = list(graph_dict.keys())[0]
+    molecule, ksize, log2sketchsize = first_key
+
+    hv.extension('bokeh')
+    defaults = dict(width=400, height=400, padding=0.1)
+    hv.opts.defaults(
+        opts.EdgePaths(**defaults), opts.Graph(**defaults),
+        opts.Nodes(**defaults))
+
+    kdims = [
+        hv.Dimension(('molecule', "molecule"), default=molecule),
+
+        hv.Dimension(('ksize', "k-mer size"), default=ksize),
+             hv.Dimension(('log2_num_hashes', "$\log_2$ num hashes"),
+                          default=log2sketchsize),
+             ]
+
+    kwargs = dict(width=800, height=800, xaxis=None, yaxis=None)
+    opts.defaults(opts.Nodes(**kwargs), opts.Graph(**kwargs))
+
+    kwargs = dict(node_size=10, edge_line_width=1, cmap='Set2',
+                  node_color=dim("species"),
+                  node_line_color='gray', width=600, height=600, xaxis=None,
+                  yaxis=None)
+
+    holomap = hv.HoloMap(graph_dict, kdims=kdims)
+    holomap.opts(opts.Graph(**kwargs))
+    return holomap
