@@ -65,7 +65,8 @@ def get_similarity_graphs(csv_template, metadata,
                           sketch_id_template=SKETCH_ID_TEMPLATE,
                           n_neighbors=N_NEIGHBORS,
                           plaidplot=False, palettes=PALETTES,
-                          color_cols=COLOR_COLS):
+                          color_cols=COLOR_COLS,
+                          verbose=False):
     """Read similarity csvs and create holoviews graphs
 
     Parameters
@@ -117,7 +118,8 @@ def get_similarity_graphs(csv_template, metadata,
         template_kwargs = dict(molecule=molecule, ksize=ksize,
                                log2sketchsize=log2sketchsize)
         sketch_id = sketch_id_template.format(**template_kwargs)
-        print(sketch_id.replace('-', ": ").replace("_", ", "))
+        if verbose:
+            print(sketch_id.replace('-', ": ").replace("_", ", "))
         csv = csv_template.format(**template_kwargs)
         try:
             similarities = pd.read_csv(csv)
@@ -126,7 +128,8 @@ def get_similarity_graphs(csv_template, metadata,
             # File doesn't exist yet
             continue
         similarities.index = similarities.columns
-        print(similarities.shape)
+        if verbose:
+            print(f"\tsimilarities.shape: {similarities.shape}")
 
         title = f"molecule: {molecule}, ksize: {ksize}, " \
                 f"log2sketchsize: {log2sketchsize}"
