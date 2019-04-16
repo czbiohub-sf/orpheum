@@ -105,6 +105,9 @@ def get_similarity_graphs(csv_template, metadata,
         similarity matrices found. To be used by 'draw_holoviews_graphs'
 
     """
+    # Strip the final slash because it makes s3 stuff weird
+    figure_folder = figure_folder.rstrip('/')
+
     iterable = itertools.product(molecules, ksizes, log2sketchsizes)
     graph_dict = {}
 
