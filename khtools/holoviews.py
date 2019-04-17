@@ -56,17 +56,13 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
     return graph, pos
 
 
-def get_similarity_graphs(csv_template, metadata,
-                          figure_folder,
-                          groupby='species',
-                          ksizes=KSIZES,
-                          log2sketchsizes=LOG2SKETCHSIZES,
-                          molecules=MOLECULES,
+def get_similarity_graphs(csv_template, metadata, figure_folder,
+                          groupby='species', ksizes=KSIZES,
+                          log2sketchsizes=LOG2SKETCHSIZES, molecules=MOLECULES,
                           sketch_id_template=SKETCH_ID_TEMPLATE,
-                          n_neighbors=N_NEIGHBORS,
-                          plaidplot=False, palettes=PALETTES,
-                          color_cols=COLOR_COLS,
-                          verbose=False):
+                          n_neighbors=N_NEIGHBORS, plaidplot=False,
+                          palettes=PALETTES, color_cols=COLOR_COLS,
+                          verbose=False, make_within_groupby_graphs=False):
     """Read similarity csvs and create holoviews graphs
 
     Parameters
@@ -166,7 +162,7 @@ def get_similarity_graphs(csv_template, metadata,
         graph_dict[(molecule, ksize, log2sketchsize)] = bundled
 
 
-        if groupby is not None:
+        if make_within_groupby_graphs:
             # make within-group (e.g. within-species) graphs
             for species, df in metadata.groupby(groupby):
                 data = similarities.loc[df.index, df.index]
