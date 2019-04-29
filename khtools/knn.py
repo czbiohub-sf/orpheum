@@ -4,7 +4,7 @@ import networkx as nx
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-import sourmash_utils
+from . import sourmash_utils
 
 
 def _compute_neighbor_adjacencies(data, n_neighbors=5):
