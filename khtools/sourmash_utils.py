@@ -165,7 +165,7 @@ def plaidplot(data, row_categories=None, col_categories=None, row_palette=None,
                        **kwargs)
     return g
 
-def plaidplot_square(data, metadata, metadata_col='cell_ontology_class', palette='tab20', 
+def plaidplot_square(data, metadata, metadata_col='cell_ontology_class', palette='tab20',
                      **kwargs):
     categories = metadata[metadata_col]
 #     palette = category_colors(categories, palette)
@@ -209,7 +209,7 @@ def plaidplot_and_distplot(data, metadata, name, ksize, ignore_abundance,
 
     df = get_single_cell(cell_id, data, metadata, ksize, name, ignore_abundance)
 
-    distplot_grid = facet_distplot(df, palette=palette)
+    distplot_grid = facet_distplot(df, palette=palette, hue=metadata_col)
     pdf = f'../figures/{fig_prefix}_cell={cell_id}_distplot.pdf'
     distplot_grid.ax.set(title=fig_prefix)
     distplot_grid.savefig(pdf)
