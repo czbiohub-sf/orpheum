@@ -10,6 +10,7 @@ from .jaccard_utils import jaccard_sigs_parallel
 
 COMPARISON_COLS = 'animal', 'tissue', 'replicate'
 GROUPBY_COLS = [f'same_{x}' for x in COMPARISON_COLS]
+IDF_QUANTILES = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
 def filter_idf(hashes, idf, mean_idf_per_cell):
     return set(x for x in hashes if idf[x] > mean_idf_per_cell)
@@ -85,7 +86,8 @@ def tidify_values_idf(values_idf, index, idf_quantile):
     return tidy
 
 
-def parallel_many_tf_idf(siglist, group_col, idf_quantiles, metadata,
+def parallel_many_tf_idf(siglist, group_col, metadata,
+                         idf_quantiles=IDF_QUANTILES,
                          comparison_cols=COMPARISON_COLS,
                          n_jobs=16, plot=True):
     labels = [metadata.loc[x.name(), group_col] for x in siglist]
