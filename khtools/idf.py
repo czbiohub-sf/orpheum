@@ -60,7 +60,7 @@ def get_tf_idf(siglist):
 
 
 
-def make_siglist_groups(siglist, groups):
+def make_siglist_groups(siglist, labels):
     """Map groups names in series to lists of signatures
 
     Returns
@@ -68,12 +68,12 @@ def make_siglist_groups(siglist, groups):
     siglist_grouped : dict
         dictionary of string name to a list of signatures
     """
-    groups_siglist = [groups[x.name()] for x in siglist]
 
     siglist_grouped = defaultdict(list)
-    for animal, sig in zip(groups_siglist, siglist):
-        siglist_grouped[animal].append(sig)
+    for label, sig in zip(labels, siglist):
+        siglist_grouped[label].append(sig)
     return siglist_grouped
+
 
 def tidify_values_idf(values_idf, index, idf_quantile):
     tidy = pd.Series(values_idf, index=index)
@@ -85,10 +85,11 @@ def tidify_values_idf(values_idf, index, idf_quantile):
     return tidy
 
 
-def parallel_many_tf_idf(siglist, groups, idf_quantiles, metadata,
+def parallel_many_tf_idf(siglist, group_col, idf_quantiles, metadata,
                          comparison_cols=COMPARISON_COLS,
                          n_jobs=16, plot=True):
-    siglist_grouped = make_siglist_groups(siglist, groups)
+    labels = [metadata.loc[x.name(), group_col] for x in siglist]
+    siglist_grouped = make_siglist_groups(siglist, labels)
     species_idfs = {species: get_inverse_document_frequency(list(sigs))
                    for species, sigs in siglist_grouped.items()}
 
