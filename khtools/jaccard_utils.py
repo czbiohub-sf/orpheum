@@ -1,5 +1,6 @@
+import tempfile
 
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, load, dump
 from itertools import combinations
 from collections import defaultdict
 
@@ -42,9 +43,22 @@ def estimate_jaccard(a, b, normalize=True):
     return numerator / denominator
 
 
+def memmap_siglist(siglist):
+    """Write a memory-mapped array of signatures"""
+    temp_folder = tempfile.mkdtemp()
+    filename = os.path.join(temp_folder, 'siglist.mmap')
+    if os.path.exists(filename): os.unlink(filename)
+    _ = dump(siglist, filename)
+    large_memmap = load(filename, mmap_mode='r+')
+    return large_memmap
+
+
 def jaccard_sigs_parallel(siglist, n_jobs=16):
-    values_idf = Parallel(n_jobs=n_jobs)(
-        delayed(estimate_jaccard)(x, y) for x, y in combinations(siglist, 2))
+    memmapped = memmap_siglist(siglist)
+    values_idf = Parallel(n_jobs=n_jobs, require='sharedmem',
+                          backend='threading')(
+        delayed(estimate_jaccard)(x, y) for x, y in combinations(memmapped, 2))
+    return values_idf
 
 
 
