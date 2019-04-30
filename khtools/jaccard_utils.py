@@ -1,6 +1,6 @@
 
 from joblib import Parallel, delayed
-import itertools
+from itertools import combinations
 from collections import defaultdict
 
 
@@ -11,8 +11,8 @@ def jaccard_sigs(i, j, siglist):
     return siglist[i].jaccard(siglist[j])
 
 def jaccard_sigs_idf(i, j, siglist, idf, mean_idf_per_cell):
-    i_hashes = filter_idf(siglist[i].get_mins(), inverse_document_frequency, mean_idf_per_cell)
-    j_hashes = filter_idf(siglist[j].get_mins(), inverse_document_frequency, mean_idf_per_cell)
+    i_hashes = filter_idf(siglist[i].get_mins(), idf, mean_idf_per_cell)
+    j_hashes = filter_idf(siglist[j].get_mins(), idf, mean_idf_per_cell)
     return jaccard(i_hashes, j_hashes)
 
 
@@ -42,6 +42,9 @@ def estimate_jaccard(a, b, normalize=True):
     return numerator / denominator
 
 
+def jaccard_sigs_parallel(siglist, n_jobs=16):
+    values_idf = Parallel(n_jobs=n_jobs)(
+        delayed(estimate_jaccard)(x, y) for x, y in combinations(siglist, 2))
 
 
 

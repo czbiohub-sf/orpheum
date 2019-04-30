@@ -1,7 +1,15 @@
-
+from itertools import combinations
 from collections import Counter, defaultdict
 import math
 
+
+import pandas as pd
+
+from .jaccard_utils import jaccard_sigs_parallel
+
+
+COMPARISON_COLS = 'animal', 'tissue', 'replicate'
+GROUPBY_COLS = [f'same_{x}' for x in COMPARISON_COLS]
 
 def filter_idf(hashes, idf, mean_idf_per_cell):
     return set(x for x in hashes if idf[x] > mean_idf_per_cell)
@@ -44,6 +52,14 @@ def get_inverse_document_frequency(siglist):
     return inverse_document_frequency
 
 
+def get_tf_idf(siglist):
+    inverse_document_frequencies = get_inverse_document_frequency(siglist)
+
+    # TODO: Use x.minhash.get_mins(with_abundance=True) for track_abundance=True
+    term_frequencies = [1/len(x.minhash.get_mins()) for x in siglist]
+
+
+
 def make_siglist_groups(siglist, groups):
     """Map groups names in series to lists of signatures
 
@@ -59,22 +75,93 @@ def make_siglist_groups(siglist, groups):
         siglist_grouped[animal].append(sig)
     return siglist_grouped
 
+def tidify_values_idf(values_idf, index, idf_quantile):
+    tidy = pd.Series(values_idf, index=index)
+    tidy = tidy.reset_index()
+    tidy = tidy.rename(
+        columns={'level_0': 'sample_1', 'level_1': 'sample_2',
+                 0: 'similarity'})
+    tidy['idf_quantile'] = idf_quantile
+    return tidy
 
-def perform_tf_idf(siglist, groups):
+
+def parallel_many_tf_idf(siglist, groups, idf_quantiles, metadata,
+                         comparison_cols=COMPARISON_COLS,
+                         n_jobs=16, plot=True):
     siglist_grouped = make_siglist_groups(siglist, groups)
+    species_idfs = {species: get_inverse_document_frequency(list(sigs))
+                   for species, sigs in siglist_grouped.items()}
 
-    siglist_grouped_tf_idf = {}
+    names = [x.name() for x in siglist]
+    index = pd.MultiIndex.from_tuples(combinations(names, 2))
+
+    dfs = []
+    for idf_quantile in idf_quantiles:
+        print(f'idf_quantile: {idf_quantile}')
+        values_idf = tf_idf_and_jaccard(siglist_grouped, species_idfs,
+                                        idf_quantile, n_jobs)
+        tidy = tidify_values_idf(values_idf, index, idf_quantile)
+        tidy = add_comparison_cols(tidy, metadata, comparison_cols)
+        if plot:
+            title = f"IDF Quantile: {idf_quantile}"
+            plot_comparison_similarities(tidy, comparison_cols,
+                                         title=title)
+        dfs.append(tidy)
+    similarities_idf_tidy = pd.concat(dfs, ignore_index=True)
+    return similarities_idf_tidy
+
+
+
+
+def tf_idf_and_jaccard(siglist_grouped, species_idfs, idf_quantile=0.5,
+                       n_jobs=16):
 
     siglist_species_tf_idf = []
 
     for species, species_sigs in siglist_grouped.items():
-        species_sigs = list(species_sigs)
-        species_idf = get_inverse_document_frequency(species_sigs)
-        species_mean_idf_per_cell = idf.get_mean_idf_per_cell(species_sigs,
-                                                              species_idf)
-        species_sigs_filtered_idf = [idf.filter_idf(x.minhash.get_mins(),
+        species_idf = species_idfs[species]
+        species_minimum_idf = pd.Series(species_idf).quantile(idf_quantile)
+        species_sigs_filtered_idf = [filter_idf(x.minhash.get_mins(),
                                                     species_idf,
-                                                    species_mean_idf_per_cell)
+                                                    species_minimum_idf)
                                      for x in species_sigs]
-        siglist_grouped_tf_idf[species] = species_sigs_filtered_idf
         siglist_species_tf_idf.extend(species_sigs_filtered_idf)
+    values_idf = jaccard_sigs_parallel(siglist_species_tf_idf, n_jobs=n_jobs)
+    return values_idf
+
+
+
+def add_comparison_cols(tidy, metadata, comparison_cols=COMPARISON_COLS):
+    """
+
+    Parameters
+    ----------
+    tidy : pandas.DataFrame
+        Dataframe of similarities between sample_1, sample_2
+    metadata : pandas.DataFrame
+        Per-sample metadata for samples in tidy
+
+    Returns
+    -------
+
+    """
+    tidy_metadata = tidy.join(metadata, on='sample_1') \
+        .join(metadata, on='sample_2', rsuffix='_sample_2')
+
+    for col in comparison_cols:
+        tidy_metadata[f'same_{col}'] = \
+            tidy_metadata[col] == tidy_metadata[f'{col}_sample_2']
+
+        return tidy_metadata
+
+
+def plot_comparison_similarities(similarity_tidy_metadata,
+                                 comparison_cols=COMPARISON_COLS,
+                                 title=None):
+
+    for col in comparison_cols:
+        groupby_col = 'same_' + col
+        g = sns.FacetGrid(similarity_tidy_metadata, hue=groupby_col)
+        g.map(sns.distplot, 'similarity')
+        g.add_legend()
+        g.set(title=None)
