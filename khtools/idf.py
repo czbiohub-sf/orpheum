@@ -4,8 +4,9 @@ import math
 
 
 import pandas as pd
+import seaborn as sns
 
-from .jaccard_utils import jaccard_sigs_parallel
+from .jaccard_utils import jaccard_sets_parallel
 
 
 COMPARISON_COLS = 'animal', 'tissue', 'replicate'
@@ -129,7 +130,7 @@ def tf_idf_and_jaccard(siglist_grouped, species_idfs, idf_quantile=0.5,
                                                     species_minimum_idf)
                                      for x in species_sigs]
         siglist_species_tf_idf.extend(species_sigs_filtered_idf)
-    values_idf = jaccard_sigs_parallel(siglist_species_tf_idf, n_jobs=n_jobs)
+    values_idf = jaccard_sets_parallel(siglist_species_tf_idf, n_jobs=n_jobs)
     return values_idf
 
 
