@@ -54,7 +54,8 @@ def memmap_siglist(siglist):
     return large_memmap
 
 
-def jaccard_sigs_parallel(siglist, n_jobs=16):
+def jaccard_sets_parallel(siglist, n_jobs=16):
+    """Estimate jaccard similarity between sets of values"""
     memmapped = memmap_siglist(siglist)
     values_idf = Parallel(n_jobs=n_jobs, require='sharedmem',
                           backend='threading')(
