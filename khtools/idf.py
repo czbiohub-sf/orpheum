@@ -156,7 +156,7 @@ def add_comparison_cols(tidy, metadata, comparison_cols=COMPARISON_COLS):
         tidy_metadata[f'same_{col}'] = \
             tidy_metadata[col] == tidy_metadata[f'{col}_sample_2']
 
-        return tidy_metadata
+    return tidy_metadata
 
 
 def plot_comparison_similarities(similarity_tidy_metadata,
