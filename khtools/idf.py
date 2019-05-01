@@ -168,4 +168,4 @@ def plot_comparison_similarities(similarity_tidy_metadata,
         g = sns.FacetGrid(similarity_tidy_metadata, hue=groupby_col)
         g.map(sns.distplot, 'similarity')
         g.add_legend()
-        g.set(title=None)
+        g.set(title=title)
