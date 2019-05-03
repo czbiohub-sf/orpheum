@@ -41,7 +41,10 @@ def estimate_jaccard(a, b, normalize=True):
 
     numerator = len(sketch_a_union_b.intersection(a).intersection(b))
     denominator = len(sketch_a_union_b)
-    return numerator / denominator
+    try:
+        return numerator / denominator
+    except ZeroDivisionError:
+        return 0
 
 
 def memmap_siglist(siglist):
