@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
 from . import sourmash_utils
-
+from .s3_utils import savefig
 
 def _compute_neighbor_adjacencies(data, n_neighbors=5):
     # Convert to distances by subtracting from 1
