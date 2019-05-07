@@ -1,9 +1,10 @@
-
-
 import itertools
 
 import numpy as np
 from scipy.spatial.distance import squareform
+
+from . import jaccard_utils
+
 
 from . import jaccard_utils
 
