@@ -1,11 +1,10 @@
 import itertools
 import json
+import warnings
 
-from fastcluster import linkage
 from matplotlib.colors import rgb2hex
 import numpy as np
 import pandas as pd
-from polo import optimal_leaf_ordering
 from scipy.spatial.distance import pdist
 import seaborn as sns
 
@@ -126,9 +125,23 @@ def calculate_linkage(data, metric, method, between='cols'):
         data = data.T
 
     D = pdist(data, metric)
+    try:
+        from fastcluster import linkage
+    except ImportError:
+        from scipy.cluster.hierarchy import linkage
+        warnings.warn("'fastcluster' not installed! This may take a while ... "
+                      "Install with 'pip install fastcluster'")
+
     Z = linkage(D, method)
 
-    optimal_Z = optimal_leaf_ordering(Z, D)
+    try:
+        from polo import optimal_leaf_ordering
+        optimal_Z = optimal_leaf_ordering(Z, D)
+    except ImportError:
+        warnings.warn("'polo' not installed! Dendrogram will not be optimal "
+                      "leaf ordered. Install with 'pip install polo'")
+        optimal_Z = Z
+
     return optimal_Z
 
 
@@ -152,7 +165,7 @@ def plaidplot(data, row_categories=None, col_categories=None, row_palette=None,
                        **kwargs)
     return g
 
-def plaidplot_square(data, metadata, metadata_col='cell_ontology_class', palette='tab20', 
+def plaidplot_square(data, metadata, metadata_col='cell_ontology_class', palette='tab20',
                      **kwargs):
     categories = metadata[metadata_col]
 #     palette = category_colors(categories, palette)
@@ -196,7 +209,7 @@ def plaidplot_and_distplot(data, metadata, name, ksize, ignore_abundance,
 
     df = get_single_cell(cell_id, data, metadata, ksize, name, ignore_abundance)
 
-    distplot_grid = facet_distplot(df, palette=palette)
+    distplot_grid = facet_distplot(df, palette=palette, hue=metadata_col)
     pdf = f'../figures/{fig_prefix}_cell={cell_id}_distplot.pdf'
     distplot_grid.ax.set(title=fig_prefix)
     distplot_grid.savefig(pdf)
