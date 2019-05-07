@@ -82,3 +82,26 @@ def draw_graph(G, label_col='cell_ontology_class', edge_color='black', legend=Tr
     
     if legend:
         _add_legend(colors, labels, label_col)
+
+
+def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
+                         figure_folder, figure_prefix, title):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        graph = knn.nearest_neighbor_graph(data, metadata,
+                                           n_neighbors=n_neighbors,
+                                           color_cols=color_cols,
+                                           palettes=palettes)
+
+    pos = nx.spring_layout(graph, seed=0)
+
+    for label in color_cols:
+        fig, ax = plt.subplots()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            knn.draw_graph(graph, edge_color='black', label_col=label, pos=pos)
+        ax.set_title(title)
+        figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
+        png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'
+        savefig(fig, png, dpi=150)
+    return graph, pos
