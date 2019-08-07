@@ -16,8 +16,8 @@ def _compute_neighbor_adjacencies(data, n_neighbors=5):
     distances, indices = nbrs.kneighbors(X)
 
     # Replace integers with cell ids
-    neighbor_indices = pd.DataFrame(indices, index=X.index)
-    neighbor_indices = neighbor_indices.applymap(lambda x: X.index[x])
+    neighbor_indices = pd.DataFrame(indices, index=X.columns)
+    neighbor_indices = neighbor_indices.applymap(lambda x: X.columns[x])
 
     # Make (cell_1, cell_2) adjacency list
     neighbor_indices_tidy = neighbor_indices.unstack()
