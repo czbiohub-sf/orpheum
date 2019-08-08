@@ -1,3 +1,4 @@
+import os
 import warnings
 
 from matplotlib.lines import Line2D
@@ -103,9 +104,8 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
             warnings.simplefilter("ignore")
             draw_graph(graph, edge_color='black', label_col=label, pos=pos)
         ax.set_title(title)
-        figure_suffix = f
-        'graph_nneighbors-{n_neighbors}_colorby-{label}'
-        png = f
-        '{figure_folder}/{figure_prefix}_{figure_suffix}.png'
+        figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
+        png = os.path.join(figure_folder,
+                           f'{figure_prefix}_{figure_suffix}.png')
         savefig(fig, png, dpi=150)
     return graph, pos
