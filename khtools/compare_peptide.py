@@ -131,19 +131,19 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     id2, seq2 = id2_seq2
 
     protein_df = kmer_comparison_table(id1, seq1, id2, seq2,
-                                       molecule='protein')
+                                       molecule='protein', ksizes=ksizes)
 
     dayhoff1 = dayhoffize(seq1)
     dayhoff2 = dayhoffize(seq2)
 
     dayhoff_df = kmer_comparison_table(id1, dayhoff1, id2, dayhoff2,
-                                       molecule='dayhoff')
+                                       molecule='dayhoff', ksizes=ksizes)
 
     hp1 = hpize(seq1)
     hp2 = hpize(seq2)
 
     hp_df = kmer_comparison_table(id1, hp1, id2, hp2,
-                                  molecule='hydrophilic-polar')
+                                  molecule='hydrophilic-polar', ksizes=ksizes)
     df = pd.concat([protein_df, dayhoff_df, hp_df], ignore_index=True)
     return df
 
