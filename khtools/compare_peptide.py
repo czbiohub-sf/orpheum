@@ -87,6 +87,44 @@ def hpize(seq):
     return seq.translate(HP_TRANSLATION)
 
 
+
+
+def kmerize(seq, ksize):
+    return set(seq[i:i+ksize] for i in range(len(seq)-ksize+1))
+
+def jaccardize(set1, set2):
+    denominator = min(len(set1), len(set2))
+    if denominator > 0:
+        return len(set1.intersection(set2))/denominator
+    else:
+        return denominator
+
+def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
+    kmers1 = set(seq1[i:i+ksize] for i in range(len(seq1)-ksize+1))
+    kmers2 = set(seq2[i:i+ksize] for i in range(len(seq2)-ksize+1))
+    jaccard = jaccardize(kmers1, kmers2)
+    if debug:
+        print("len(kmers1):", len(kmers1))
+        print("len(kmers2):", len(kmers2))
+        print(f"jaccard: {jaccard}")
+    return jaccard
+
+
+def kmer_comparison_table(id1, seq1, id2, seq2, molecule, ksizes=KSIZES):
+    lines = []
+    for ksize in ksizes:
+        jaccard = kmerize_and_jaccard(seq1, seq2, ksize)
+        line = [id1, id2, ksize, jaccard]
+        lines.append(line)
+    df = pd.DataFrame(lines, columns=COLUMNS)
+    df['molecule'] = molecule
+    return df
+
+
+def nCr(n, r):
+    f = math.factorial
+    return f(n) // (f(r) * f(n - r))
+
 def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     # Unpack the tuples
     id1, seq1 = id1_seq1
@@ -145,7 +183,7 @@ def get_comparison_at_index(index, seqlist, ksizes=KSIZES):
     return comparision_df_list
 
 
-def compare_all_seqs(seqlist, n_jobs=4):
+def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES):
     """
     
     Parameters
