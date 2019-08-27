@@ -206,7 +206,7 @@ def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES):
     func = partial(
         get_comparison_at_index,
         seqlist=seqlist,
-        ksizes=KSIZES)
+        ksizes=ksizes)
     notify("Created similarity func")
 
     # Initialize multiprocess.pool
