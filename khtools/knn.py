@@ -86,7 +86,28 @@ def draw_graph(G, label_col='cell_ontology_class', edge_color='black', legend=Tr
 
 
 def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
-                         figure_folder, figure_prefix, title):
+                         figure_folder, figure_prefix, title,
+                         edge_color='black', legend=True,
+                         **kwargs):
+    """
+
+    Parameters
+    ----------
+    data
+    metadata
+    n_neighbors
+    color_cols
+    palettes
+    figure_folder
+    figure_prefix
+    title
+    kwargs : keyword arguments
+        Any other keyword arguments passed onto networkx.draw
+
+    Returns
+    -------
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         graph = nearest_neighbor_graph(data, metadata,
@@ -100,7 +121,8 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
         fig, ax = plt.subplots()
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            draw_graph(graph, edge_color='black', label_col=label, pos=pos)
+            draw_graph(graph, edge_color=edge_color, label_col=label, pos=pos,
+                       legend=legend, **kwargs)
         ax.set_title(title)
         figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
         png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'
