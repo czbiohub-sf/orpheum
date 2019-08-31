@@ -13,6 +13,7 @@ from sourmash.logging import notify
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
+AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
 
 DAYHOFF_MAPPING = {
     "C": "a",
@@ -74,11 +75,50 @@ HP_MAPPING = {
     "Q": "p"
 }
 
+# From: Brüne, D., Andrade-Navarro, M. A., & Mier, P. (2018).
+# Proteome-wide comparison between the amino acid composition of domains and
+# linkers. BMC Research Notes, 1–6. http://doi.org/10.1186/s13104-018-3221-0
+BOTVINNIK_MAPPING = {
+    # Small and hydrophobic
+    "A": "a",
+    "G": "a",
+
+    # Hydrophobic
+    "L": "b",
+    "I": "b",
+    "V": "b",
+
+    # Aromatic, not W
+    "F": "c",
+    "Y": "c",
+
+    # Polar or charged
+    # Phosphorylate-able
+    "S": "d",
+    "T": "d",
+
+    # Polar, uncharged
+    "N": "e",
+    "Q": "f",
+
+    # Special
+    "C": "g",
+    "M": "h",
+    "W": "i",
+    "H": "j",
+    "Q": "k",
+    "P": "l"
+}
+
+assert all(x in DAYHOFF_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
+assert all(x in HP_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
+assert all(x in BOTVINNIK_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 
 DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
 
 HP_TRANSLATION = str.maketrans(HP_MAPPING)
 
+BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 def dayhoffize(seq):
     return seq.translate(DAYHOFF_TRANSLATION)
@@ -87,7 +127,8 @@ def dayhoffize(seq):
 def hpize(seq):
     return seq.translate(HP_TRANSLATION)
 
-
+def botvinnikize(seq):
+    return seq.translate(BOTVINNIK_TRANSLATION)
 
 
 def kmerize(seq, ksize):
@@ -134,6 +175,12 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     protein_df = kmer_comparison_table(id1, seq1, id2, seq2,
                                        molecule='protein', ksizes=ksizes)
 
+    botvinnik1 = botvinnikize(seq1)
+    botvinnik2 = botvinnikize(seq2)
+
+    botvinnik_df = kmer_comparison_table(id1, botvinnik1, id2, botvinnik2,
+                                  molecule='botvinnik', ksizes=ksizes)
+
     dayhoff1 = dayhoffize(seq1)
     dayhoff2 = dayhoffize(seq2)
 
@@ -144,8 +191,9 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     hp2 = hpize(seq2)
 
     hp_df = kmer_comparison_table(id1, hp1, id2, hp2,
-                                  molecule='hydrophilic-polar', ksizes=ksizes)
-    df = pd.concat([protein_df, dayhoff_df, hp_df], ignore_index=True)
+                                  molecule='hydrophobic-polar', ksizes=ksizes)
+
+    df = pd.concat([protein_df, botvinnik_df, dayhoff_df, hp_df], ignore_index=True)
     return df
 
 
