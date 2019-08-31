@@ -99,15 +99,24 @@ BOTVINNIK_MAPPING = {
 
     # Polar, uncharged
     "N": "e",
-    "Q": "f",
+    "Q": "e",
+
+    # Polar, negatively charged
+    "D": "f",
+    "E": "f",
+
+    # Polar, positively charged
+    # Not histidine
+    "R": "g",
+    "K": "g",
 
     # Special
-    "C": "g",
-    "M": "h",
-    "W": "i",
-    "H": "j",
-    "Q": "k",
-    "P": "l"
+    "C": "h",
+    "M": "i",
+    "W": "j",
+    "H": "k",
+    "Q": "l",
+    "P": "m"
 }
 
 assert all(x in DAYHOFF_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
