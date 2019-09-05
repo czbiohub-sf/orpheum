@@ -1,9 +1,10 @@
 import requests
 import sys
 
-def get_sequence(ensembl_id, verbose=False):
+
+def get_sequence(ensembl_id, verbose=False, type='cds'):
     server = "https://rest.ensembl.org"
-    ext = f"/sequence/id/{ensembl_id}"
+    ext = f"/sequence/id/{ensembl_id};?type={type}"
 
     r = requests.get(server+ext, headers={ "Content-Type" : "text/plain"})
 
