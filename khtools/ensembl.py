@@ -2,6 +2,12 @@ import requests
 import sys
 
 
+def maybe_get_cds(transcript_id):
+    try:
+        return get_sequence(transcript_id, type='cds', verbose=False)
+    except requests.exceptions.HTTPError:
+        return None
+
 def get_sequence(ensembl_id, verbose=False, type='cds'):
     server = "https://rest.ensembl.org"
     ext = f"/sequence/id/{ensembl_id}?type={type}"
