@@ -1,8 +1,16 @@
+import logging
 
 import pandas as pd
 
 from .compare_peptide import compare_all_seqs
 from .ensembl import get_sequence, get_rna_sequence_from_protein_id
+
+
+# Create a logger
+logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+
 
 QUANTITATIVE_KEYWORDS = set(
     ['conservation score', 'alignment coverage', 'dN with', 'dS with',
@@ -125,15 +133,22 @@ class HomologyTable:
                              " and 'protein_coding_cdna', 'protein_coding_"
                              "cds', and 'non_coding' datatypes are accepted")
 
+        logger.info(f"datatype: {datatype}, moltype: {moltype}, " \
+                     "seqtype: {seqtype}")
+
         random_subset = data.sample(n_subset, random_state=random_state)
+        logger.info("Getting sequences from IDs")
         species1_id_seqs = self.get_sequences_from_ids(
             random_subset, self.species1_id_col, moltype, seqtype)
         species2_id_seqs = self.get_sequences_from_ids(
             random_subset, self.species2_id_col, moltype, seqtype)
         seqlist = species1_id_seqs + species2_id_seqs
+
+        logger.info("K-merizing and calculating jaccard comparisons")
         kmer_comparisons = compare_all_seqs(seqlist, n_jobs, ksizes,
                                             moltype=moltype)
 
+        logger.info("Cleaning up k-mer comparisons for cross-species data")
         cross_species = self._get_cross_species(random_subset,
                                                 kmer_comparisons)
         cross_species_metadata = self._add_orthology_metadata(cross_species,
