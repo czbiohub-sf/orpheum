@@ -37,10 +37,10 @@ class HomologyTable:
         self.species2 = species2
 
         # Extract column for homology type (e.g. one2one, one2many, many2many)
-        homology_type_col = [x for x in self.data.columns
+        self.homology_type_col = [x for x in self.data.columns
                              if x.endswith("homology type")][0]
 
-        self.data['is_homologue'] = self.data[homology_type_col].notnull()
+        self.data['is_homologue'] = self.data[self.homology_type_col].notnull()
 
         self.species1_id_col = 'Query protein or transcript ID'
         self.species2_id_col = [x for x in self.data.columns if
@@ -126,7 +126,7 @@ class HomologyTable:
             moltype = 'DNA'
             seqtype = 'cds'
         elif datatype == 'non_coding':
-            data = self.protein_coding
+            data = self.non_coding
             moltype = 'DNA'
             seqtype = 'cdna'
         else:
