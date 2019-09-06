@@ -137,6 +137,7 @@ class HomologyTable:
         logger.info(f"datatype: {datatype}, moltype: {moltype}, " \
                     f"seqtype: {seqtype}")
 
+        logger.info("Subsetting data")
         random_subset = data.sample(n_subset, random_state=random_state)
         logger.info("Getting sequences from IDs")
         species1_id_seqs = self.get_sequences_from_ids(
