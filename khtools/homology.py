@@ -135,7 +135,7 @@ class HomologyTable:
                              "cds', and 'non_coding' datatypes are accepted")
 
         logger.info(f"datatype: {datatype}, moltype: {moltype}, " \
-                     "seqtype: {seqtype}")
+                    f"seqtype: {seqtype}")
 
         random_subset = data.sample(n_subset, random_state=random_state)
         logger.info("Getting sequences from IDs")
