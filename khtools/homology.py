@@ -113,7 +113,7 @@ class HomologyTable:
 
     def compare_orthology(self, datatype, n_subset=200, random_state=0,
                           n_jobs=32, ksizes=list(range(2, 41))):
-        if datatype == 'protein_coding_peptides':
+        if datatype == 'protein_coding_peptide':
             data = self.protein_coding
             moltype = 'protein'
             seqtype = 'protein'
@@ -130,7 +130,7 @@ class HomologyTable:
             moltype = 'DNA'
             seqtype = 'cdna'
         else:
-            raise ValueError("Only 'protein_coding_peptides',"
+            raise ValueError("Only 'protein_coding_peptide',"
                              " and 'protein_coding_cdna', 'protein_coding_"
                              "cds', and 'non_coding' datatypes are accepted")
 
