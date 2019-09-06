@@ -8,10 +8,57 @@ import time
 import pandas as pd
 from sourmash.logging import notify
 
+# Divergence time estimates in millions of years
+# from http://www.timetree.org/ on 2019-08-26
+divergence_estimates = pd.Series({"Amniota": 312,
+                                  'Bilateria': 824,
+                                  "Boreoeutheria": 96,
+
+                                  # Old world monkeys
+                                  'Catarrhini': 29.4,
+                                  "Euarchontoglires": 76,
+
+                                  # Bony vertebrates
+                                  'Euteleostomi': 435,
+                                  'Eutheria': 105,
+
+                                  # Jawed vertebrates
+                                  'Gnathostomata': 473,
+
+                                  # A primate suborder
+                                  'Haplorrhini': 67,
+
+                                  # Great apes (includes orangutan)
+                                  'Hominidae': 15.8,
+
+                                  # Gorilla, human, chimp
+                                  'Homininae': 9.1,
+
+                                  # Apes (includes gibbons)
+                                  'Hominoidea': 20.2,
+
+                                  'Mammalia': 177,
+                                  "Opisthokonta": 1105,
+                                  'Primates': 74,
+
+                                  # tetrapods and the lobe-finned fishes
+                                  'Sarcopterygii': 413,
+                                  'Simiiformes': 43,
+
+                                  # Tetrapods - 4-limbed
+                                  'Tetrapoda': 352,
+
+                                  # Includes Eutheria (placental mammals) and Metatheria (maruspials)
+                                  'Theria': 159,
+
+                                  'NA': 0})
+divergence_estimates = divergence_estimates.sort_values()
+
 
 
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
+DNA_ALPHABET = "A", "C", "G", "T"
 
 AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
 
@@ -47,6 +94,42 @@ DAYHOFF_MAPPING = {
     "W": "f",
     "Y": "f"
 }
+
+DAYHOFF_v2_MAPPING = {
+    "C": "a",
+
+    # Small
+    "A": "b",
+    "G": "b",
+    "P": "b",
+
+    # Phosphorylateable
+    "S": "B",
+    "T": "B",
+
+    # Acid and amide
+    "D": "c",
+    "E": "c",
+    "N": "c",
+    "Q": "c",
+
+    # Basic
+    "H": "d",
+    "K": "d",
+    "R": "d",
+
+    # Hydrophobic
+    "I": "e",
+    "L": "e",
+    "M": "e",
+    "V": "e",
+
+    # Aromatic
+    "F": "f",
+    "W": "f",
+    "Y": "f"
+}
+
 
 ## Hydrophobic/hydrophilic mapping
 HP_MAPPING = {
@@ -124,6 +207,7 @@ assert all(x in HP_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 assert all(x in BOTVINNIK_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 
 DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
+DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_v2_MAPPING)
 
 HP_TRANSLATION = str.maketrans(HP_MAPPING)
 
@@ -132,6 +216,8 @@ BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 def dayhoffize(seq):
     return seq.translate(DAYHOFF_TRANSLATION)
 
+def dayhoff_v2_ize(seq):
+    return seq.translate(DAYHOFF_V2_TRANSLATION)
 
 def hpize(seq):
     return seq.translate(HP_TRANSLATION)
@@ -196,13 +282,29 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     dayhoff_df = kmer_comparison_table(id1, dayhoff1, id2, dayhoff2,
                                        molecule='dayhoff', ksizes=ksizes)
 
+    dayhoff_v2_1 = dayhoff_v2_ize(seq1)
+    dayhoff_v2_2 = dayhoff_v2_ize(seq2)
+
+    dayhoff_v2_df = kmer_comparison_table(id1, dayhoff_v2_1, id2, dayhoff_v2_2,
+                                       molecule='dayhoff_v2', ksizes=ksizes)
+
     hp1 = hpize(seq1)
     hp2 = hpize(seq2)
 
     hp_df = kmer_comparison_table(id1, hp1, id2, hp2,
                                   molecule='hydrophobic-polar', ksizes=ksizes)
 
-    df = pd.concat([protein_df, botvinnik_df, dayhoff_df, hp_df], ignore_index=True)
+    df = pd.concat([protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df,
+                    hp_df], ignore_index=True)
+    return df
+
+
+def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
+    # Unpack the tuples
+    id1, seq1 = id1_seq1
+    id2, seq2 = id2_seq2
+    df = kmer_comparison_table(id1, seq1, id2, seq2, molecule='nucleotide',
+                               ksizes=ksizes)
     return df
 
 
