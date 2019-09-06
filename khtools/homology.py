@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+from tqdm import tqdm
 
 from .compare_peptide import compare_all_seqs
 from .ensembl import get_sequence, get_rna_sequence_from_protein_id
@@ -56,9 +57,9 @@ class HomologyTable:
     def get_sequences_from_ids(df, id_column, moltype, seqtype):
         if moltype == 'protein' and seqtype != 'protein':
             seqs = [get_rna_sequence_from_protein_id(x, seqtype)
-                    for x in df[id_column]]
+                    for x in tqdm(df[id_column])]
         else:
-            seqs = [get_sequence(x) for x in df[id_column]]
+            seqs = [get_sequence(x) for x in tqdm(df[id_column])]
         id_seqs = list(
             zip(df[id_column], seqs))
         return id_seqs
