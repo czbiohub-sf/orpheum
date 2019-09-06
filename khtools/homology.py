@@ -1,10 +1,8 @@
-import requests
-import sys
 
 import pandas as pd
 
 from .compare_peptide import compare_all_seqs
-from .ensembl import get_sequence, maybe_get_cds
+from .ensembl import get_sequence, get_rna_sequence_from_protein_id
 
 QUANTITATIVE_KEYWORDS = set(
     ['conservation score', 'alignment coverage', 'dN with', 'dS with',
@@ -46,9 +44,13 @@ class HomologyTable:
         self.protein_coding = self.data.loc[self._protein_coding_rows]
         self.non_coding = self.data.loc[~self._protein_coding_rows]
 
-    def get_sequences_from_ids(self, df, id_column):
-        seqs = [get_sequence(x) for x in
-                         df[id_column]]
+    @staticmethod
+    def get_sequences_from_ids(df, id_column, moltype, seqtype):
+        if moltype == 'protein' and seqtype != 'protein':
+            seqs = [get_rna_sequence_from_protein_id(x, seqtype)
+                    for x in df[id_column]]
+        else:
+            seqs = [get_sequence(x) for x in df[id_column]]
         id_seqs = list(
             zip(df[id_column], seqs))
         return id_seqs
@@ -102,21 +104,32 @@ class HomologyTable:
 
     def compare_orthology(self, datatype, n_subset=200, random_state=0,
                           n_jobs=32, ksizes=list(range(2, 41))):
-        if datatype == 'protein':
+        if datatype == 'protein_coding_peptides':
             data = self.protein_coding
             moltype = 'protein'
+            seqtype = 'protein'
+        elif datatype == 'protein_coding_cdna':
+            data = self.protein_coding
+            moltype = 'DNA'
+            seqtype = 'cdna'
+        elif datatype == 'protein_coding_cds':
+            data = self.protein_coding
+            moltype = 'DNA'
+            seqtype = 'cds'
         elif datatype == 'non_coding':
             data = self.protein_coding
             moltype = 'DNA'
+            seqtype = 'cdna'
         else:
-            raise ValueError("Only 'protein_coding' and 'non_coding' data "
-                             "types are accepted")
+            raise ValueError("Only 'protein_coding_peptides',"
+                             " and 'protein_coding_cdna', 'protein_coding_"
+                             "cds', and 'non_coding' datatypes are accepted")
 
         random_subset = data.sample(n_subset, random_state=random_state)
-        species1_id_seqs = self.get_sequences_from_ids(random_subset,
-                                                        self.species1_id_col)
-        species2_id_seqs = self.get_sequences_from_ids(random_subset,
-                                                        self.species2_id_col)
+        species1_id_seqs = self.get_sequences_from_ids(
+            random_subset, self.species1_id_col, moltype, seqtype)
+        species2_id_seqs = self.get_sequences_from_ids(
+            random_subset, self.species2_id_col, moltype, seqtype)
         seqlist = species1_id_seqs + species2_id_seqs
         kmer_comparisons = compare_all_seqs(seqlist, n_jobs, ksizes,
                                             moltype=moltype)

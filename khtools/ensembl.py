@@ -8,9 +8,30 @@ def maybe_get_cds(transcript_id):
     except requests.exceptions.HTTPError:
         return None
 
-def get_sequence(ensembl_id, verbose=False, type='cds'):
+def get_rna_sequence_from_protein_id(protein_id, verbose=False, type='cdna'):
     server = "https://rest.ensembl.org"
-    ext = f"/sequence/id/{ensembl_id}?type={type}"
+    ext = f"/lookup/id/{protein_id}?content-type=application/json"
+
+    r = requests.get(server + ext,
+                     headers={"Content-Type": "application/json"})
+
+    if not r.ok:
+        r.raise_for_status()
+        sys.exit()
+
+    decoded = r.json()
+    # print(repr(decoded))
+    if verbose:
+        pprint(decoded)
+
+    transcript_id = decoded['Parent']
+    sequence = get_sequence(transcript_id, type)
+    return sequence
+
+
+def get_sequence(ensembl_id, verbose=False):
+    server = "https://rest.ensembl.org"
+    ext = f"/sequence/id/{ensembl_id}"
 
     r = requests.get(server+ext, headers={ "Content-Type" : "text/plain"})
 
