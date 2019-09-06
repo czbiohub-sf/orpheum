@@ -307,14 +307,20 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
                                ksizes=ksizes)
     return df
 
+def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype='protein'):
+    if moltype == 'protein':
+        return compare_peptide_seqs(id1_seq1, id2_seq2, ksizes)
+    elif moltype.lower() == 'dna':
+        return compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes)
 
-def compare_args_unpack(args, ksizes):
+
+def compare_args_unpack(args, ksizes, moltype):
     """Helper function to unpack the arguments. Written to use in pool.imap as it
     can only be given one argument."""
-    return compare_peptide_seqs(*args, ksizes=ksizes)
+    return compare_seqs(*args, ksizes=ksizes, moltype=moltype)
 
 
-def get_comparison_at_index(index, seqlist, ksizes=KSIZES):
+def get_comparison_at_index(index, seqlist, ksizes=KSIZES, moltype='protein'):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't redundantly
     calculate signatures with all the other indices prior to index - 1
@@ -333,7 +339,7 @@ def get_comparison_at_index(index, seqlist, ksizes=KSIZES):
     """
     startt = time.time()
     seq_iterator = itertools.product([seqlist[index]], seqlist[index + 1:])
-    func = partial(compare_args_unpack, ksizes=ksizes)
+    func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
         "comparison for index {} done in {:.5f} seconds",
@@ -343,7 +349,7 @@ def get_comparison_at_index(index, seqlist, ksizes=KSIZES):
     return comparision_df_list
 
 
-def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES):
+def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES, moltype='protein'):
     """
     
     Parameters
@@ -366,7 +372,8 @@ def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES):
     func = partial(
         get_comparison_at_index,
         seqlist=seqlist,
-        ksizes=ksizes)
+        ksizes=ksizes,
+        moltype=moltype)
     notify("Created similarity func")
 
     # Initialize multiprocess.pool
