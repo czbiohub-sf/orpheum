@@ -2,6 +2,7 @@ from functools import partial
 import itertools
 import math
 import multiprocessing
+import random
 import time
 
 
@@ -376,6 +377,7 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
                     weak_strong_df, amino_keto_df], ignore_index=True)
     return df
 
+
 def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype='protein'):
     if moltype == 'protein':
         return compare_peptide_seqs(id1_seq1, id2_seq2, ksizes)
@@ -389,7 +391,9 @@ def compare_args_unpack(args, ksizes, moltype):
     return compare_seqs(*args, ksizes=ksizes, moltype=moltype)
 
 
-def get_comparison_at_index(index, seqlist, ksizes=KSIZES, moltype='protein'):
+def get_comparison_at_index(index, seqlist1, seqlist2,
+                            ksizes=KSIZES, n_background=100,
+                            moltype='protein'):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't redundantly
     calculate signatures with all the other indices prior to index - 1
@@ -407,7 +411,11 @@ def get_comparison_at_index(index, seqlist, ksizes=KSIZES, moltype='protein'):
     rest of the signatures from index+1
     """
     startt = time.time()
-    seq_iterator = itertools.product([seqlist[index]], seqlist[index + 1:])
+    pairs_iterator = zip(seqlist1, seqlist2)
+    background_iterator = itertools.combinations(seqlist1, seqlist2)
+    random_iterator = random.sample(background_iterator, n_background)
+
+    seq_iterator = itertools.chain_from_iterable(pairs_iterator, random_iterator)
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
@@ -418,7 +426,8 @@ def get_comparison_at_index(index, seqlist, ksizes=KSIZES, moltype='protein'):
     return comparision_df_list
 
 
-def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES, moltype='protein'):
+def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
+                     moltype='protein', n_background_multiplier=100):
     """
     
     Parameters
@@ -432,15 +441,22 @@ def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES, moltype='protein'):
     -------
 
     """
+    if seqlist2 is not None:
+        if len(seqlist1) != len(seqlist2):
+            raise ValueError("Can only compare two sequences of equal length")
+
     t0 = time.time()
-    length_seqlist = len(seqlist)
+    n_background = n_background_multiplier * (len(seqlist1))
+    n_total_comparisons = len(seqlist1) + n_background
 
     # Initialize the function using func.partial with the common arguments like
     # siglist, ignore_abundance, downsample, for computing all the signatures
     # The only changing parameter that will be mapped from the pool is the index
     func = partial(
         get_comparison_at_index,
-        seqlist=seqlist,
+        seqlist1=seqlist1,
+        seqlist2=seqlist2,
+        n_background=n_background,
         ksizes=ksizes,
         moltype=moltype)
     notify("Created similarity func")
@@ -449,16 +465,17 @@ def compare_all_seqs(seqlist, n_jobs=4, ksizes=KSIZES, moltype='protein'):
     pool = multiprocessing.Pool(processes=n_jobs)
 
     # Calculate chunk size, by default pool.imap chunk size is 1
-    chunksize, extra = divmod(length_seqlist, n_jobs)
+    chunksize, extra = divmod(n_total_comparisons, n_jobs)
     if extra:
         chunksize += 1
     notify("Calculated chunk size for multiprocessing")
 
     # This will not generate the results yet, since pool.imap returns a generator
-    result = pool.imap(func, range(length_seqlist), chunksize=chunksize)
+    result = pool.imap(func, range(n_total_comparisons), chunksize=chunksize)
     notify("Initialized multiprocessing pool.imap")
 
     peptide_kmer_comparisons = pd.concat(itertools.chain(*result), ignore_index=True)
 
     notify(f"Total time: {time.time() - t0}")
     return peptide_kmer_comparisons
+
