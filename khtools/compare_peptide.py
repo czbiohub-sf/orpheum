@@ -413,7 +413,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     startt = time.time()
     pairs_iterator = [seqlist1[index], seqlist2[index]]
     random_seqlist2 = random.sample(seqlist2, n_background)
-    background_pairs = zip(cycle(seqlist1[index]), random_seqlist2)
+    background_pairs = zip(itertools.cycle(seqlist1[index]), random_seqlist2)
     print("random_iterator:", random_iterator)
 
     seq_iterator = itertools.chain(*[pairs_iterator, background_pairs])
