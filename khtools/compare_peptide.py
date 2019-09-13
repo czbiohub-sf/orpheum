@@ -413,9 +413,11 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     startt = time.time()
     pairs_iterator = [seqlist1[index], seqlist2[index]]
     random_seqlist2 = random.sample(seqlist2, n_background)
-    background_pairs = zip(itertools.cycle(seqlist1[index]), random_seqlist2)
+    background_pairs = list(zip(itertools.cycle(seqlist1[index]), random_seqlist2))
+    print(f"background_pairs: {background_pairs}")
 
-    seq_iterator = itertools.chain(*[pairs_iterator, background_pairs])
+    seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
+    print(f"seq_iterator: {seq_iterator}")
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
