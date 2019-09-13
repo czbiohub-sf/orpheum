@@ -202,25 +202,68 @@ BOTVINNIK_MAPPING = {
     "P": "m"
 }
 
+PURINE_PYRIMIDINE_MAPPING = {
+    "A": "R",
+    "C": "Y",
+    "G": "R",
+    "T": "Y"
+}
+
+
+AMINO_KETO_MAPPING = {
+    "A": "M",
+    "C": "M",
+    "G": "K",
+    "T": "K"
+}
+
+
+WEAK_STRONG_MAPPING = {
+    "A": "W",
+    "C": "S",
+    "G": "S",
+    "T": "W"
+}
+
 assert all(x in DAYHOFF_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 assert all(x in HP_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 assert all(x in BOTVINNIK_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 
+# Nucleic acid mappings
+AMINO_KETO_TRANSLATION = str.maketrans(AMINO_KETO_MAPPING)
+WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
+PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
+
+# Amino acid mappings
 DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
 DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_v2_MAPPING)
-
 HP_TRANSLATION = str.maketrans(HP_MAPPING)
-
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
+
+
+def amino_keto_ize(seq):
+    return seq.translate(AMINO_KETO_TRANSLATION)
+
+
+def weak_strong_ize(seq):
+    return seq.translate(WEAK_STRONG_TRANSLATION)
+
+
+def pyruine_pyrimidize(seq):
+    return seq.translate(PURINE_PYRIMIDINE_TRANSLATION)
+
 
 def dayhoffize(seq):
     return seq.translate(DAYHOFF_TRANSLATION)
 
+
 def dayhoff_v2_ize(seq):
     return seq.translate(DAYHOFF_V2_TRANSLATION)
 
+
 def hpize(seq):
     return seq.translate(HP_TRANSLATION)
+
 
 def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
@@ -303,8 +346,34 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
-    df = kmer_comparison_table(id1, seq1, id2, seq2, molecule='nucleotide',
-                               ksizes=ksizes)
+
+    purine_pyrimidine1 = purine_pyrimidize(seq1)
+    purine_pyrimidine2 = purine_pyrimidize(seq2)
+
+    purine_primimdine_df = kmer_comparison_table(
+        id1, purine_pyrimidine1, id2, purine_pyrimidine2,
+        molecule='purine_pyrimidine', ksizes=ksizes)
+
+    weak_strong1 = weak_strong_ize(seq1)
+    weak_strong2 = weak_strong_ize(seq2)
+
+    weak_strong_df = kmer_comparison_table(
+        id1, weak_strong1, id2, weak_strong2,
+        molecule='weak_strong', ksizes=ksizes)
+    
+    amino_keto1 = amino_keto_ize(seq1)
+    amino_keto2 = amino_keto_ize(seq2)
+
+    amino_keto_df = kmer_comparison_table(
+        id1, amino_keto1, id2, amino_keto2,
+        molecule='amino_keto', ksizes=ksizes)
+
+    nucleotide_df = kmer_comparison_table(id1, seq1, id2, seq2,
+                                          molecule='nucleotide',
+                                          ksizes=ksizes)
+
+    df = pd.concat([purine_primimdine_df, nucleotide_df, 
+                    weak_strong_df, amino_keto_df], ignore_index=True)
     return df
 
 def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype='protein'):
