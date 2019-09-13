@@ -14,8 +14,8 @@ logger.setLevel(logging.INFO)
 
 
 QUANTITATIVE_KEYWORDS = set(
-    ['conservation score', 'alignment coverage', 'dN with', 'dS with',
-     '%id'])
+    ['Gene-order conservation score', 'alignment coverage', 'dN with',
+     'dS with', '%id'])
 
 
 class HomologyTable:
@@ -48,8 +48,9 @@ class HomologyTable:
         self.quantitative_features = [x for x in self.data.columns if any(
             keyword in x for keyword in QUANTITATIVE_KEYWORDS)]
 
-        dN_col = [col for col in self.quantitative_features if 'dN with' in col][0]
-        self._protein_coding_rows = self.data[dN_col].notnull()
+        gene_order_col = [col for col in self.quantitative_features
+                          if 'Gene-order conservation score' in col][0]
+        self._protein_coding_rows = self.data[gene_order_col].notnull()
         self.protein_coding = self.data.loc[self._protein_coding_rows]
         self.non_coding = self.data.loc[~self._protein_coding_rows]
 
@@ -112,7 +113,8 @@ class HomologyTable:
         return cross_species_metadata_subset
 
     def compare_orthology(self, datatype, n_subset=200, random_state=0,
-                          n_jobs=32, ksizes=list(range(2, 41))):
+                          n_jobs=32, n_background_multiplier=100,
+                          ksizes=list(range(2, 41))):
         if datatype == 'protein_coding_peptide':
             data = self.protein_coding
             moltype = 'protein'
@@ -144,11 +146,12 @@ class HomologyTable:
             random_subset, self.species1_id_col, moltype, seqtype)
         species2_id_seqs = self.get_sequences_from_ids(
             random_subset, self.species2_id_col, moltype, seqtype)
-        seqlist = species1_id_seqs + species2_id_seqs
 
         logger.info("K-merizing and calculating jaccard comparisons")
-        kmer_comparisons = compare_all_seqs(seqlist, n_jobs, ksizes,
-                                            moltype=moltype)
+        kmer_comparisons = compare_all_seqs(species1_id_seqs, species2_id_seqs,
+                                            n_jobs, ksizes,
+                                            moltype=moltype,
+                                            n_background_multiplier=n_background_multiplier)
 
         logger.info("Cleaning up k-mer comparisons for cross-species data")
         cross_species = self._get_cross_species(random_subset,
