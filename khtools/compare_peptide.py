@@ -414,6 +414,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     pairs_iterator = zip(seqlist1, seqlist2)
     background_iterator = itertools.combinations(seqlist1, seqlist2)
     random_iterator = random.sample(background_iterator, n_background)
+    print("random_iterator:", random_iterator)
 
     seq_iterator = itertools.chain_from_iterable(pairs_iterator, random_iterator)
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
