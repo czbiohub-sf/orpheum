@@ -113,8 +113,27 @@ class HomologyTable:
         return cross_species_metadata_subset
 
     def compare_orthology(self, datatype, n_subset=200, random_state=0,
-                          n_jobs=32, n_background_multiplier=100,
+                          n_jobs=32, n_background=100,
                           ksizes=list(range(2, 41))):
+        """
+
+        Parameters
+        ----------
+        datatype : str
+            Either 'protein_coding_peptide', 'protein_coding_cdna', or
+            'protein_coding_cds', 'non_coding'
+        n_subset
+        random_state
+        n_jobs
+        n_background : int
+            Number of background comparisons to do, per species1 sequence
+        ksizes
+
+        Returns
+        -------
+
+        """
+
         if datatype == 'protein_coding_peptide':
             data = self.protein_coding
             moltype = 'protein'
@@ -151,7 +170,7 @@ class HomologyTable:
         kmer_comparisons = compare_all_seqs(species1_id_seqs, species2_id_seqs,
                                             n_jobs, ksizes,
                                             moltype=moltype,
-                                            n_background_multiplier=n_background_multiplier)
+                                            n_background=n_background)
 
         logger.info("Cleaning up k-mer comparisons for cross-species data")
         cross_species = self._get_cross_species(random_subset,

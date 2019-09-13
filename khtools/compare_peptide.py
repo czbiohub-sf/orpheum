@@ -428,7 +428,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
 
 
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
-                     moltype='protein', n_background_multiplier=100):
+                     moltype='protein', n_background=100):
     """
     
     Parameters
@@ -447,7 +447,6 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
             raise ValueError("Can only compare two sequences of equal length")
 
     t0 = time.time()
-    n_background = n_background_multiplier * (len(seqlist1))
     n_total_comparisons = len(seqlist1) + n_background
 
     # Initialize the function using func.partial with the common arguments like
