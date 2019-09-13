@@ -411,12 +411,12 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     rest of the signatures from index+1
     """
     startt = time.time()
-    pairs_iterator = zip(seqlist1, seqlist2)
-    background_iterator = itertools.combinations(seqlist1, seqlist2)
-    random_iterator = random.sample(background_iterator, n_background)
+    pairs_iterator = [seqlist1[index], seqlist2[index]]
+    random_seqlist2 = random.sample(seqlist2, n_background)
+    background_pairs = zip(cycle(seqlist1[index]), random_seqlist2)
     print("random_iterator:", random_iterator)
 
-    seq_iterator = itertools.chain_from_iterable(pairs_iterator, random_iterator)
+    seq_iterator = itertools.chain(*[pairs_iterator, background_pairs])
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
