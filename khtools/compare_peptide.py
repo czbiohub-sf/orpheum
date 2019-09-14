@@ -394,7 +394,7 @@ def compare_args_unpack(args, ksizes, moltype):
 
 def get_comparison_at_index(index, seqlist1, seqlist2,
                             ksizes=KSIZES, n_background=100,
-                            moltype='protein'):
+                            moltype='protein', verbose=False):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't redundantly
     calculate signatures with all the other indices prior to index - 1
@@ -416,13 +416,14 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     random_seqlist2 = random.sample(seqlist2, n_background)
     this_index_seqlist1 = [seqlist1[index]] * n_background
     background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
-    import pdb; pdb.set_trace()
-    print("background_pairs:")
-    pprint(background_pairs)
+    if verbose:
+        print("background_pairs:")
+        pprint(background_pairs)
 
     seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
-    print("seq_iterator:")
-    pprint(seq_iterator)
+    if verbose:
+        print("seq_iterator:")
+        pprint(seq_iterator)
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
