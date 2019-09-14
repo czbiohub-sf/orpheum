@@ -251,7 +251,7 @@ def weak_strong_ize(seq):
     return seq.translate(WEAK_STRONG_TRANSLATION)
 
 
-def pyruine_pyrimidize(seq):
+def purine_pyrimidize(seq):
     return seq.translate(PURINE_PYRIMIDINE_TRANSLATION)
 
 
