@@ -454,7 +454,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
             raise ValueError("Can only compare two sequences of equal length")
 
     t0 = time.time()
-    n_total_comparisons = len(seqlist1) + n_background
+    len_seqlist1 = len(seqlist1)
 
     # Initialize the function using func.partial with the common arguments like
     # siglist, ignore_abundance, downsample, for computing all the signatures
@@ -472,13 +472,13 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     pool = multiprocessing.Pool(processes=n_jobs)
 
     # Calculate chunk size, by default pool.imap chunk size is 1
-    chunksize, extra = divmod(n_total_comparisons, n_jobs)
+    chunksize, extra = divmod(len_seqlist1, n_jobs)
     if extra:
         chunksize += 1
     notify("Calculated chunk size for multiprocessing")
 
     # This will not generate the results yet, since pool.imap returns a generator
-    result = pool.imap(func, range(n_total_comparisons), chunksize=chunksize)
+    result = pool.imap(func, range(len_seqlist1), chunksize=chunksize)
     notify("Initialized multiprocessing pool.imap")
 
     peptide_kmer_comparisons = pd.concat(itertools.chain(*result), ignore_index=True)
