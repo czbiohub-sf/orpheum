@@ -2,6 +2,7 @@ from functools import partial
 import itertools
 import math
 import multiprocessing
+from pprint import pprint
 import random
 import time
 
@@ -416,10 +417,10 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     this_index_seqlist1 = [seqlist1[index]] * n_background
     background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
     import pdb; pdb.set_trace()
-    print(f"background_pairs: {background_pairs}")
+    pprint(f"background_pairs: {background_pairs}")
 
     seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
-    print(f"seq_iterator: {seq_iterator}")
+    pprint(f"seq_iterator: {seq_iterator}")
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
