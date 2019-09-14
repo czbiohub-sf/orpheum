@@ -417,10 +417,12 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     this_index_seqlist1 = [seqlist1[index]] * n_background
     background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
     import pdb; pdb.set_trace()
-    pprint(f"background_pairs: {background_pairs}")
+    print("background_pairs:")
+    pprint(background_pairs)
 
     seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
-    pprint(f"seq_iterator: {seq_iterator}")
+    print("seq_iterator:")
+    pprint(seq_iterator)
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
