@@ -412,7 +412,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     rest of the signatures from index+1
     """
     startt = time.time()
-    pairs_iterator = [[seqlist1[index], seqlist2[index]]]
+    pairs_iterator = [(seqlist1[index], seqlist2[index])]
     random_seqlist2 = random.sample(seqlist2, n_background)
     this_index_seqlist1 = [seqlist1[index]] * n_background
     background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
