@@ -177,9 +177,7 @@ class HomologyTable:
                                                 kmer_comparisons)
         cross_species_metadata = self._add_orthology_metadata(cross_species,
                                                               random_subset)
-        cross_species_metadata_subset = self._subset_non_orthologous(
-            cross_species_metadata, random_state)
 
-        cross_species_metadata_fillna = cross_species_metadata_subset.fillna(
+        cross_species_metadata_fillna = cross_species_metadata.fillna(
             "No homology")
         return cross_species_metadata_fillna
