@@ -63,9 +63,11 @@ def get_orthologues(ensembl_id, target_species, verbose=False):
     return decoded
 
 
-def lookup(ensembl_id, verbose=False):
+def lookup(ensembl_id, expand=False, verbose=False):
+    # Intify the boolean to 0 (False) and 1 (True)
+    expand = int(expand)
     server = "https://rest.ensembl.org"
-    ext = f"/lookup/id/{ensembl_id}?expand=1"
+    ext = f"/lookup/id/{ensembl_id}?expand={expand}"
 
     r = requests.get(server + ext,
                      headers={"Content-Type": "application/json"})
