@@ -134,6 +134,10 @@ class HomologyTable:
 
         Returns
         -------
+        homology_jaccard : pandas.DataFrame
+            Table of jaccard similarities of random subsets of proteins or
+            transcripts across species1 and species2, joined with the original
+            metadata table
 
         """
 
