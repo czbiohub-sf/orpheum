@@ -25,6 +25,7 @@ def get_rna_sequence_from_protein_id(protein_id, ignore_errors=False,
         if ignore_errors:
             logger.warning(f"{ensembl_id} was not found, likely deprecated. " \
                             "Skipping ...")
+            return None
         else:
             r.raise_for_status()
             sys.exit()
@@ -49,6 +50,7 @@ def get_sequence(ensembl_id, ignore_errors=True, verbose=False):
         if ignore_errors:
             logger.warning(f"{ensembl_id} was not found, likely deprecated. " \
                             "Skipping ...")
+            return None
         else:
             r.raise_for_status()
             sys.exit()
