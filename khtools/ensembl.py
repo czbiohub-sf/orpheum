@@ -61,3 +61,21 @@ def get_orthologues(ensembl_id, target_species, verbose=False):
     if verbose:
         pprint(decoded)
     return decoded
+
+
+def lookup(ensembl_id, verbose=False):
+    server = "https://rest.ensembl.org"
+    ext = f"/lookup/id/{ensembl_id}"
+
+    r = requests.get(server + ext,
+                     headers={"Content-Type": "application/json"})
+
+    if not r.ok:
+        r.raise_for_status()
+        sys.exit()
+
+    decoded = r.json()
+    # print(repr(decoded))
+    if verbose:
+        pprint(decoded)
+    return decoded
