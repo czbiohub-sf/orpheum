@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+import seaborn as sns
 from tqdm import tqdm
 
 from .compare_peptide import compare_all_seqs
@@ -13,9 +14,11 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
 
-QUANTITATIVE_KEYWORDS = set(
-    ['Gene-order conservation score', 'alignment coverage', 'dN with',
-     'dS with', '%id'])
+QUANTITATIVE_KEYWORDS = {'Gene-order conservation score', 'alignment coverage',
+                         'dN with', 'dS with', '%id'}
+ORTHOLOGY_ORDER = ['No homology', 'ortholog_one2one', 'ortholog_one2many',
+                   'ortholog_many2many']
+ORTHOLOGY_PALETTE = dict(zip(ORTHOLOGY_ORDER, ['grey'] + sns.color_palette()))
 
 
 class HomologyTable:
