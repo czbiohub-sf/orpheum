@@ -1,6 +1,11 @@
+import logging
 import requests
 import sys
 
+# Create a logger
+logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
 
 def maybe_get_cds(transcript_id):
     try:
@@ -8,7 +13,8 @@ def maybe_get_cds(transcript_id):
     except requests.exceptions.HTTPError:
         return None
 
-def get_rna_sequence_from_protein_id(protein_id, verbose=False, type='cdna'):
+def get_rna_sequence_from_protein_id(protein_id, ignore_errors=False,
+                                     verbose=False, type='cdna'):
     server = "https://rest.ensembl.org"
     ext = f"/lookup/id/{protein_id}?content-type=application/json"
 
@@ -16,8 +22,12 @@ def get_rna_sequence_from_protein_id(protein_id, verbose=False, type='cdna'):
                      headers={"Content-Type": "application/json"})
 
     if not r.ok:
-        r.raise_for_status()
-        sys.exit()
+        if ignore_errors:
+            logger.warning(f"{ensembl_id} was not found, likely deprecated. " \
+                            "Skipping ...")
+        else:
+            r.raise_for_status()
+            sys.exit()
 
     decoded = r.json()
     # print(repr(decoded))
@@ -29,15 +39,19 @@ def get_rna_sequence_from_protein_id(protein_id, verbose=False, type='cdna'):
     return sequence
 
 
-def get_sequence(ensembl_id, verbose=False):
+def get_sequence(ensembl_id, ignore_errors=True, verbose=False):
     server = "https://rest.ensembl.org"
     ext = f"/sequence/id/{ensembl_id}"
 
     r = requests.get(server+ext, headers={ "Content-Type" : "text/plain"})
 
     if not r.ok:
-        r.raise_for_status()
-        sys.exit()
+        if ignore_errors:
+            logger.warning(f"{ensembl_id} was not found, likely deprecated. " \
+                            "Skipping ...")
+        else:
+            r.raise_for_status()
+            sys.exit()
 
     decoded = r.text
     if verbose:

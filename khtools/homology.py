@@ -59,13 +59,16 @@ class HomologyTable:
 
     @staticmethod
     def get_sequences_from_ids(df, id_column, moltype, seqtype):
+
+        # ignore_errors=True skips deprecated IDs
         if moltype == 'protein' and seqtype != 'protein':
-            seqs = [get_rna_sequence_from_protein_id(x, seqtype)
+            seqs = [get_rna_sequence_from_protein_id(x, type=seqtype,
+                                                     ignore_errors=True)
                     for x in tqdm(df[id_column])]
         else:
-            seqs = [get_sequence(x) for x in tqdm(df[id_column])]
-        id_seqs = list(
-            zip(df[id_column], seqs))
+            seqs = [get_sequence(x, ignore_errors=True) for x in tqdm(df[id_column])]
+        # Sanitize output based on deprecated ENSEMBL IDs that don't have sequences
+        id_seqs = [(ID, seq) for ID, seq in zip(df[id_column], seqs) if seq is not None]
         return id_seqs
 
     def _get_cross_species(self, random_subset, kmer_comparisons):
