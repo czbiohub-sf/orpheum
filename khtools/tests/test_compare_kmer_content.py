@@ -3,9 +3,10 @@ test_compare_kmer_content.py
 
 Tests comparing k-mer content
 """
+from io import StringIO
 
-import os
-
+import pandas as pd
+import pandas.util.testing as pdt
 import pytest
 
 
@@ -64,6 +65,11 @@ def test_kmer_comparison_table(nucleotide_seq1, nucleotide_seq2, ksizes):
     test = kmer_comparison_table('seq1', nucleotide_seq1,
                                  'seq2', nucleotide_seq2,
                                  'nucleotide', ksizes=ksizes)
-    true = "asdf"
-    assert test == true
+    s = """id1,id2,ksize,jaccard,molecule
+seq1,seq2,2,1.0,nucleotide
+seq1,seq2,3,0.8,nucleotide
+seq1,seq2,4,0.25,nucleotide
+"""
+    true = pd.read_csv(StringIO(s))
+    pdt.assert_equal(test, true)
 
