@@ -17,21 +17,21 @@ def folder():
 
 # -------------------- Test nucleotide encodings ---------------------------- #
 def test_amino_keto_ize():
-    from khtools.compare_peptide import amino_keto_ize
+    from khtools.sequence_encodings import amino_keto_ize
 
     test = amino_keto_ize("GATTACA")
     true = 'KMKKMMM'
     assert test == true
 
 def test_weak_strong_ize():
-    from khtools.compare_peptide import weak_strong_ize
+    from khtools.sequence_encodings import weak_strong_ize
 
     test = weak_strong_ize("GATTACA")
     true = 'SWWWWSW'
     assert test == true
 
 def test_purine_pyrimidize():
-    from khtools.compare_peptide import purine_pyrimidize
+    from khtools.sequence_encodings import purine_pyrimidize
 
     test = purine_pyrimidize("GATTACA")
     true = 'RRYYRYR'
@@ -39,7 +39,7 @@ def test_purine_pyrimidize():
 
 # -------------------- Test peptide encodings ---------------------------- #
 def test_dayhoffize():
-    from khtools.compare_peptide import dayhoffize
+    from khtools.sequence_encodings import dayhoffize
 
     test = dayhoffize("SASHAFIERCE")
     true = 'bbbdbfecdac'
@@ -47,7 +47,7 @@ def test_dayhoffize():
 
 
 def test_dayhoff_v2_ize():
-    from khtools.compare_peptide import dayhoff_v2_ize
+    from khtools.sequence_encodings import dayhoff_v2_ize
 
     test = dayhoff_v2_ize("SASHAFIERCE")
     true = 'BbBdbfecdac'
@@ -55,7 +55,7 @@ def test_dayhoff_v2_ize():
 
 
 def test_hpize():
-    from khtools.compare_peptide import hpize
+    from khtools.sequence_encodings import hpize
 
     test = hpize("SASHAFIERCE")
     true = 'phpphhhpppp'
@@ -63,7 +63,7 @@ def test_hpize():
 
 
 def test_botvinnikize():
-    from khtools.compare_peptide import botvinnikize
+    from khtools.sequence_encodings import botvinnikize
 
     test = botvinnikize("SASHAFIERCE")
     true = 'dadkacbfghf'

@@ -12,6 +12,11 @@ from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
+from khtools.sequence_encodings import AMINO_ACID_SINGLE_LETTERS, \
+    DAYHOFF_MAPPING, HP_MAPPING, BOTVINNIK_MAPPING, amino_keto_ize, \
+    weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
+    botvinnikize, jaccardize
+
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
                                   "Boreoeutheria": 96,
@@ -60,226 +65,22 @@ divergence_estimates = divergence_estimates.sort_values()
 
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
-DNA_ALPHABET = "A", "C", "G", "T"
-
-AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
-
-DAYHOFF_MAPPING = {
-    "C": "a",
-
-    # Small
-    "A": "b",
-    "G": "b",
-    "P": "b",
-    "S": "b",
-    "T": "b",
-
-    # Acid and amide
-    "D": "c",
-    "E": "c",
-    "N": "c",
-    "Q": "c",
-
-    # Basic
-    "H": "d",
-    "K": "d",
-    "R": "d",
-
-    # Hydrophobic
-    "I": "e",
-    "L": "e",
-    "M": "e",
-    "V": "e",
-
-    # Aromatic
-    "F": "f",
-    "W": "f",
-    "Y": "f"
-}
-
-DAYHOFF_v2_MAPPING = {
-    "C": "a",
-
-    # Small
-    "A": "b",
-    "G": "b",
-    "P": "b",
-
-    # Phosphorylateable
-    "S": "B",
-    "T": "B",
-
-    # Acid and amide
-    "D": "c",
-    "E": "c",
-    "N": "c",
-    "Q": "c",
-
-    # Basic
-    "H": "d",
-    "K": "d",
-    "R": "d",
-
-    # Hydrophobic
-    "I": "e",
-    "L": "e",
-    "M": "e",
-    "V": "e",
-
-    # Aromatic
-    "F": "f",
-    "W": "f",
-    "Y": "f"
-}
-
 
 ## Hydrophobic/hydrophilic mapping
-HP_MAPPING = {
-    # Hydrophobic
-    "A": "h",
-    "F": "h",
-    "G": "h",
-    "I": "h",
-    "L": "h",
-    "M": 'h',
-    "P": "h",
-    "V": "h",
-    "W": "h",
-    "Y": "h",
-
-    # Hydrophilic - polar
-    "N": 'p',
-    "C": 'p',
-    "S": "p",
-    "T": "p",
-    "D": "p",
-    "E": "p",
-    "R": "p",
-    "H": "p",
-    "K": "p",
-    "Q": "p"
-}
 
 # From: Brüne, D., Andrade-Navarro, M. A., & Mier, P. (2018).
 # Proteome-wide comparison between the amino acid composition of domains and
 # linkers. BMC Research Notes, 1–6. http://doi.org/10.1186/s13104-018-3221-0
-BOTVINNIK_MAPPING = {
-    # Small and hydrophobic
-    "A": "a",
-    "G": "a",
 
-    # Hydrophobic
-    "L": "b",
-    "I": "b",
-    "V": "b",
-
-    # Aromatic, not W
-    "F": "c",
-    "Y": "c",
-
-    # Polar or charged
-    # Phosphorylate-able
-    "S": "d",
-    "T": "d",
-
-    # Polar, uncharged
-    "N": "e",
-    "Q": "e",
-
-    # Polar, negatively charged
-    "D": "f",
-    "E": "f",
-
-    # Polar, positively charged
-    # Not histidine
-    "R": "g",
-    "K": "g",
-
-    # Special
-    "C": "h",
-    "M": "i",
-    "W": "j",
-    "H": "k",
-    "Q": "l",
-    "P": "m"
-}
-
-PURINE_PYRIMIDINE_MAPPING = {
-    "A": "R",
-    "C": "Y",
-    "G": "R",
-    "T": "Y"
-}
-
-
-AMINO_KETO_MAPPING = {
-    "A": "M",
-    "C": "M",
-    "G": "K",
-    "T": "K"
-}
-
-
-WEAK_STRONG_MAPPING = {
-    "A": "W",
-    "C": "S",
-    "G": "S",
-    "T": "W"
-}
 
 assert all(x in DAYHOFF_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 assert all(x in HP_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 assert all(x in BOTVINNIK_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
 
 # Nucleic acid mappings
-AMINO_KETO_TRANSLATION = str.maketrans(AMINO_KETO_MAPPING)
-WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
-PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
 
 # Amino acid mappings
-DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
-DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_v2_MAPPING)
-HP_TRANSLATION = str.maketrans(HP_MAPPING)
-BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
-
-def amino_keto_ize(seq):
-    return seq.translate(AMINO_KETO_TRANSLATION)
-
-
-def weak_strong_ize(seq):
-    return seq.translate(WEAK_STRONG_TRANSLATION)
-
-
-def purine_pyrimidize(seq):
-    return seq.translate(PURINE_PYRIMIDINE_TRANSLATION)
-
-
-def dayhoffize(seq):
-    return seq.translate(DAYHOFF_TRANSLATION)
-
-
-def dayhoff_v2_ize(seq):
-    return seq.translate(DAYHOFF_V2_TRANSLATION)
-
-
-def hpize(seq):
-    return seq.translate(HP_TRANSLATION)
-
-
-def botvinnikize(seq):
-    return seq.translate(BOTVINNIK_TRANSLATION)
-
-
-def kmerize(seq, ksize):
-    return set(seq[i:i+ksize] for i in range(len(seq)-ksize+1))
-
-def jaccardize(set1, set2):
-    denominator = min(len(set1), len(set2))
-    if denominator > 0:
-        return len(set1.intersection(set2))/denominator
-    else:
-        return denominator
 
 def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
     kmers1 = set(seq1[i:i+ksize] for i in range(len(seq1)-ksize+1))
