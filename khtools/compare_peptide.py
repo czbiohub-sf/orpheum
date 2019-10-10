@@ -12,10 +12,10 @@ from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
-from khtools.sequence_encodings import AMINO_ACID_SINGLE_LETTERS, \
+from .sequence_encodings import AMINO_ACID_SINGLE_LETTERS, \
     DAYHOFF_MAPPING, HP_MAPPING, BOTVINNIK_MAPPING, amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
-    botvinnikize, jaccardize
+    botvinnikize
 
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
@@ -73,13 +73,19 @@ COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 # linkers. BMC Research Notes, 1–6. http://doi.org/10.1186/s13104-018-3221-0
 
 
-assert all(x in DAYHOFF_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
-assert all(x in HP_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
-assert all(x in BOTVINNIK_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
+def kmerize(seq, ksize):
+    """Return the set of unique k-mers from the sequence"""
+    return set(seq[i:i+ksize] for i in range(len(seq)-ksize+1))
 
-# Nucleic acid mappings
 
-# Amino acid mappings
+def jaccardize(set1, set2):
+    """Compute jaccard index of two sets"""
+    denominator = min(len(set1), len(set2))
+    if denominator > 0:
+        return len(set1.intersection(set2))/denominator
+    else:
+        return denominator
+
 
 
 def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
