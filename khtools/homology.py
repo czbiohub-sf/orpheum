@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 
-from .compare_peptide import compare_all_seqs
+from .compare_kmer_content import compare_all_seqs
 from .ensembl import get_sequence, get_rna_sequence_from_protein_id
 
 

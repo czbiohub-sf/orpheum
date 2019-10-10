@@ -12,8 +12,7 @@ from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
-from .sequence_encodings import AMINO_ACID_SINGLE_LETTERS, \
-    DAYHOFF_MAPPING, HP_MAPPING, BOTVINNIK_MAPPING, amino_keto_ize, \
+from .sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
     botvinnikize
 
@@ -99,20 +98,16 @@ def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
     return jaccard
 
 
-def kmer_comparison_table(id1, seq1, id2, seq2, molecule, ksizes=KSIZES):
+def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
     lines = []
     for ksize in ksizes:
         jaccard = kmerize_and_jaccard(seq1, seq2, ksize)
         line = [id1, id2, ksize, jaccard]
         lines.append(line)
     df = pd.DataFrame(lines, columns=COLUMNS)
-    df['molecule'] = molecule
+    df['molecule'] = molecule_name
     return df
 
-
-def nCr(n, r):
-    f = math.factorial
-    return f(n) // (f(r) * f(n - r))
 
 def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     # Unpack the tuples
@@ -120,31 +115,31 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     id2, seq2 = id2_seq2
 
     protein_df = kmer_comparison_table(id1, seq1, id2, seq2,
-                                       molecule='protein', ksizes=ksizes)
+                                       molecule_name='protein', ksizes=ksizes)
 
     botvinnik1 = botvinnikize(seq1)
     botvinnik2 = botvinnikize(seq2)
 
     botvinnik_df = kmer_comparison_table(id1, botvinnik1, id2, botvinnik2,
-                                  molecule='botvinnik', ksizes=ksizes)
+                                         molecule_name='botvinnik', ksizes=ksizes)
 
     dayhoff1 = dayhoffize(seq1)
     dayhoff2 = dayhoffize(seq2)
 
     dayhoff_df = kmer_comparison_table(id1, dayhoff1, id2, dayhoff2,
-                                       molecule='dayhoff', ksizes=ksizes)
+                                       molecule_name='dayhoff', ksizes=ksizes)
 
     dayhoff_v2_1 = dayhoff_v2_ize(seq1)
     dayhoff_v2_2 = dayhoff_v2_ize(seq2)
 
     dayhoff_v2_df = kmer_comparison_table(id1, dayhoff_v2_1, id2, dayhoff_v2_2,
-                                       molecule='dayhoff_v2', ksizes=ksizes)
+                                          molecule_name='dayhoff_v2', ksizes=ksizes)
 
     hp1 = hpize(seq1)
     hp2 = hpize(seq2)
 
     hp_df = kmer_comparison_table(id1, hp1, id2, hp2,
-                                  molecule='hydrophobic-polar', ksizes=ksizes)
+                                  molecule_name='hydrophobic-polar', ksizes=ksizes)
 
     df = pd.concat([protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df,
                     hp_df], ignore_index=True)
@@ -161,24 +156,24 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
 
     purine_primimdine_df = kmer_comparison_table(
         id1, purine_pyrimidine1, id2, purine_pyrimidine2,
-        molecule='purine_pyrimidine', ksizes=ksizes)
+        molecule_name='purine_pyrimidine', ksizes=ksizes)
 
     weak_strong1 = weak_strong_ize(seq1)
     weak_strong2 = weak_strong_ize(seq2)
 
     weak_strong_df = kmer_comparison_table(
         id1, weak_strong1, id2, weak_strong2,
-        molecule='weak_strong', ksizes=ksizes)
+        molecule_name='weak_strong', ksizes=ksizes)
     
     amino_keto1 = amino_keto_ize(seq1)
     amino_keto2 = amino_keto_ize(seq2)
 
     amino_keto_df = kmer_comparison_table(
         id1, amino_keto1, id2, amino_keto2,
-        molecule='amino_keto', ksizes=ksizes)
+        molecule_name='amino_keto', ksizes=ksizes)
 
     nucleotide_df = kmer_comparison_table(id1, seq1, id2, seq2,
-                                          molecule='nucleotide',
+                                          molecule_name='nucleotide',
                                           ksizes=ksizes)
 
     df = pd.concat([purine_primimdine_df, nucleotide_df, 
