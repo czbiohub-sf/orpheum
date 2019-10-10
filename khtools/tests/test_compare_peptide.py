@@ -15,34 +15,57 @@ import pytest
 def folder():
     return "test-folder"
 
+# -------------------- Test nucleotide encodings ---------------------------- #
+def test_amino_keto_ize():
+    from khtools.compare_peptide import amino_keto_ize
 
-def test_sanitize_path():
-    from khtools.compare_peptide import sanitize_path
+    test = amino_keto_ize("GATTACA")
+    true = 'KMKKMMM'
+    assert test == true
 
-    test = sanitize_path('.')
-    true = os.path.abspath('.')
+def test_weak_strong_ize():
+    from khtools.compare_peptide import weak_strong_ize
+
+    test = weak_strong_ize("GATTACA")
+    true = 'SWWWWSW'
+    assert test == true
+
+def test_purine_pyrimidize():
+    from khtools.compare_peptide import purine_pyrimidize
+
+    test = purine_pyrimidize("GATTACA")
+    true = 'RRYYRYR'
+    assert test == true
+
+# -------------------- Test peptide encodings ---------------------------- #
+def test_dayhoffize():
+    from khtools.compare_peptide import dayhoffize
+
+    test = dayhoffize("SASHAFIERCE")
+    true = 'bbbdbfecdac'
     assert test == true
 
 
-def test_maybe_add_slash(folder):
-    from khtools.os_utils import maybe_add_slash
+def test_dayhoff_v2_ize():
+    from khtools.compare_peptide import dayhoff_v2_ize
 
-    test = maybe_add_slash(folder)
-    assert test == 'test-folder/'
-
-
-def test_get_stdout_from_command():
-    from khtools.os_utils import get_stdout_from_command
-    command = ['echo', 'asdf']
-    stdout = get_stdout_from_command(command)
-    assert stdout == ['asdf']
+    test = dayhoff_v2_ize("SASHAFIERCE")
+    true = 'BbBdbfecdac'
+    assert test == true
 
 
-def test_get_stdout_stderr_from_command():
-    from khtools.os_utils import get_stdout_stderr_from_command
+def test_hpize():
+    from khtools.compare_peptide import hpize
 
-    command = ['sed', 'asdf']
-    stdout, stderr = get_stdout_stderr_from_command(command)
-    assert stdout == []
-    assert stderr == ['sed: 1: "asdf": command a expects \\ followed by text']
+    test = hpize("SASHAFIERCE")
+    true = 'phpphhhpppp'
+    assert test == true
+
+
+def test_botvinnikize():
+    from khtools.compare_peptide import botvinnikize
+
+    test = botvinnikize("SASHAFIERCE")
+    true = 'dadkacbfghf'
+    assert test == true
 
