@@ -15,6 +15,22 @@ import pytest
 def folder():
     return "test-folder"
 
+
+
+def test_translations():
+    from khtools.sequence_encodings import DAYHOFF_MAPPING, HP_MAPPING, \
+        BOTVINNIK_MAPPING, AMINO_ACID_SINGLE_LETTERS, DNA_ALPHABET, \
+        AMINO_KETO_MAPPING, PURINE_PYRIMIDINE_MAPPING, WEAK_STRONG_MAPPING
+
+    assert all(x in DAYHOFF_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
+    assert all(x in HP_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
+    assert all(x in BOTVINNIK_MAPPING for x in AMINO_ACID_SINGLE_LETTERS)
+
+    assert all(x in AMINO_KETO_MAPPING for x in DNA_ALPHABET)
+    assert all(x in PURINE_PYRIMIDINE_MAPPING for x in DNA_ALPHABET)
+    assert all(x in WEAK_STRONG_MAPPING for x in DNA_ALPHABET)
+
+
 # -------------------- Test nucleotide encodings ---------------------------- #
 def test_amino_keto_ize():
     from khtools.sequence_encodings import amino_keto_ize
@@ -68,4 +84,3 @@ def test_botvinnikize():
     test = botvinnikize("SASHAFIERCE")
     true = 'dadkacbfghf'
     assert test == true
-

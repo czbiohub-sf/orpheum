@@ -158,6 +158,8 @@ HP_TRANSLATION = str.maketrans(HP_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 
+# Nucleic acid mappings
+
 def amino_keto_ize(seq):
     return seq.translate(AMINO_KETO_TRANSLATION)
 
@@ -170,6 +172,7 @@ def purine_pyrimidize(seq):
     return seq.translate(PURINE_PYRIMIDINE_TRANSLATION)
 
 
+# Amino acid mappings
 def dayhoffize(seq):
     return seq.translate(DAYHOFF_TRANSLATION)
 
@@ -186,13 +189,3 @@ def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
 
 
-def kmerize(seq, ksize):
-    return set(seq[i:i+ksize] for i in range(len(seq)-ksize+1))
-
-
-def jaccardize(set1, set2):
-    denominator = min(len(set1), len(set2))
-    if denominator > 0:
-        return len(set1.intersection(set2))/denominator
-    else:
-        return denominator
