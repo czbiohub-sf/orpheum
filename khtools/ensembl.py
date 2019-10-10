@@ -1,6 +1,8 @@
 import logging
-import requests
 import sys
+
+import requests
+
 
 # Create a logger
 logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
