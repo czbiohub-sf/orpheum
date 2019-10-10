@@ -1,11 +1,8 @@
 """
-test_os_utils.py
+test_sequence_encodings.py
 
-Tests for operating system utilities
+Tests for re-encoding biological sequence data
 """
-
-import os
-
 import pytest
 
 
@@ -15,6 +12,15 @@ import pytest
 def folder():
     return "test-folder"
 
+
+@pytest.fixture
+def peptide_string():
+    return "SASHAFIERCE"
+
+
+@pytest.fixture
+def nucleotide_string():
+    return "GATTACA"
 
 
 def test_translations():
@@ -32,55 +38,55 @@ def test_translations():
 
 
 # -------------------- Test nucleotide encodings ---------------------------- #
-def test_amino_keto_ize():
+def test_amino_keto_ize(nucleotide_string):
     from khtools.sequence_encodings import amino_keto_ize
 
-    test = amino_keto_ize("GATTACA")
+    test = amino_keto_ize(nucleotide_string)
     true = 'KMKKMMM'
     assert test == true
 
-def test_weak_strong_ize():
+def test_weak_strong_ize(nucleotide_string):
     from khtools.sequence_encodings import weak_strong_ize
 
-    test = weak_strong_ize("GATTACA")
+    test = weak_strong_ize(nucleotide_string)
     true = 'SWWWWSW'
     assert test == true
 
-def test_purine_pyrimidize():
+def test_purine_pyrimidize(nucleotide_string):
     from khtools.sequence_encodings import purine_pyrimidize
 
-    test = purine_pyrimidize("GATTACA")
+    test = purine_pyrimidize(nucleotide_string)
     true = 'RRYYRYR'
     assert test == true
 
 # -------------------- Test peptide encodings ---------------------------- #
-def test_dayhoffize():
+def test_dayhoffize(peptide_string):
     from khtools.sequence_encodings import dayhoffize
 
-    test = dayhoffize("SASHAFIERCE")
+    test = dayhoffize(peptide_string)
     true = 'bbbdbfecdac'
     assert test == true
 
 
-def test_dayhoff_v2_ize():
+def test_dayhoff_v2_ize(peptide_string):
     from khtools.sequence_encodings import dayhoff_v2_ize
 
-    test = dayhoff_v2_ize("SASHAFIERCE")
+    test = dayhoff_v2_ize(peptide_string)
     true = 'BbBdbfecdac'
     assert test == true
 
 
-def test_hpize():
+def test_hpize(peptide_string):
     from khtools.sequence_encodings import hpize
 
-    test = hpize("SASHAFIERCE")
+    test = hpize(peptide_string)
     true = 'phpphhhpppp'
     assert test == true
 
 
-def test_botvinnikize():
+def test_botvinnikize(peptide_string):
     from khtools.sequence_encodings import botvinnikize
 
-    test = botvinnikize("SASHAFIERCE")
+    test = botvinnikize(peptide_string)
     true = 'dadkacbfghf'
     assert test == true
