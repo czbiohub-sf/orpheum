@@ -44,7 +44,7 @@ def encode_peptide(peptide_sequence, molecule):
     elif molecule == 'hydrophobic-polar' or molecule == 'hp':
         return hpize(peptide_sequence)
     elif molecule in VALID_MOLECULES:
-        return molecule
+        return peptide_sequence
     else:
         raise ValueError(f"{molecule} is not a valid amino acid encoding, " \
                           "only " \
