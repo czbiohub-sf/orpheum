@@ -138,7 +138,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
     nucleotide_ksize = 3*peptide_ksize
 
     for record in screed.open(reads):
-        description = record['description']
+        description = record['name']
         seq = Seq(record['sequence'])
 
         if verbose:
