@@ -137,7 +137,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
     scoring_lines = []
     nucleotide_ksize = 3*peptide_ksize
 
-    for record in screed.open(reads):
+    for record in tqdm(screed.open(reads)):
         description = record['name']
         seq = Seq(record['sequence'])
 
