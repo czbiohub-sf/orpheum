@@ -118,8 +118,6 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
             print(record.description)
             print(record.seq)
 
-        continue
-
     kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
                            zip(kmers, hashes)}
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
