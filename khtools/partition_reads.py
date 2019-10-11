@@ -103,7 +103,8 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     if len(translation) < peptide_ksize:
         return 0, 0
     if verbose:
-        print(f"\t{translation}")
+        print(f
+        "\t{translation}")
     kmers = list(set(kmerize(str(translation), peptide_ksize)))
     hashes = [hash_murmur(kmer) for kmer in kmers]
     n_kmers = len(kmers)
@@ -112,7 +113,8 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
         return -1
         if verbose:
-            print(f'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
+            print(f
+            'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
             print(record.description)
             print(record.seq)
 
@@ -130,6 +132,38 @@ def is_low_complexity(sequence, ksize):
     if n_kmers < (n_possible_kmers_on_sequence) / 2:
         return True, n_kmers
     return False, n_kmers
+
+
+def score_single_sequence(sequence, peptide_graph, peptide_ksize, molecule,
+                          verbose):
+    nucleotide_ksize = 3 * peptide_ksize
+    # Check if nucleotide sequence is low complexity
+    low_complexity, n_kmers = is_low_complexity(sequence,
+                                                nucleotide_ksize)
+    if low_complexity:
+        return -1, n_kmers
+
+    # Convert to BioPython sequence object for translation
+    seq = Seq(sequence)
+
+    # Convert to BioPython sequence object for translation
+    translations = six_frame_translation_no_stops(seq)
+    # For all translations, use the one with the maximum number of k-mers
+    # in the databse
+    max_n_kmers = 0
+    max_fraction_in_peptide_db = 0
+    max_kmers_in_peptide_db = {}
+    for translation in translations:
+        translation = encode_peptide(translation, molecule)
+        score, n_kmers = score_single_translation(translation, peptide_graph,
+                                                  peptide_ksize, molecule,
+                                                  verbose)
+        # Update n_kmers if this is the best translation frame
+        if max_fraction_in_peptide_db == fraction_in_peptide_db:
+            max_n_kmers = n_kmers
+            max_kmers_in_peptide_db = kmers_in_peptide_db
+    return max_kmers_in_peptide_db, max_n_kmers
+
 
 
 def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
