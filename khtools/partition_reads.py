@@ -180,10 +180,9 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
                                         peptide_graph.get(h) > 0)
             if n_kmers < (len(translation) - peptide_ksize + 1)/2:
                 if verbose:
-
-                scoring_lines.append(
-                    [record.description, -1, 'low complexity'])
-                continue
+                    scoring_lines.append(
+                        [record.description, -1, 'low complexity'])
+                    continue
 
             kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
                                    zip(kmers, hashes)}
