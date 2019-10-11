@@ -114,10 +114,7 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
         if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
             return -1
             if verbose:
-                print(f
-                'Low complexity sequence!!! n_kmers < ' \
-                '(len(read.seq) - ksize + 1)/2  --> ' \
-                '{n_kmers} < {(len(record.seq) - ksize + 1)/2}')
+                print(f'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
                 print(record.description)
                 print(record.seq)
 
@@ -208,9 +205,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
         scoring_lines.append(line)
         if verbose:
             pprint(max_kmers_in_peptide_db)
-            print(f'n_kmers_in_peptide_db/n_kmers: ' \
-                   '{max_n_kmers}/{n_kmers} = ' \
-                   '{fraction_in_peptide_db}')
+            print(f'n_kmers_in_peptide_db/n_kmers: {max_n_kmers}/{n_kmers} = {fraction_in_peptide_db}')
     scoring_df = pd.DataFrame(scoring_lines,
                                      columns=['read_id',
                                               'jaccard_in_peptide_db'
