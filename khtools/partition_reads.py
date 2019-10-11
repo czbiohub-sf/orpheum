@@ -159,9 +159,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     for translation in translations:
-        print(f"translation: {translation}")
         translation = encode_peptide(translation, molecule)
-        print(f"translation: {translation}")
         fraction_in_peptide_db, n_kmers = score_single_translation(
             translation, peptide_graph, peptide_ksize, molecule=molecule,
             verbose=verbose)
