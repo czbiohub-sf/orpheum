@@ -139,19 +139,23 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 
     for record in tqdm(screed.open(reads)):
         description = record['name']
-        seq = Seq(record['sequence'])
+        sequence = record['sequence']
+
+        # Check if nucleotide sequence is low complexity
+        low_complexity, n_kmers = is_low_complexity(sequence,
+                                                    nucleotide_ksize)
+        if low_complexity:
+            scoring_lines.append(
+                [description, -1, n_kmers, 'low complexity'])
+            continue
+
+        seq = Seq(sequence)
 
         if verbose:
             print()
             print(description)
             print(seq)
 
-        # Check if nucleotide sequence is low complexity
-        low_complexity, n_kmers = is_low_complexity(seq, nucleotide_ksize)
-        if low_complexity:
-            scoring_lines.append(
-                [description, -1, n_kmers, 'low complexity'])
-            continue
 
 
         # Convert to BioPython sequence object for translation
