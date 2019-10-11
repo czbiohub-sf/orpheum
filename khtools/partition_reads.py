@@ -156,8 +156,6 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             print(description)
             print(seq)
 
-
-
         # Convert to BioPython sequence object for translation
         translations = six_frame_translation_no_stops(seq)
 
@@ -209,6 +207,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
     scoring_df = pd.DataFrame(scoring_lines,
                                  columns=['read_id',
                                           'jaccard_in_peptide_db'
+                                          'n_kmers',
                                           'classification'])
     return scoring_df
 
