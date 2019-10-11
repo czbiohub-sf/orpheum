@@ -53,16 +53,14 @@ def encode_peptide(peptide_sequence, molecule):
 
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
                               molecule='protein',
-                              tablesize=DEFAULT_MAX_TABLESIZE,
-                              seed=DEFAULT_SEED):
+                              tablesize=DEFAULT_MAX_TABLESIZE,):
     """Create a bloom filter out of peptide seuqences"""
-    peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables,
-                              seed=seed)
+    peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     for record in screed.open(peptide_fasta):
         if '*' in record['sequence']:
             continue
-        sequence = encode_peptide(record['sequence'])
+        sequence = encode_peptide(record['sequence'], molecule)
         kmers = kmerize(sequence, peptide_ksize)
         for kmer in kmers:
             # Convert the k-mer into an integer
