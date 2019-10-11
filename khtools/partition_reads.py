@@ -151,7 +151,6 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     # in the databse
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
-    max_kmers_in_peptide_db = {}
     for translation in translations:
         translation = encode_peptide(translation, molecule)
         fraction_in_peptide_db, n_kmers = score_single_translation(
@@ -165,8 +164,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
         # Update n_kmers if this is the best translation frame
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             max_n_kmers = n_kmers
-            max_kmers_in_peptide_db = kmers_in_peptide_db
-    return max_kmers_in_peptide_db, max_n_kmers
+    return max_fraction_in_peptide_db, max_n_kmers
 
 
 
