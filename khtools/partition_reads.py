@@ -103,7 +103,6 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
                            zip(kmers, hashes)}
     if verbose:
         # Print keys (kmers) only
-        kmer_string = ', '.join(kmers_in_peptide_db.keys())
         print(f"\tK-mers in peptide database:")
         pprint(kmers_in_peptide_db)
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
