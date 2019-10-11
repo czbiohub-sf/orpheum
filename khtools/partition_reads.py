@@ -98,7 +98,7 @@ def six_frame_translation_no_stops(seq, debug=False):
 
 
 def score_single_translation(translation, peptide_graph, peptide_ksize,
-                             molecule, verbose):
+                             molecule='protein', verbose=True):
     translation = encode_peptide(translation, molecule)
 
     if len(translation) < peptide_ksize:
@@ -155,7 +155,8 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     for translation in translations:
         translation = encode_peptide(translation, molecule)
         fraction_in_peptide_db, n_kmers = score_single_translation(
-            translation, peptide_graph, peptide_ksize, molecule, verbose)
+            translation, peptide_graph, peptide_ksize, molecule=molecule,
+            verbose=verbose)
         # Update n_kmers if this is the best translation frame
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             max_n_kmers = n_kmers
