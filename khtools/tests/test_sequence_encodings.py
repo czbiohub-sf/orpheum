@@ -23,6 +23,11 @@ def nucleotide_string():
     return "GATTACA"
 
 
+@pytest.fixture(params=['protein', 'dayhoff', 'hydrophobic-polar'])
+def molecule(request):
+    return request.params
+
+
 def test_translations():
     from khtools.sequence_encodings import DAYHOFF_MAPPING, HP_MAPPING, \
         BOTVINNIK_MAPPING, AMINO_ACID_SINGLE_LETTERS, DNA_ALPHABET, \
@@ -90,3 +95,17 @@ def test_botvinnikize(peptide_string):
     test = botvinnikize(peptide_string)
     true = 'dadkacbfghf'
     assert test == true
+
+
+def test_encode_peptide(peptide_string, molecule):
+    from khtools.sequence_encodings import encode_peptide
+
+    test = encode_peptide(peptide_string)
+    if molecule == 'dayhoff':
+        true = 'bbbdbfecdac'
+    elif molecule == 'hydrophobic-polar':
+        true = 'phpphhhpppp'
+    elif molecule == 'protein':
+        true = peptide_string
+    assert test == true
+

@@ -158,6 +158,7 @@ HP_TRANSLATION = str.maketrans(HP_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 
+VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', 'dayhoff', 'hydrophobic-polar', 'hp'
 # Nucleic acid mappings
 
 def amino_keto_ize(seq):
@@ -189,3 +190,14 @@ def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
 
 
+def encode_peptide(peptide_sequence, molecule):
+    if molecule == 'dayhoff':
+        return dayhoffize(peptide_sequence)
+    elif molecule == 'hydrophobic-polar' or molecule == 'hp':
+        return hpize(peptide_sequence)
+    elif molecule in VALID_PEPTIDE_MOLECULES:
+        return peptide_sequence
+    else:
+        raise ValueError(f"{molecule} is not a valid amino acid encoding, " \
+                          "only " \
+                          "{', '.join(VALID_PEPTIDE_MOLECULES} can be used")

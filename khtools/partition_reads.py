@@ -3,52 +3,31 @@ partition_reads.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
-import gzip
-from io import StringIO
 from pprint import pprint
 import warnings
 
 from Bio.Seq import Seq
-from Bio import SeqIO
 import click
 from khmer import Nodegraph
-import matplotlib.pyplot as plt
 import screed
 from sourmash._minhash import hash_murmur
-from khmer.khmer_args import calculate_graphsize
 import pandas as pd
-from sourmash.logging import notify
-import seaborn as sns
-from sklearn import metrics
-from khtools.compare_kmer_content import kmerize, hpize, dayhoffize
+from khtools.sequence_encodings import encode_peptide
+from khtools.compare_kmer_content import kmerize
 from tqdm import tqdm
 
 
 # Import modified 'os' module with LC_LANG set so click doesn't complain.
 # The '# noqa: F401' line prevents the linter from complaining about the unused
 # import.
-from .os_utils import os    # noqa: F401
 
 
 DEFAULT_K = 32
 DEFAULT_N_TABLES = 4
 DEFAULT_MAX_TABLESIZE = 1e10
 DEFAULT_N_THREADS = 1
-VALID_MOLECULES = 'protein', 'peptide', 'dayhoff', 'hydrophobic-polar', 'hp'
 DEFAULT_SEED = 42
 
-
-def encode_peptide(peptide_sequence, molecule):
-    if molecule == 'dayhoff':
-        return dayhoffize(peptide_sequence)
-    elif molecule == 'hydrophobic-polar' or molecule == 'hp':
-        return hpize(peptide_sequence)
-    elif molecule in VALID_MOLECULES:
-        return peptide_sequence
-    else:
-        raise ValueError(f"{molecule} is not a valid amino acid encoding, " \
-                          "only " \
-                          "{', '.join(VALID_MOLECULES} can be used")
 
 
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
@@ -125,7 +104,8 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     if verbose:
         # Print keys (kmers) only
         kmer_string = ', '.join(kmers_in_peptide_db.keys())
-        print(f"\tK-mers in peptide database: {kmer_string}")
+        print(f"\tK-mers in peptide database:")
+        pprint(kmers_in_peptide_db)
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
     return fraction_in_peptide_db, n_kmers
 
