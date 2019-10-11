@@ -150,7 +150,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
         low_complexity, n_kmers = is_low_complexity(seq, nucleotide_ksize)
         if low_complexity:
             scoring_lines.append(
-                [record.description, -1, n_kmers, 'low complexity'])
+                [description, -1, n_kmers, 'low complexity'])
             continue
 
 
