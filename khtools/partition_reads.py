@@ -157,6 +157,11 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
         fraction_in_peptide_db, n_kmers = score_single_translation(
             translation, peptide_graph, peptide_ksize, molecule=molecule,
             verbose=verbose)
+
+        # Save the highest jaccard
+        max_fraction_in_peptide_db = max(max_fraction_in_peptide_db,
+                                         fraction_in_peptide_db)
+
         # Update n_kmers if this is the best translation frame
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             max_n_kmers = n_kmers
