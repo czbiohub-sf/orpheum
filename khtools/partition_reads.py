@@ -34,32 +34,35 @@ DEFAULT_K = 32
 DEFAULT_N_TABLES = 4
 DEFAULT_MAX_TABLESIZE = 1e10
 DEFAULT_N_THREADS = 1
-VALID_MOLECULES = 'protein', 'peptide', 'dayhoff', 'hydrophobic-polar'
+VALID_MOLECULES = 'protein', 'peptide', 'dayhoff', 'hydrophobic-polar', 'hp'
 DEFAULT_SEED = 42
+
+
+def encode_peptide(peptide_sequence, molecule):
+    if molecule == 'dayhoff':
+        return dayhoffize(peptide_sequence)
+    elif molecule == 'hydrophobic-polar' or molecule == 'hp':
+        return hpize(peptide_sequence)
+    elif molecule in VALID_MOLECULES:
+        return molecule
+    else:
+        raise ValueError(f"{molecule} is not a valid amino acid encoding, " \
+                          "only " \
+                          "{', '.join(VALID_MOLECULES} can be used")
+
 
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
                               molecule='protein',
                               tablesize=DEFAULT_MAX_TABLESIZE,
                               seed=DEFAULT_SEED):
     """Create a bloom filter out of peptide seuqences"""
-    try:
-        assert molecule in VALID_MOLECULES
-    except AssertionError:
-        raise ValueError(f"{molecule} is not a valid amino acid molecule " \
-                          "type. Only {','.join(VALID_MOLECULES)} are " \
-                          "accepted")
-
     peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables,
                               seed=seed)
 
     for record in screed.open(peptide_fasta):
         if '*' in record['sequence']:
             continue
-        sequence = record['sequence']
-        if molecule == 'dayhoff':
-            sequence = dayhoffize(sequence)
-        elif molecule == 'hydrophobic-polar':
-            sequence = hpize(sequence)
+        sequence = encode_peptide(record['sequence'])
         kmers = kmerize(sequence, peptide_ksize)
         for kmer in kmers:
             # Convert the k-mer into an integer
@@ -71,7 +74,7 @@ def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
     return peptide_graph
 
 
-def three_frame_translation(seq, cds=False, debug=False):
+def three_frame_translation(seq, debug=False):
     if debug:
         warning_filter = 'default'
     else:
@@ -84,16 +87,136 @@ def three_frame_translation(seq, cds=False, debug=False):
             yield translation
 
 
-def three_frame_translation_no_stops(seq, cds=False, debug=False):
-    return [t for t in three_frame_translation(seq, cds, debug)
+def three_frame_translation_no_stops(seq, debug=False):
+    return [t for t in three_frame_translation(seq, debug)
             if '*' not in t]
 
 
-def six_frame_translation_no_stops(seq, cds=False, debug=False):
-    forward_translations = three_frame_translation_no_stops(seq, cds, debug)
+def six_frame_translation_no_stops(seq, debug=False):
+    forward_translations = three_frame_translation_no_stops(seq, debug)
     reverse_translations = three_frame_translation_no_stops(
-        seq.reverse_complement(), cds, debug)
+        seq.reverse_complement(), debug)
     return forward_translations + reverse_translations
+
+def score_single_translation(translation, peptide_graph, peptide_ksize,
+                             molecule, verbose):
+    translation = encode_peptide(translation, molecule)
+
+    if len(translation) < peptide_ksize:
+        continue
+    if verbose:
+        print(f
+        "\t{translation}")
+        kmers = list(set(kmerize(str(translation), peptide_ksize)))
+        hashes = [hash_murmur(kmer) for kmer in kmers]
+        n_kmers = len(kmers)
+        n_kmers_in_peptide_db = sum(1 for h in hashes if
+                                    peptide_graph.get(h) > 0)
+        if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
+            return -1
+            if verbose:
+                print(f
+                'Low complexity sequence!!! n_kmers < ' \
+                '(len(read.seq) - ksize + 1)/2  --> ' \
+                '{n_kmers} < {(len(record.seq) - ksize + 1)/2}')
+                print(record.description)
+                print(record.seq)
+
+            continue
+
+        kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
+                               zip(kmers, hashes)}
+        fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
+        return fraction_in_peptide_db, n_kmers
+
+
+def is_low_complexity(sequence, ksize):
+    """CHeck if seqauence is low complexity, i.e. low entropy, mostly repetitive"""
+    kmers = kmerize(sequence, ksize)
+    n_kmers = len(kmers)
+    n_possible_kmers_on_sequence = len(sequence) - ksize + 1
+    if n_kmers < (n_possible_kmers_on_sequence) / 2:
+        return True, n_kmers
+    return False, n_kmers
+
+
+def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
+                molecule='protein', verbose=False):
+    scoring_lines = []
+    nucleotide_ksize = 3*peptide_ksize
+
+    for record in screed.open(reads):
+        description = record['description']
+        seq = Seq(record['sequence'])
+
+        if verbose:
+            print()
+            print(description)
+            print(seq)
+
+        # Check if nucleotide sequence is low complexity
+        low_complexity, n_kmers = is_low_complexity(seq, nucleotide_ksize)
+        if low_complexity:
+            scoring_lines.append(
+                [record.description, -1, n_kmers, 'low complexity'])
+            continue
+
+
+        # Convert to BioPython sequence object for translation
+        translations = six_frame_translation_no_stops(seq)
+
+        # For all translations, use the one with the maximum number of k-mers
+        # in the databse
+        max_n_kmers = 0
+        max_fraction_in_peptide_db = 0
+        max_kmers_in_peptide_db = {}
+        for translation in translations:
+            translation = encode_peptide(translation, molecule)
+
+            if len(translation) < peptide_ksize:
+                continue
+            if verbose:
+                print(f"\t{translation}")
+            kmers = list(set(kmerize(str(translation), peptide_ksize)))
+            hashes = [hash_murmur(kmer) for kmer in kmers]
+            n_kmers = len(kmers)
+            n_kmers_in_peptide_db = sum(1 for h in hashes if
+                                        peptide_graph.get(h) > 0)
+            if n_kmers < (len(translation) - peptide_ksize + 1)/2:
+                if verbose:
+
+                scoring_lines.append(
+                    [record.description, -1, 'low complexity'])
+                continue
+
+            kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
+                                   zip(kmers, hashes)}
+            fraction_in_peptide_db = n_kmers_in_peptide_db/n_kmers
+            max_fraction_in_peptide_db  = max(max_fraction_in_peptide_db,
+                                              fraction_in_peptide_db)
+
+            # Update n_kmers if this is the best translation frame
+            if max_fraction_in_peptide_db == fraction_in_peptide_db:
+                max_n_kmers = max_n_kmers
+                max_kmers_in_peptide_db = max_kmers_in_peptide_db
+
+        if max_fraction_in_peptide_db > jaccard_threshold:
+            line = [record.description, max_fraction_in_peptide_db, n_kmers,
+                 'coding']
+        else:
+            line = [record.description, max_fraction_in_peptide_db, n_kmers,
+                 'non-coding']
+        scoring_lines.append(line)
+        if verbose:
+            pprint(max_kmers_in_peptide_db)
+            print(f'n_kmers_in_peptide_db/n_kmers: ' \
+                   '{max_n_kmers}/{n_kmers} = ' \
+                   '{fraction_in_peptide_db}')
+    scoring_df = pd.DataFrame(scoring_lines,
+                                     columns=['read_id',
+                                              'jaccard_in_peptide_db'
+                                              'classification'])
+    return scoring_df
 
 
 @click.command()
@@ -101,6 +224,14 @@ def six_frame_translation_no_stops(seq, cds=False, debug=False):
 @click.argument('peptides')
 @click.option('--peptide-ksize', default=7,
                 help="K-mer size of the peptide sequence to use")
+@click.option('--jaccard-threshold', default=0.9,
+              help="Minimum fraction of peptide k-mers from read in the "
+                   "peptide database for this read to be called a "
+                   "'coding read'")
+@click.option('--molecule', default='protein',
+              help="The type of amino acid encoding to use. Default is "
+                   "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+                   "used")
 @click.option("--long-reads", is_flag=True,
               help="If set, then only considers reading frames starting with "
                    "start codon (ATG) and ending in a stop codon "
@@ -109,7 +240,8 @@ def six_frame_translation_no_stops(seq, cds=False, debug=False):
               help="Print more output")
 @click.option("--debug", is_flag=True,
                   help="Print developer debugger output, including warnings")
-def cli(reads, peptides, peptide_ksize, long_reads=False, verbose=False):
+def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
+        molecule='protein', long_reads=False, verbose=False):
     """
 
     Parameters
@@ -128,8 +260,8 @@ def cli(reads, peptides, peptide_ksize, long_reads=False, verbose=False):
 
     """
     peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize)
+    coding_scores = score_reads(reads, peptide_graph, peptide_ksize,
+                                jaccard_threshold, molecule, verbose)
 
-    for x in tqdm(range(count)):
-        # note that colorama.init() doesn't need to be called for the colors
-        # to work
-        click.echo(click.style('Hello %s!' % name, fg=random.choice(COLORS)))
+
+
