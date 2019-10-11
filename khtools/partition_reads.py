@@ -103,27 +103,27 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     translation = encode_peptide(translation, molecule)
 
     if len(translation) < peptide_ksize:
-        continue
+        return 0, 0
     if verbose:
         print(f"\t{translation}")
-        kmers = list(set(kmerize(str(translation), peptide_ksize)))
-        hashes = [hash_murmur(kmer) for kmer in kmers]
-        n_kmers = len(kmers)
-        n_kmers_in_peptide_db = sum(1 for h in hashes if
-                                    peptide_graph.get(h) > 0)
-        if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
-            return -1
-            if verbose:
-                print(f'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
-                print(record.description)
-                print(record.seq)
+    kmers = list(set(kmerize(str(translation), peptide_ksize)))
+    hashes = [hash_murmur(kmer) for kmer in kmers]
+    n_kmers = len(kmers)
+    n_kmers_in_peptide_db = sum(1 for h in hashes if
+                                peptide_graph.get(h) > 0)
+    if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
+        return -1
+        if verbose:
+            print(f'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
+            print(record.description)
+            print(record.seq)
 
-            continue
+        continue
 
-        kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
-                               zip(kmers, hashes)}
-        fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
-        return fraction_in_peptide_db, n_kmers
+    kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
+                           zip(kmers, hashes)}
+    fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
+    return fraction_in_peptide_db, n_kmers
 
 
 def is_low_complexity(sequence, ksize):
@@ -182,7 +182,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
                 if verbose:
                     scoring_lines.append(
                         [record.description, -1, 'low complexity'])
-                    continue
+                continue
 
             kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
                                    zip(kmers, hashes)}
