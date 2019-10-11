@@ -103,13 +103,16 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
 
     if len(translation) < peptide_ksize:
         return 0, 0
-    if verbose:
-        print(f"translation: \t{translation}")
+
     kmers = list(set(kmerize(str(translation), peptide_ksize)))
     hashes = [hash_murmur(kmer) for kmer in kmers]
     n_kmers = len(kmers)
     n_kmers_in_peptide_db = sum(1 for h in hashes if
                                 peptide_graph.get(h) > 0)
+    if verbose:
+        print(f"translation: \t{translation}")
+        print("kmers:", kmers)
+
     if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
         return -1
         if verbose:
@@ -156,6 +159,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     for translation in translations:
+        print(f"translation: {translation}")
         translation = encode_peptide(translation, molecule)
         fraction_in_peptide_db, n_kmers = score_single_translation(
             translation, peptide_graph, peptide_ksize, molecule=molecule,
