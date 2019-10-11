@@ -163,8 +163,8 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
         max_fraction_in_peptide_db = max(max_fraction_in_peptide_db,
                                          fraction_in_peptide_db)
 
-        # Update n_kmers if this is the best translation frame
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
+            # Update n_kmers if this is the best translation frame
             max_n_kmers = n_kmers
     return max_fraction_in_peptide_db, max_n_kmers
 
