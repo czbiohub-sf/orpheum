@@ -194,59 +194,16 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
                 [description, -1, n_kmers, 'low complexity'])
             continue
 
-        seq = Seq(sequence)
+        jaccard, n_kmers = score_single_sequence(sequence, peptide_graph,
+                                                 peptide_ksize, molecule, verbose)
 
-        if verbose:
-            print()
-            print(description)
-            print(seq)
-
-        # Convert to BioPython sequence object for translation
-        translations = six_frame_translation_no_stops(seq)
-
-        # For all translations, use the one with the maximum number of k-mers
-        # in the databse
-        max_n_kmers = 0
-        max_fraction_in_peptide_db = 0
-        max_kmers_in_peptide_db = {}
-        for translation in translations:
-            translation = encode_peptide(translation, molecule)
-
-            if len(translation) < peptide_ksize:
-                continue
-            if verbose:
-                print(f"\t{translation}")
-            kmers = list(set(kmerize(str(translation), peptide_ksize)))
-            hashes = [hash_murmur(kmer) for kmer in kmers]
-            n_kmers = len(kmers)
-            n_kmers_in_peptide_db = sum(1 for h in hashes if
-                                        peptide_graph.get(h) > 0)
-            if n_kmers < (len(translation) - peptide_ksize + 1)/2:
-                if verbose:
-                    scoring_lines.append(
-                        [description, -1, 'low complexity'])
-                continue
-
-            kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
-                                   zip(kmers, hashes)}
-            fraction_in_peptide_db = n_kmers_in_peptide_db/n_kmers
-            max_fraction_in_peptide_db  = max(max_fraction_in_peptide_db,
-                                              fraction_in_peptide_db)
-
-            # Update n_kmers if this is the best translation frame
-            if max_fraction_in_peptide_db == fraction_in_peptide_db:
-                max_n_kmers = n_kmers
-                max_kmers_in_peptide_db = kmers_in_peptide_db
-
-        if max_fraction_in_peptide_db > jaccard_threshold:
-            line = [description, max_fraction_in_peptide_db, max_n_kmers,
-                 'coding']
+        if jaccard > jaccard_threshold:
+            line = [description, jaccard, n_kmers, 'coding']
         else:
-            line = [description, max_fraction_in_peptide_db, max_n_kmers,
-                 'non-coding']
+            line = [description, jaccard, n_kmers, 'non-coding']
         if verbose:
-            pprint(max_kmers_in_peptide_db)
-            print(f'n_kmers_in_peptide_db/n_kmers: {max_n_kmers}/{n_kmers} = {fraction_in_peptide_db}')
+            # pprint(n_kmers)
+            print("Jaccard: {jaccard}, n_kmers = {n_kmers}")
         scoring_lines.append(line)
 
     scoring_df = pd.DataFrame(scoring_lines,
