@@ -193,23 +193,24 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 
             # Update n_kmers if this is the best translation frame
             if max_fraction_in_peptide_db == fraction_in_peptide_db:
-                max_n_kmers = max_n_kmers
-                max_kmers_in_peptide_db = max_kmers_in_peptide_db
+                max_n_kmers = n_kmers
+                max_kmers_in_peptide_db = kmers_in_peptide_db
 
         if max_fraction_in_peptide_db > jaccard_threshold:
-            line = [record.description, max_fraction_in_peptide_db, n_kmers,
+            line = [record.description, max_fraction_in_peptide_db, max_n_kmers,
                  'coding']
         else:
-            line = [record.description, max_fraction_in_peptide_db, n_kmers,
+            line = [record.description, max_fraction_in_peptide_db, max_n_kmers,
                  'non-coding']
-        scoring_lines.append(line)
         if verbose:
             pprint(max_kmers_in_peptide_db)
             print(f'n_kmers_in_peptide_db/n_kmers: {max_n_kmers}/{n_kmers} = {fraction_in_peptide_db}')
+        scoring_lines.append(line)
+
     scoring_df = pd.DataFrame(scoring_lines,
-                                     columns=['read_id',
-                                              'jaccard_in_peptide_db'
-                                              'classification'])
+                                 columns=['read_id',
+                                          'jaccard_in_peptide_db'
+                                          'classification'])
     return scoring_df
 
 
