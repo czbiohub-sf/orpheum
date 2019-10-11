@@ -105,8 +105,7 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     if len(translation) < peptide_ksize:
         continue
     if verbose:
-        print(f
-        "\t{translation}")
+        print(f"\t{translation}")
         kmers = list(set(kmerize(str(translation), peptide_ksize)))
         hashes = [hash_murmur(kmer) for kmer in kmers]
         n_kmers = len(kmers)
