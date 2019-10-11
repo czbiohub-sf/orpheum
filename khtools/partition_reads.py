@@ -96,6 +96,7 @@ def six_frame_translation_no_stops(seq, debug=False):
         seq.reverse_complement(), debug)
     return forward_translations + reverse_translations
 
+
 def score_single_translation(translation, peptide_graph, peptide_ksize,
                              molecule, verbose):
     translation = encode_peptide(translation, molecule)
@@ -132,8 +133,8 @@ def is_low_complexity(sequence, ksize):
     return False, n_kmers
 
 
-def score_single_sequence(sequence, peptide_graph, peptide_ksize, molecule,
-                          verbose):
+def score_single_sequence(sequence, peptide_graph, peptide_ksize,
+                          molecule='protein', verbose=True):
     nucleotide_ksize = 3 * peptide_ksize
     # Check if nucleotide sequence is low complexity
     low_complexity, n_kmers = is_low_complexity(sequence,
@@ -153,9 +154,8 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize, molecule,
     max_kmers_in_peptide_db = {}
     for translation in translations:
         translation = encode_peptide(translation, molecule)
-        score, n_kmers = score_single_translation(translation, peptide_graph,
-                                                  peptide_ksize, molecule,
-                                                  verbose)
+        fraction_in_peptide_db, n_kmers = score_single_translation(
+            translation, peptide_graph, peptide_ksize, molecule, verbose)
         # Update n_kmers if this is the best translation frame
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             max_n_kmers = n_kmers
