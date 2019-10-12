@@ -51,3 +51,5 @@ def test_lookup(ensembl_protein_id):
         test = lookup(ensembl_protein_id)
         s = '{"start":3307,"Parent":"ENST00000361390","end":4262,"species":"homo_sapiens","id":"ENSP00000354687","object_type":"Translation","db_type":"core","length":318}'
         true = json.reads(s)
+
+        assert test == true

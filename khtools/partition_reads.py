@@ -32,7 +32,7 @@ DEFAULT_SEED = 42
 
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
                               molecule='protein',
-                              tablesize=DEFAULT_MAX_TABLESIZE,):
+                              tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide seuqences"""
     peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
