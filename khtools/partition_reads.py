@@ -35,7 +35,7 @@ def write_fasta(file_handle, description, sequence):
 
 def open_and_announce(filename, seqtype, quiet=False):
     if not quiet:
-        print("Writing {seqtype} to {filename}")
+        print(f"Writing {seqtype} to {filename}")
     return open(filename, 'w')
 
 
@@ -250,7 +250,6 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
         peptide_file_handle.close()
         low_complexity_file_handle.close()
         low_complexity_peptide_file_handle.close()
-
 
     scoring_df = pd.DataFrame(scoring_lines,
                                  columns=['read_id',
