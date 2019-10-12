@@ -106,10 +106,11 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
         # Print keys (kmers) only
         print(f"\tK-mers in peptide database:")
         pprint(kmers_in_peptide_db)
-        if fraction_in_peptide_db > jaccard_threshold:
-            print(f"{translation} is above {jaccard_threshold}")
 
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
+
+    if verbose and fraction_in_peptide_db > jaccard_threshold:
+        print(f"{translation} is above {jaccard_threshold}")
     return fraction_in_peptide_db, n_kmers
 
 
