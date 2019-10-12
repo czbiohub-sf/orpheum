@@ -91,7 +91,7 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
                              peptide_file_handle=None):
     translation = encode_peptide(translation, molecule)
 
-    if len(translation) < peptide_ksize:
+    if len(translation) <= peptide_ksize:
         return 0, 0
 
     kmers = list(set(kmerize(str(translation), peptide_ksize)))
