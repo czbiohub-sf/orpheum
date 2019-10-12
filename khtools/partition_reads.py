@@ -77,7 +77,8 @@ def six_frame_translation_no_stops(seq, debug=False):
 
 
 def score_single_translation(translation, peptide_graph, peptide_ksize,
-                             molecule='protein', verbose=True):
+                             molecule='protein', jaccard_threshold=0.9,
+                             verbose=True):
     translation = encode_peptide(translation, molecule)
 
     if len(translation) < peptide_ksize:
@@ -105,6 +106,8 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
         # Print keys (kmers) only
         print(f"\tK-mers in peptide database:")
         pprint(kmers_in_peptide_db)
+        if fraction_in_peptide_db > jaccard_threshold:
+
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
     return fraction_in_peptide_db, n_kmers
 
