@@ -42,3 +42,6 @@ def test_six_frame_translation_no_stops(seq):
             'QNRIYSYIAIFLILLMSVLSK']
     assert test == true
 
+
+def test_make_peptide_bloom_filter():
+    pass

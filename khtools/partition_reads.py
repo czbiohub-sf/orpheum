@@ -42,7 +42,7 @@ def open_and_announce(filename, seqtype, quiet=False):
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
                               molecule='protein',
                               tablesize=DEFAULT_MAX_TABLESIZE):
-    """Create a bloom filter out of peptide seuqences"""
+    """Create a bloom filter out of peptide sequences"""
     peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     for record in screed.open(peptide_fasta):
