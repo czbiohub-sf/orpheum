@@ -30,7 +30,7 @@ DEFAULT_N_THREADS = 1
 DEFAULT_SEED = 42
 
 def write_fasta(file_handle, description, sequence):
-    file_handle.write(f"\n>{description}\n{sequence}")
+    file_handle.write(f">{description}\n{sequence}\n")
 
 
 def open_and_announce(filename, seqtype, quiet=False):
