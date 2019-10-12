@@ -266,6 +266,9 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
                    "used")
+@click.options('--csv', default=False,
+               help='Name of csv file to write with all sequence reads and '
+                    'their coding scores')
 @click.option("--long-reads", is_flag=True,
               help="If set, then only considers reading frames starting with "
                    "start codon (ATG) and ending in a stop codon "
@@ -275,7 +278,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 @click.option("--debug", is_flag=True,
                   help="Print developer debugger output, including warnings")
 def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
-        molecule='protein', long_reads=False, verbose=False):
+        molecule='protein', csv=False, long_reads=False, verbose=False):
     """
 
     Parameters
@@ -299,6 +302,7 @@ def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
     coding_scores = score_reads(reads, peptide_graph, peptide_ksize,
                                 jaccard_threshold, molecule, verbose,
                                 prefix=prefix)
-
+    if csv:
+        coding_scores.to_csv(csv)
 
 
