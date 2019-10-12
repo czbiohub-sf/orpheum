@@ -3,6 +3,7 @@ partition_reads.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+import os
 from pprint import pprint
 import warnings
 
@@ -28,6 +29,8 @@ DEFAULT_MAX_TABLESIZE = 1e10
 DEFAULT_N_THREADS = 1
 DEFAULT_SEED = 42
 
+def write_fasta(file_handle, description, sequence):
+    file_handle.write(f"\n>{description}\n{sequence}")
 
 
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
@@ -64,21 +67,28 @@ def three_frame_translation(seq, debug=False):
             yield translation
 
 
-def three_frame_translation_no_stops(seq, debug=False):
-    return [t for t in three_frame_translation(seq, debug)
-            if '*' not in t]
+def three_frame_translation_no_stops(seq, debug=False, sign=1):
+    """Remove translations with stop codons and keep track of the reading frame"""
+    return {sign*i: t for i, t in enumerate(three_frame_translation(seq, debug))
+            if '*' not in t}
 
 
 def six_frame_translation_no_stops(seq, debug=False):
     forward_translations = three_frame_translation_no_stops(seq, debug)
+
+    # Sign=-1 sets the reading frames as negative to make it obvious they are
+    # from the reverse strand
     reverse_translations = three_frame_translation_no_stops(
-        seq.reverse_complement(), debug)
-    return forward_translations + reverse_translations
+        seq.reverse_complement(), debug, sign=-1)
+    forward_translations.update(reverse_translations)
+    return forward_translations
 
 
 def score_single_translation(translation, peptide_graph, peptide_ksize,
                              molecule='protein', jaccard_threshold=0.9,
-                             verbose=True):
+                             verbose=True, description=None,
+                             translation_frame=None,
+                             peptide_file_handle=None):
     translation = encode_peptide(translation, molecule)
 
     if len(translation) < peptide_ksize:
@@ -102,8 +112,13 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
 
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
-    if verbose and fraction_in_peptide_db > jaccard_threshold:
-        print(f"\t{translation} is above {jaccard_threshold}")
+    if fraction_in_peptide_db > jaccard_threshold:
+        if verbose:
+            print(f"\t{translation} is above {jaccard_threshold}")
+        if peptide_file_handle is not None:
+            seqname = f'{description} translation_frame: {translation_frame}'
+            write_fasta(peptide_file_handle, seqname, translation)
+
     return fraction_in_peptide_db, n_kmers
 
 
@@ -119,7 +134,10 @@ def compute_low_complexity(sequence, ksize):
 
 
 def score_single_sequence(sequence, peptide_graph, peptide_ksize,
-                          molecule='protein', verbose=True):
+                          molecule='protein', verbose=True,
+                          peptide_file_handle=None,
+                          noncoding_file_handle=None,
+                          low_complexity_peptide_file_handle=None):
     # Convert to BioPython sequence object for translation
     seq = Seq(sequence)
 
@@ -129,7 +147,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     # in the databse
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
-    for translation in translations:
+    for frame, translation in translations.items():
         translation = encode_peptide(translation, molecule)
 
         with warnings.catch_warnings():
@@ -138,11 +156,16 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
             low_complexity, n_kmers = compute_low_complexity(translation,
                                                              peptide_ksize)
         if low_complexity:
+            if peptide_file_handle is not None:
+                seqname = f'{description} translation_frame: {translation_frame}'
+                write_fasta(low_complexity_peptide_file_handle, seqname,
+                            translation)
             return -1, n_kmers
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             translation, peptide_graph, peptide_ksize, molecule=molecule,
-            verbose=verbose)
+            verbose=verbose, description=description, translation_frame=frame,
+            peptide_file_handle=peptide_file_handle)
 
         # Save the highest jaccard
         max_fraction_in_peptide_db = max(max_fraction_in_peptide_db,
@@ -151,14 +174,28 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             # Update n_kmers if this is the best translation frame
             max_n_kmers = n_kmers
+
+    if max_fraction_in_peptide_db > jaccard_threshold:
+        if noncoding_file_handle is not None:
+            write_fasta(noncoding_file_handle, description, sequence)
     return max_fraction_in_peptide_db, max_n_kmers
 
 
 
 def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
-                molecule='protein', verbose=False):
+                molecule='protein', verbose=False, prefix=None):
     scoring_lines = []
     nucleotide_ksize = 3*peptide_ksize
+
+    if prefix is not None:
+        noncoding_file_handle = open(f"{prefix}.noncoding_nucleotides.fasta", 'w')
+        peptide_file_handle = open(f"{prefix}.coding_peptides.fasta", 'w')
+        low_complexity_file_handle = open(f"{prefix}.low_complexity_nucleotides.fasta", 'w')
+        low_complexity_peptide_file_handle = open(f"{prefix}.low_complexity_peptides.fasta", 'w')
+    else:
+        noncoding_file_handle, peptide_file_handle = None, None
+        low_complexity_file_handle = None
+        low_complexity_peptide_file_handle = None
 
     for record in tqdm(screed.open(reads)):
         description = record['name']
@@ -172,11 +209,15 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
         if is_low_complexity:
             scoring_lines.append(
                 [description, -1, n_kmers, 'low complexity'])
+            if prefix is not None:
+                write_fasta(low_complexity_file_handle, description, sequence)
             continue
 
-        jaccard, n_kmers = score_single_sequence(sequence, peptide_graph,
-                                                 peptide_ksize, molecule,
-                                                 verbose)
+        jaccard, n_kmers = score_single_sequence(
+            sequence, peptide_graph, peptide_ksize, molecule, verbose,
+            peptide_file_handle=peptide_file_handle,
+            noncoding_file_handle=noncoding_file_handle,
+            low_complexity_peptide_file_handle=low_complexity_peptide_file_handle)
 
         if jaccard > jaccard_threshold:
             line = [description, jaccard, n_kmers, 'coding']
@@ -236,8 +277,11 @@ def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
 
     """
     peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize)
+
+    prefix = os.path.splitext(reads)[0]
     coding_scores = score_reads(reads, peptide_graph, peptide_ksize,
-                                jaccard_threshold, molecule, verbose)
+                                jaccard_threshold, molecule, verbose,
+                                prefix=prefix)
 
 
 
