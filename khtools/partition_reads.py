@@ -132,7 +132,8 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     for translation in translations:
         translation = encode_peptide(translation, molecule)
 
-        with warnings.filterwarnings('ignore'):
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
             # Ignore Biopython warning of seq objects being strings now
             low_complexity, n_kmers = compute_low_complexity(translation,
                                                              peptide_ksize)
