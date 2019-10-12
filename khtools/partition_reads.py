@@ -266,7 +266,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
                    "used")
-@click.options('--csv', default=False,
+@click.option('--csv', default=False,
                help='Name of csv file to write with all sequence reads and '
                     'their coding scores')
 @click.option("--long-reads", is_flag=True,
