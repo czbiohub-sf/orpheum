@@ -33,6 +33,12 @@ def write_fasta(file_handle, description, sequence):
     file_handle.write(f"\n>{description}\n{sequence}")
 
 
+def open_and_announce(filename, seqtype, quiet=False):
+    if not quiet:
+        print("Writing {seqtype} to {filename}")
+    return open(filename, 'w')
+
+
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
                               molecule='protein',
                               tablesize=DEFAULT_MAX_TABLESIZE):
@@ -190,10 +196,17 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
     nucleotide_ksize = 3*peptide_ksize
 
     if prefix is not None:
-        noncoding_file_handle = open(f"{prefix}.noncoding_nucleotides.fasta", 'w')
-        peptide_file_handle = open(f"{prefix}.coding_peptides.fasta", 'w')
-        low_complexity_file_handle = open(f"{prefix}.low_complexity_nucleotides.fasta", 'w')
-        low_complexity_peptide_file_handle = open(f"{prefix}.low_complexity_peptides.fasta", 'w')
+        noncoding_file_handle = open_and_announce(
+            f"{prefix}.noncoding_nucleotides.fasta", "Noncoding nucleotides")
+        peptide_file_handle = open_and_announce(
+            f"{prefix}.coding_peptides.fasta",
+             "all valid protein-coding translation frames")
+        low_complexity_file_handle = open_and_announce(
+            f"{prefix}.low_complexity_nucleotides.fasta",
+             "low complexity (low entropy) nucleotides")
+        low_complexity_peptide_file_handle = open_and_announce(
+            f"{prefix}.low_complexity_peptides.fasta",
+             "low complexity (low entropy) peptides")
     else:
         noncoding_file_handle, peptide_file_handle = None, None
         low_complexity_file_handle = None
