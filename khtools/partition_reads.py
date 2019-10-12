@@ -118,7 +118,8 @@ def is_low_complexity(sequence, ksize):
     kmers = kmerize(sequence, ksize)
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
-    if n_kmers < (n_possible_kmers_on_sequence) / 2:
+    min_kmer_entropy = n_possible_kmers_on_sequence / 2
+    if n_kmers < min_kmer_entropy:
         return True, n_kmers
     return False, n_kmers
 
