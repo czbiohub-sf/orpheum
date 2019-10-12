@@ -89,20 +89,20 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     n_kmers = len(kmers)
     n_kmers_in_peptide_db = sum(1 for h in hashes if
                                 peptide_graph.get(h) > 0)
-    if verbose:
+    if verbose > 1:
         print(f"\ttranslation: \t{translation}")
         print("\tkmers:", ' '.join(kmers))
 
     if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
         return -1
-        if verbose:
+        if verbose > 1:
             print(f'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
             print(record.description)
             print(record.seq)
 
     kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
                            zip(kmers, hashes)}
-    if verbose:
+    if verbose > 1:
         # Print keys (kmers) only
         print(f"\tK-mers in peptide database:")
         pprint(kmers_in_peptide_db)
@@ -168,6 +168,8 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
     for record in tqdm(screed.open(reads)):
         description = record['name']
         sequence = record['sequence']
+        if verbose:
+            print(description)
 
         # Check if nucleotide sequence is low complexity
         low_complexity, n_kmers = is_low_complexity(sequence,
@@ -184,9 +186,9 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             line = [description, jaccard, n_kmers, 'coding']
         else:
             line = [description, jaccard, n_kmers, 'non-coding']
-        if verbose:
+        if verbose > 1:
             # pprint(n_kmers)
-            print("Jaccard: {jaccard}, n_kmers = {n_kmers}")
+            print(f"Jaccard: {jaccard}, n_kmers = {n_kmers}")
         scoring_lines.append(line)
 
     scoring_df = pd.DataFrame(scoring_lines,
