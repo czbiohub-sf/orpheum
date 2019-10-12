@@ -93,13 +93,6 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
         print(f"\ttranslation: \t{translation}")
         print("\tkmers:", ' '.join(kmers))
 
-    if n_kmers < (len(translation) - peptide_ksize + 1) / 2:
-        return -1
-        if verbose > 1:
-            print(f'Low complexity sequence!!! n_kmers < (len(read.seq) - ksize + 1)/2  --> {n_kmers} < {(len(record.seq) - ksize + 1)/2}')
-            print(record.description)
-            print(record.seq)
-
     kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
                            zip(kmers, hashes)}
     if verbose > 1:
@@ -114,7 +107,7 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     return fraction_in_peptide_db, n_kmers
 
 
-def is_low_complexity(sequence, ksize):
+def compute_low_complexity(sequence, ksize):
     """CHeck if seqauence is low complexity, i.e. low entropy, mostly repetitive"""
     kmers = kmerize(sequence, ksize)
     n_kmers = len(kmers)
@@ -127,13 +120,6 @@ def is_low_complexity(sequence, ksize):
 
 def score_single_sequence(sequence, peptide_graph, peptide_ksize,
                           molecule='protein', verbose=True):
-    nucleotide_ksize = 3 * peptide_ksize
-    # Check if nucleotide sequence is low complexity
-    low_complexity, n_kmers = is_low_complexity(sequence,
-                                                nucleotide_ksize)
-    if low_complexity:
-        return -1, n_kmers
-
     # Convert to BioPython sequence object for translation
     seq = Seq(sequence)
 
@@ -145,6 +131,11 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     max_fraction_in_peptide_db = 0
     for translation in translations:
         translation = encode_peptide(translation, molecule)
+        low_complexity, n_kmers = compute_low_complexity(translation,
+                                                         peptide_ksize)
+        if low_complexity:
+            return -1, n_kmers
+
         fraction_in_peptide_db, n_kmers = score_single_translation(
             translation, peptide_graph, peptide_ksize, molecule=molecule,
             verbose=verbose)
@@ -172,9 +163,9 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             print(description)
 
         # Check if nucleotide sequence is low complexity
-        low_complexity, n_kmers = is_low_complexity(sequence,
-                                                    nucleotide_ksize)
-        if low_complexity:
+        is_low_complexity, n_kmers = compute_low_complexity(sequence,
+                                                            nucleotide_ksize)
+        if is_low_complexity:
             scoring_lines.append(
                 [description, -1, n_kmers, 'low complexity'])
             continue
