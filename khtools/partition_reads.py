@@ -135,6 +135,7 @@ def compute_low_complexity(sequence, ksize):
 
 def score_single_sequence(sequence, peptide_graph, peptide_ksize,
                           molecule='protein', verbose=True,
+                          jaccard_threshold=0.9,
                           description=None,
                           peptide_file_handle=None,
                           noncoding_file_handle=None,
@@ -216,6 +217,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 
         jaccard, n_kmers = score_single_sequence(
             sequence, peptide_graph, peptide_ksize, molecule, verbose,
+            jaccard_threshold=jaccard_threshold,
             description=description,
             peptide_file_handle=peptide_file_handle,
             noncoding_file_handle=noncoding_file_handle,
