@@ -110,7 +110,7 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
     if verbose and fraction_in_peptide_db > jaccard_threshold:
-        print(f"{translation} is above {jaccard_threshold}")
+        print(f"\t{translation} is above {jaccard_threshold}")
     return fraction_in_peptide_db, n_kmers
 
 
@@ -180,7 +180,8 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             continue
 
         jaccard, n_kmers = score_single_sequence(sequence, peptide_graph,
-                                                 peptide_ksize, molecule, verbose)
+                                                 peptide_ksize, molecule,
+                                                 verbose)
 
         if jaccard > jaccard_threshold:
             line = [description, jaccard, n_kmers, 'coding']
