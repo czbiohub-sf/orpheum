@@ -183,7 +183,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
             # Update n_kmers if this is the best translation frame
             max_n_kmers = n_kmers
 
-    if max_fraction_in_peptide_db > jaccard_threshold:
+    if max_fraction_in_peptide_db <= jaccard_threshold:
         if noncoding_file_handle is not None:
             write_fasta(noncoding_file_handle, description, sequence)
     return max_fraction_in_peptide_db, max_n_kmers
