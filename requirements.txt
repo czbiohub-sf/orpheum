@@ -17,3 +17,4 @@ setuptools==39.1.0
 httmock==1.2.6
 scikit_learn==0.21.3
 sourmash==2.2.0
+biopython
