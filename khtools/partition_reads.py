@@ -245,6 +245,13 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             print(f"Jaccard: {jaccard}, n_kmers = {n_kmers}")
         scoring_lines.append(line)
 
+    if prefix:
+        noncoding_file_handle.close()
+        peptide_file_handle.close()
+        low_complexity_file_handle.close()
+        low_complexity_peptide_file_handle.close()
+
+
     scoring_df = pd.DataFrame(scoring_lines,
                                  columns=['read_id',
                                           'jaccard_in_peptide_db',
