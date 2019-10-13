@@ -294,7 +294,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_graph,
 @click.option('--jaccard-threshold', default=0.9,
               help="Minimum fraction of peptide k-mers from read in the "
                    "peptide database for this read to be called a "
-                   "'coding read'")
+                   "'coding read'. Default: 0.9")
 @click.option('--molecule', default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -316,6 +316,7 @@ def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
         debug=False):
     """
 
+    \b
     Parameters
     ----------
     reads : str
@@ -323,10 +324,11 @@ def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
     peptides : str
         Sequence file of peptides
     peptide_ksize : int
-
+        Number of characters in amino acid words
     long_reads
     verbose
 
+    \b
     Returns
     -------
 
@@ -344,6 +346,7 @@ def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
                                 jaccard_threshold, molecule, verbose,
                                 prefix=prefix)
     if csv:
+        click.echo(f"Writing coding scores of reads to {csv}")
         coding_scores.to_csv(csv)
 
     maybe_save_peptide_bloom_filter(peptides, peptide_graph,
