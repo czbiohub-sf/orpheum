@@ -87,8 +87,8 @@ def three_frame_translation(seq, debug=False):
 
 def three_frame_translation_no_stops(seq, debug=False, sign=1):
     """Remove translations with stop codons and keep track of the reading frame"""
-    return {sign*i: t for i, t in enumerate(three_frame_translation(seq, debug))
-            if '*' not in t}
+    return {sign*(i+1): t for i, t in
+            enumerate(three_frame_translation(seq, debug)) if '*' not in t}
 
 
 def six_frame_translation_no_stops(seq, debug=False):

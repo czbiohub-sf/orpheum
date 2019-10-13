@@ -11,6 +11,7 @@ import click
 
 # Within-module imports
 from khtools.hello import hello
+from khtools.partition_reads import cli as partition_reads
 
 
 click.option = partial(click.option, show_default=True)
@@ -26,7 +27,7 @@ def cli():
     pass
 
 
-cli.add_command(hello, name='hello')
+cli.add_command(partition_reads, name='partition')
 
 
 if __name__ == "__main__":

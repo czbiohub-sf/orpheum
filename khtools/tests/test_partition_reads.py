@@ -1,6 +1,10 @@
+import os
+import warnings
+
+
 from Bio.Seq import Seq
 import pytest
-import warnings
+
 
 
 @pytest.fixture
@@ -16,6 +20,13 @@ def seq():
         warnings.simplefilter("ignore")
         return Seq(s)
 
+@pytest.fixture
+def peptide_fasta():
+    filename = os.path.join(pytest.config.rootdir,
+                            f'khtools/tests/data/{ensembl_id}.pkl')
+    with open(filename, 'rb') as testing_file:
+        testing_data = pickle.load(testing_file)
+
 
 def test_three_frame_translation(seq):
     from khtools.partition_reads import three_frame_translation
@@ -29,17 +40,20 @@ def test_three_frame_translation(seq):
 def test_three_frame_translation_no_stops(seq):
     from khtools.partition_reads import three_frame_translation_no_stops
 
-    test = [str(x) for x in three_frame_translation_no_stops(seq)]
-    true = ['ACLILTSIILGKSQYNCKSCSV']
+    test = {k: str(v) for k, v in
+            three_frame_translation_no_stops(seq).items()}
+    true = {2: 'ACLILTSIILGKSQYNCKSCSV'}
     assert test == true
 
 
 def test_six_frame_translation_no_stops(seq):
     from khtools.partition_reads import six_frame_translation_no_stops
 
-    test = [str(x) for x in six_frame_translation_no_stops(seq)]
-    true = ['ACLILTSIILGKSQYNCKSCSV', 'TEQDLQLYCDFPNIIDVSIKQA',
-            'QNRIYSYIAIFLILLMSVLSK']
+    test = {k: str(v) for k, v in
+            six_frame_translation_no_stops(seq).items()}
+    true = {2: 'ACLILTSIILGKSQYNCKSCSV',
+            -2: 'TEQDLQLYCDFPNIIDVSIKQA',
+            -3: 'QNRIYSYIAIFLILLMSVLSK'}
     assert test == true
 
 
