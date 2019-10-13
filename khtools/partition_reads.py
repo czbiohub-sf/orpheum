@@ -176,7 +176,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
             low_complexity, n_kmers = compute_low_complexity(translation,
                                                              peptide_ksize)
         if low_complexity:
-            if peptide_file_handle is not None:
+            if low_complexity_peptide_file_handle is not None:
                 seqname = f'{description} translation_frame: {translation_frame}'
                 write_fasta(low_complexity_peptide_file_handle, seqname,
                             translation)
@@ -236,7 +236,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
         if is_low_complexity:
             scoring_lines.append(
                 [description, -1, n_kmers, 'low complexity'])
-            if prefix is not None:
+            if low_complexity_file_handle is not None:
                 write_fasta(low_complexity_file_handle, description, sequence)
             continue
 
