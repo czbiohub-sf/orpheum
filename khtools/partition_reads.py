@@ -39,24 +39,24 @@ def open_and_announce(filename, seqtype, quiet=False):
     return open(filename, 'w')
 
 
-def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, n_tables=4,
-                              molecule='protein',
-                              tablesize=DEFAULT_MAX_TABLESIZE):
+def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
+                              n_tables=4, tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
     peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
-    for record in screed.open(peptide_fasta):
-        if '*' in record['sequence']:
-            continue
-        sequence = encode_peptide(record['sequence'], molecule)
-        kmers = kmerize(sequence, peptide_ksize)
-        for kmer in kmers:
-            # Convert the k-mer into an integer
-            hashed = hash_murmur(kmer)
+    with screed.open(peptide_fasta) as records:
+        for record in records:
+            if '*' in record['sequence']:
+                continue
+            sequence = encode_peptide(record['sequence'], molecule)
+            kmers = kmerize(sequence, peptide_ksize)
+            for kmer in kmers:
+                # Convert the k-mer into an integer
+                hashed = hash_murmur(kmer)
 
-            # .add can take the hashed integer so we can hash the peptide
-            #  kmer and add it directly
-            peptide_graph.add(hashed)
+                # .add can take the hashed integer so we can hash the peptide
+                #  kmer and add it directly
+                peptide_graph.add(hashed)
     return peptide_graph
 
 
@@ -129,7 +129,7 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
 
 
 def compute_low_complexity(sequence, ksize):
-    """CHeck if seqauence is low complexity, i.e. low entropy, mostly repetitive"""
+    """Check if sequence is low complexity, i.e. low entropy, mostly repetitive"""
     kmers = kmerize(sequence, ksize)
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
