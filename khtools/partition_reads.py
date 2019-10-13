@@ -60,6 +60,18 @@ def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
     return peptide_graph
 
 
+def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
+                                    molecule,
+                                    peptides_are_bloom_filter):
+    if peptides_are_bloom_filter:
+        peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
+                                                  molecule=molecule)
+    else:
+        peptide_graph = Nodegraph.load(peptides)
+        assert peptide_ksize == peptide_graph.ksize
+    return peptide_graph
+
+
 def three_frame_translation(seq, debug=False):
     if debug:
         warning_filter = 'default'
@@ -259,11 +271,26 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
     return scoring_df
 
 
+def maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+                                    save_peptide_bloom_filter):
+    if save_peptide_bloom_filter:
+        if isinstance(save_peptide_bloom_filter, str):
+            peptide_graph.save(save_peptide_bloom_filter)
+        else:
+            filename = os.path.splitext(peptides)[0] + '.nodegraph'
+            print(f"Writing peptide bloom filter to {filename}")
+            peptide_graph.save(filename)
+
 @click.command()
 @click.argument('reads')
 @click.argument('peptides')
 @click.option('--peptide-ksize', default=7,
-                help="K-mer size of the peptide sequence to use")
+                help="K-mer size of the peptide sequence to use. Default: 7")
+@click.option("--save-peptide-bloom-filter", is_flag=True,
+              help="If specified, save the peptide bloom filter. "
+                   "Default filename is the name of the")
+@click.option('--peptides-are-bloom-filter', is_flag=True,
+              help="Peptide file is already a bloom filter")
 @click.option('--jaccard-threshold', default=0.9,
               help="Minimum fraction of peptide k-mers from read in the "
                    "peptide database for this read to be called a "
@@ -283,8 +310,10 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
               help="Print more output")
 @click.option("--debug", is_flag=True,
                   help="Print developer debugger output, including warnings")
-def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
-        molecule='protein', csv=False, long_reads=False, verbose=False):
+def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
+        peptides_are_bloom_filter=False, jaccard_threshold=0.9,
+        molecule='protein', csv=False, long_reads=False, verbose=False,
+        debug=False):
     """
 
     Parameters
@@ -302,7 +331,13 @@ def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
     -------
 
     """
-    peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize)
+    # \b above prevents rewrapping of paragraph
+    click.echo(f"Creating peptide bloom filter with file: {peptides} using " \
+              f"ksize: {ksize} and molecule: {molecule} ...")
+    peptide_graph = maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
+                                                    molecule,
+                                                    peptides_are_bloom_filter)
+    click.echo("\tDone!")
 
     prefix = os.path.splitext(reads)[0]
     coding_scores = score_reads(reads, peptide_graph, peptide_ksize,
@@ -311,4 +346,6 @@ def cli(reads, peptides, peptide_ksize, jaccard_threshold=0.9,
     if csv:
         coding_scores.to_csv(csv)
 
+    maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+                                    save_peptide_bloom_filter)
 
