@@ -31,7 +31,6 @@ def ensembl_mock(url, request):
         raise ValueError(f"Testing file for transcript {ensembl_id} "
                          "not found")
 
-    assert testing_data['ensembl_id'] == ensembl_id
     print(f"Loaded test data for {ensembl_id}")
     print(f"Test data generated on {testing_data['time_generated']}")
 
@@ -50,4 +49,5 @@ def test_lookup(ensembl_protein_id):
     with HTTMock(ensembl_mock):
         test = lookup(ensembl_protein_id)
         s = '{"start":3307,"Parent":"ENST00000361390","end":4262,"species":"homo_sapiens","id":"ENSP00000354687","object_type":"Translation","db_type":"core","length":318}'
-        true = json.reads(s)
+        true = json.loads(s)
+        assert test == true

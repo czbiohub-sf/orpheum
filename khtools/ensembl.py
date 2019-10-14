@@ -97,7 +97,6 @@ def lookup(ensembl_id, expand=False, verbose=False):
         sys.exit()
 
     decoded = r.json()
-    # print(repr(decoded))
     if verbose:
         pprint(decoded)
     return decoded
