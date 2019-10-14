@@ -6,6 +6,7 @@ import re
 from httmock import all_requests, HTTMock
 import pytest
 
+
 @pytest.fixture
 def ensembl_protein_id():
     return "ENSP00000354687"
@@ -40,7 +41,7 @@ def ensembl_mock(url, request):
         return testing_data['lookup_response']
     else:
         raise NotImplementedError(f"Endpoint {url.path} not implemented for "
-                                   "mocking")
+                                  "mocking")
 
 
 def test_lookup(ensembl_protein_id):

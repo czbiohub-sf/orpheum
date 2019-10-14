@@ -41,13 +41,13 @@ class HomologyTable:
 
         # Extract column for homology type (e.g. one2one, one2many, many2many)
         self.homology_type_col = [x for x in self.data.columns
-                             if x.endswith("homology type")][0]
+                                  if x.endswith("homology type")][0]
 
         self.data['is_homologue'] = self.data[self.homology_type_col].notnull()
 
         self.species1_id_col = 'Query protein or transcript ID'
-        self.species2_id_col = [x for x in self.data.columns if
-                           x.endswith("protein or transcript stable ID")][0]
+        self.species2_id_col = [x for x in self.data.columns if x.endswith(
+            "protein or transcript stable ID")][0]
         self.quantitative_features = [x for x in self.data.columns if any(
             keyword in x for keyword in QUANTITATIVE_KEYWORDS)]
 
@@ -66,9 +66,12 @@ class HomologyTable:
                                                      ignore_errors=True)
                     for x in tqdm(df[id_column])]
         else:
-            seqs = [get_sequence(x, ignore_errors=True) for x in tqdm(df[id_column])]
-        # Sanitize output based on deprecated ENSEMBL IDs that don't have sequences
-        id_seqs = [(ID, seq) for ID, seq in zip(df[id_column], seqs) if seq is not None]
+            seqs = [get_sequence(x, ignore_errors=True)
+                    for x in tqdm(df[id_column])]
+        # Sanitize output based on deprecated ENSEMBL IDs that don't have
+        # sequences
+        id_seqs = [(ID, seq)
+                   for ID, seq in zip(df[id_column], seqs) if seq is not None]
         return id_seqs
 
     def _get_cross_species(self, random_subset, kmer_comparisons):
@@ -84,8 +87,8 @@ class HomologyTable:
             'species1'] = kmer_comparisons.id1.map(id_to_species)
         kmer_comparisons[
             'species2'] = kmer_comparisons.id2.map(id_to_species)
-        kmer_comparisons[
-            'species_species'] = kmer_comparisons.species1 + "_" + kmer_comparisons.species2
+        kmer_comparisons['species_species'] = kmer_comparisons.species1 + \
+            "_" + kmer_comparisons.species2
         cross_species = kmer_comparisons.query('species1 != species2')
         del kmer_comparisons
         return cross_species
@@ -165,7 +168,7 @@ class HomologyTable:
                              " and 'protein_coding_cdna', 'protein_coding_"
                              "cds', and 'non_coding' datatypes are accepted")
 
-        logger.info(f"datatype: {datatype}, moltype: {moltype}, " \
+        logger.info(f"datatype: {datatype}, moltype: {moltype}, "
                     f"seqtype: {seqtype}")
 
         logger.info("Subsetting data")

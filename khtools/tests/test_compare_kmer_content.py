@@ -16,6 +16,7 @@ import pytest
 def folder():
     return "test-folder"
 
+
 @pytest.fixture
 def ksize():
     return 3
@@ -25,6 +26,7 @@ def ksize():
 def ksizes():
     return [2, 3, 4]
 
+
 @pytest.fixture
 def nucleotide_seq1():
     return "GATTACA"
@@ -33,6 +35,7 @@ def nucleotide_seq1():
 @pytest.fixture
 def nucleotide_seq2():
     return "GATTTTAAAACA"
+
 
 @pytest.fixture
 def peptide_seq1():

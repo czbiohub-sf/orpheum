@@ -45,12 +45,14 @@ def test_amino_keto_ize(nucleotide_string):
     true = 'KMKKMMM'
     assert test == true
 
+
 def test_weak_strong_ize(nucleotide_string):
     from khtools.sequence_encodings import weak_strong_ize
 
     test = weak_strong_ize(nucleotide_string)
     true = 'SWWWWSW'
     assert test == true
+
 
 def test_purine_pyrimidize(nucleotide_string):
     from khtools.sequence_encodings import purine_pyrimidize
@@ -60,6 +62,8 @@ def test_purine_pyrimidize(nucleotide_string):
     assert test == true
 
 # -------------------- Test peptide encodings ---------------------------- #
+
+
 def test_dayhoffize(peptide_string):
     from khtools.sequence_encodings import dayhoffize
 

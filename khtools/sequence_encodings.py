@@ -187,5 +187,3 @@ def hpize(seq):
 
 def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
-
-
