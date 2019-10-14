@@ -20,13 +20,6 @@ def seq():
         warnings.simplefilter("ignore")
         return Seq(s)
 
-@pytest.fixture
-def peptide_fasta():
-    filename = os.path.join(pytest.config.rootdir,
-                            f'khtools/tests/data/{ensembl_id}.pkl')
-    with open(filename, 'rb') as testing_file:
-        testing_data = pickle.load(testing_file)
-
 
 def test_three_frame_translation(seq):
     from khtools.partition_reads import three_frame_translation
@@ -56,6 +49,3 @@ def test_six_frame_translation_no_stops(seq):
             -3: 'QNRIYSYIAIFLILLMSVLSK'}
     assert test == true
 
-
-def test_make_peptide_bloom_filter():
-    pass

@@ -12,6 +12,7 @@ import click
 # Within-module imports
 from khtools.hello import hello
 from khtools.partition_reads import cli as partition_reads
+from khtools.bloom_filter import cli as bloom_filter
 
 
 click.option = partial(click.option, show_default=True)
@@ -28,6 +29,7 @@ def cli():
 
 
 cli.add_command(partition_reads, name='partition')
+cli.add_command(bloom_filter, name='bloom-filter')
 
 
 if __name__ == "__main__":
