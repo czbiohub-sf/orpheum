@@ -239,10 +239,10 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 @click.argument('peptides')
 @click.option('--peptide-ksize', default=7,
                 help="K-mer size of the peptide sequence to use. Default: 7")
-@click.option("--save-peptide-bloom-filter", is_flag=True,
+@click.option("--save-peptide-bloom-filter", is_flag=True, default=False,
               help="If specified, save the peptide bloom filter. "
                    "Default filename is the name of the")
-@click.option('--peptides-are-bloom-filter', is_flag=True,
+@click.option('--peptides-are-bloom-filter', is_flag=True, default=False,
               help="Peptide file is already a bloom filter")
 @click.option('--jaccard-threshold', default=0.9,
               help="Minimum fraction of peptide k-mers from read in the "
@@ -287,12 +287,14 @@ def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
 
     """
     # \b above prevents rewrapping of paragraph
-    click.echo(f"Creating peptide bloom filter with file: {peptides} using " \
-               f"ksize: {ksize} and molecule: {molecule} ...")
     peptide_graph = maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
                                                     molecule,
                                                     peptides_are_bloom_filter)
     click.echo("\tDone!")
+
+    if not peptides_are_bloom_filter:
+        maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+                                        save_peptide_bloom_filter)
 
     prefix = os.path.splitext(reads)[0]
     coding_scores = score_reads(reads, peptide_graph, peptide_ksize,
