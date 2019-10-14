@@ -117,6 +117,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
                           molecule='protein', verbose=True,
                           jaccard_threshold=0.9,
                           description=None,
+                          translation_frame=None,
                           peptide_file_handle=None,
                           noncoding_file_handle=None,
                           low_complexity_peptide_file_handle=None):
@@ -139,7 +140,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
                                                              peptide_ksize)
         if low_complexity:
             if low_complexity_peptide_file_handle is not None:
-                seqname = f'{description} translation_frame: {translation_frame}'
+                seqname = f'{description} translation_frame: {frame}'
                 write_fasta(low_complexity_peptide_file_handle, seqname,
                             translation)
             return -1, n_kmers
