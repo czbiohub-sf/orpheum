@@ -107,11 +107,12 @@ class HomologyTable:
         """Take random subsets of the non-homologous data and add back"""
         # Take random subsets of the non-homologous data as there's several
         # orders of magnitude more non-homologous pairs than homologous pairs
-        cross_species_metadata_subset_non_homologues = cross_species_metadata.groupby(
-            ['id1', 'ksize', 'molecule'], as_index=False,
-            group_keys=False).apply(
-            lambda x: x.loc[x['is_homologue'].isnull()].sample(
-                10, random_state=random_state))
+        cross_species_metadata_subset_non_homologues = \
+            cross_species_metadata.groupby(
+                ['id1', 'ksize', 'molecule'], as_index=False,
+                group_keys=False).apply(
+                lambda x: x.loc[x['is_homologue'].isnull()].sample(
+                    10, random_state=random_state))
         # Add the randomly sampled non homologous data back to the data that is
         # homologous
         cross_species_metadata_subset = pd.concat(

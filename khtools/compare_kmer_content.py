@@ -1,6 +1,5 @@
 from functools import partial
 import itertools
-import math
 import multiprocessing
 from pprint import pprint
 import random
@@ -62,7 +61,8 @@ divergence_estimates = pd.Series({"Amniota": 312,
 divergence_estimates = divergence_estimates.sort_values()
 
 
-KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25
+KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
+         21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
 # Hydrophobic/hydrophilic mapping
@@ -212,8 +212,9 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
                             ksizes=KSIZES, n_background=100,
                             moltype='protein', verbose=False):
     """Returns similarities of all the combinations of signature at index in the
-    siglist with the rest of the indices starting at index + 1. Doesn't redundantly
-    calculate signatures with all the other indices prior to index - 1
+    siglist with the rest of the indices starting at index + 1. Doesn't
+    redundantly calculate signatures with all the other indices prior to
+    index - 1
 
     :param int index: generate masks from this image
     :param boolean ignore_abundance
@@ -224,8 +225,8 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
         based on the cosine similarity.
     :param boolean downsample by max_hash if True
     :param siglist list of signatures
-    :return: list of similarities for the combinations of signature at index with
-    rest of the signatures from index+1
+    :return: list of similarities for the combinations of signature at index
+    with rest of the signatures from index+1
     """
     startt = time.time()
     pairs_iterator = [(seqlist1[index], seqlist2[index])]

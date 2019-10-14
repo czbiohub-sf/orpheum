@@ -1,4 +1,5 @@
 import logging
+from pprint import pprint
 import sys
 
 import requests
@@ -27,7 +28,7 @@ def get_rna_sequence_from_protein_id(protein_id, ignore_errors=False,
 
     if not r.ok:
         if ignore_errors:
-            logger.warning(f"{ensembl_id} was not found, likely deprecated. "
+            logger.warning(f"{protein_id} was not found, likely deprecated. "
                            "Skipping ...")
             return None
         else:
@@ -69,7 +70,8 @@ def get_sequence(ensembl_id, type=None, ignore_errors=True, verbose=False):
 
 def get_orthologues(ensembl_id, target_species, verbose=False):
     server = "https://rest.ensembl.org"
-    ext = f"/homology/id/{ensembl_id}?target_species={target_species};type=orthologues"
+    ext = f"/homology/id/{ensembl_id}?target_species={target_species}" \
+        ";type=orthologues"
 
     r = requests.get(server + ext,
                      headers={"Content-Type": "application/json"})

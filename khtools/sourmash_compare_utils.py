@@ -2,6 +2,7 @@
 
 import itertools
 
+from joblib import Parallel, delayed
 import numpy as np
 from scipy.spatial.distance import squareform
 
@@ -48,7 +49,8 @@ def get_similarity_difference(
         'ksize',
         'molecule',
         'num_hashes')):
-    """Calculate difference in similarity from "true" aka maximum sampling similarity
+    """Calculate difference in similarity from "true" aka maximum sampling
+    similarity
 
     Parameters
     ----------
@@ -59,7 +61,9 @@ def get_similarity_difference(
     """
     CELL_INDEX = ['cell1', 'cell2']
 
-    max_num_hashes = similarity.num_hashes.max()
+    # flake8 can't detect that the variable is used by pandas dataframe
+    # querying so ignore with #noqa
+    max_num_hashes = similarity.num_hashes.max()  # noqa
     true_similarity = similarity.query('num_hashes == @max_num_hashes')
     true_similarity = true_similarity.set_index(CELL_INDEX).sort_index()
 

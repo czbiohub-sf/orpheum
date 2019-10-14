@@ -20,7 +20,8 @@ keys_to_print = keys_for_length + keys_for_values
 BLADDER_CELL_ID = '10X_P4_3_GCGAGAACACATGGGA'
 TISSUE_CHANNEL = 'bladder-10X_P4_3_'
 
-PALETTE_NAMES = 'tab10', 'Set2', 'tab20', 'Set3', 'tab20b', 'Accent', 'tab20c', 'Dark2', 'Paired', 'Pastel1', 'Set1', 'Pastel2'
+PALETTE_NAMES = 'tab10', 'Set2', 'tab20', 'Set3', 'tab20b', 'Accent', \
+                'tab20c', 'Dark2', 'Paired', 'Pastel1', 'Set1', 'Pastel2'
 
 METADATA_COL = ['cell_ontology_class', 'free_annotation']
 
@@ -98,8 +99,10 @@ def category_colors(categories, palette):
     ------
     categories : pandas.DataFrame or pandas.Series
     palette : string or dict
-        If a string, then "categories" must be a Series and this only labels one series
-        If a dict, then corresponds to the column names of "categories" dataframe
+        If a string, then "categories" must be a Series and this only labels
+        one series
+        If a dict, then corresponds to the column names of "categories"
+        dataframe
     """
     item_to_color = None
     if isinstance(categories, pd.DataFrame):
@@ -167,10 +170,12 @@ def plaidplot(
 
     row_colors = category_colors(
         row_categories,
-        row_palette) if 'row_colors' not in kwargs else kwargs.pop('row_colors')
+        row_palette) if 'row_colors' not in kwargs \
+        else kwargs.pop('row_colors')
     col_colors = category_colors(
         col_categories,
-        col_palette) if 'col_colors' not in kwargs else kwargs.pop('col_colors')
+        col_palette) if 'col_colors' not in kwargs \
+        else kwargs.pop('col_colors')
 
     if 'vmax' not in kwargs:
         kwargs['vmax'] = data.replace(1, np.nan).max().max()
@@ -238,7 +243,8 @@ def plaidplot_and_distplot(
         **kwargs):
     plaidplot_grid = plaidplot_square(
         data, metadata, metadata_col=metadata_col, **kwargs)
-    fig_prefix = f'{tissue_channel}_{name}_k{ksize}_{molecule}_ignore-abundance={ignore_abundance}'
+    fig_prefix = f'{tissue_channel}_{name}_k{ksize}_{molecule}_' \
+                  'ignore-abundance={ignore_abundance}'
     png = f'../figures/{fig_prefix}_clustermap.png'
     plaidplot_grid.ax_col_dendrogram.set(title=fig_prefix)
     plaidplot_grid.savefig(png, dpi=300)
@@ -283,8 +289,8 @@ def _assemble_metadata(compare, cell_ids, metadata_cols):
         data = list(compare.columns[~colon_separated].str.split('|').values)
         metadata_not_colon_separated = pd.DataFrame(
             data, columns=metadata_cols)
-        metadata_not_colon_separated = metadata_not_colon_separated.dropna(subset=[
-                                                                           'cell_id'])
+        metadata_not_colon_separated = metadata_not_colon_separated.dropna(
+            subset=['cell_id'])
         metadata_not_colon_separated = metadata_not_colon_separated.set_index(
             'cell_id')
     else:
@@ -299,8 +305,8 @@ def _assemble_metadata(compare, cell_ids, metadata_cols):
     metadata['method'] = metadata.index.map(
         lambda x: '10x' if '10X' in x else 'FACS')
     # Replace underscores with spaces for cell ontology names for consistency
-    metadata['cell_ontology_class'] = metadata['cell_ontology_class'].str.replace(
-        "_", " ")
+    metadata['cell_ontology_class'] = \
+        metadata['cell_ontology_class'].str.replace("_", " ")
     return metadata
 
 
@@ -326,8 +332,10 @@ def read_compare(csv, pattern='(?P<column>\\w+):(?P<value>[\\w-]+)',
 
 def filter_siglist(siglist, ksize, moltype):
     if moltype == 'protein':
-        def molfilter(x): return x.minhash.is_protein
+        def molfilter(x):
+            return x.minhash.is_protein
     else:
-        def molfilter(x): return not x.minhash.is_protein
+        def molfilter(x):
+            return not x.minhash.is_protein
 
     return [s for s in siglist if molfilter(s) and (s.minhash.ksize == ksize)]

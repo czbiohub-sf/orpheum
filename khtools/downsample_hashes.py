@@ -23,7 +23,8 @@ def downsample_siglist(
             downsample_scaled) for s in siglist]
     else:
         raise ValueError(
-            "Either downsample_num_hashes or downsample_scaled must be specified!")
+            "Either downsample_num_hashes or downsample_scaled must be "
+            "specified!")
     return siglist_downsampled
 
 

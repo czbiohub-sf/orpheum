@@ -1,5 +1,6 @@
 DNA_ALPHABET = "A", "C", "G", "T"
-AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
+AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C",\
+                            "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
 DAYHOFF_MAPPING = {
     "C": "a",
 
@@ -128,7 +129,6 @@ BOTVINNIK_MAPPING = {
     "M": "i",
     "W": "j",
     "H": "k",
-    "Q": "l",
     "P": "m"
 }
 PURINE_PYRIMIDINE_MAPPING = {

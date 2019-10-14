@@ -21,7 +21,8 @@ settings = dict(help_option_names=['-h', '--help'])
              context_settings=settings)
 def cli():
     """
-    Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices
+    Kmer hashing tools contains data cleaning and visualization code for
+    analyzing kmer-hashing similarity matrices
     """
     pass
 
