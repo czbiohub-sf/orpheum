@@ -31,7 +31,6 @@ def ensembl_mock(url, request):
                          "not found")
 
     assert testing_data['ensembl_id'] == ensembl_id
-    import pdb; pdb.set_trace()
     print(f"Loaded test data for {ensembl_id}")
     print(f"Test data generated on {testing_data['time_generated']}")
 
