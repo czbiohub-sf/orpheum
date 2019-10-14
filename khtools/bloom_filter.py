@@ -37,11 +37,15 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
                                     molecule,
                                     peptides_are_bloom_filter):
     if peptides_are_bloom_filter:
-        peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                  molecule=molecule)
-    else:
+        print(f"Loading existing bloom filter from {peptides} and making " \
+               "sure the ksizes match")
         peptide_graph = Nodegraph.load(peptides)
         assert peptide_ksize == peptide_graph.ksize
+    else:
+        print(f"Creating peptide bloom filter with file: {peptides} using " \
+               f"ksize: {peptide_ksize} and molecule: {molecule} ...")
+        peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
+                                                  molecule=molecule)
     return peptide_graph
 
 
@@ -95,8 +99,6 @@ def cli(peptides, peptide_ksize=7, molecule='protein', save_as=None):
 
     """
     # \b above prevents rewrapping of paragraph
-    click.echo(f"Creating peptide bloom filter with file: {peptides}" \
-               f"\nUsing ksize: {peptide_ksize} and molecule: {molecule} ...")
     peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
                                               molecule)
     click.echo("\tDone!")
