@@ -294,6 +294,7 @@ def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
 
     if not peptides_are_bloom_filter:
         maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+                                        molecule, peptide_ksize,
                                         save_peptide_bloom_filter)
 
     prefix = os.path.splitext(reads)[0]
