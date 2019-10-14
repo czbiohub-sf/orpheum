@@ -12,7 +12,8 @@ def test_make_peptide_bloom_filter(peptide_fasta, molecule, peptide_ksize):
                            ("dayhoff", 8): 223991,
                            ("hydrophobic-polar", 7): 170,
                            ("hydrophobic-polar", 8): 317}
-    true = TRUE_N_UNIQUE_KMERS[(molecule, peptide_ksize)]
-    assert test.n_unique_kmers() == true
+    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(molecule, peptide_ksize)]
+    assert test.n_unique_kmers() == true_n_unique_kmers
     filename = f'/Users/olgabot/code/kmer-hashing/kh-tools/khtools/tests/data/bloom_filter/Homo_sapiens.GRCh38.pep.subset.molecule-{protein}_ksize-{peptide_ksize}.bloomfilter.nodegraph'
     test.save(filename)
+
