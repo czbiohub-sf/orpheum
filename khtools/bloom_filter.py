@@ -59,7 +59,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_graph,
             filename = save_peptide_bloom_filter
             peptide_graph.save(save_peptide_bloom_filter)
         else:
-            suffix = f'molecule-{molecule}_ksize-{ksize}.bloomfilter.nodegraph'
+            suffix = f'.molecule-{molecule}_ksize-{ksize}.bloomfilter.nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
         print(f"Writing peptide bloom filter to {filename}")
