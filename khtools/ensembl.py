@@ -44,9 +44,11 @@ def get_rna_sequence_from_protein_id(protein_id, ignore_errors=False,
     return sequence
 
 
-def get_sequence(ensembl_id, ignore_errors=True, verbose=False):
+def get_sequence(ensembl_id, type=None, ignore_errors=True, verbose=False):
     server = "https://rest.ensembl.org"
     ext = f"/sequence/id/{ensembl_id}"
+    if type is not None:
+        ext += f'?type={type}'
 
     r = requests.get(server + ext, headers={"Content-Type": "text/plain"})
 

@@ -12,6 +12,17 @@ def ensembl_protein_id():
     return "ENSP00000354687"
 
 
+@pytest.fixture
+def ensembl_transcript_id():
+    return "ENST00000361390"
+
+
+@pytest.fixture
+def ensembl_gene_id():
+    return "ENSG00000198888"
+
+
+
 @all_requests
 def ensembl_mock(url, request):
     match = re.match(r'.*/(.*?)$', url.path)
@@ -38,9 +49,12 @@ def ensembl_mock(url, request):
         return testing_data['sequence_response']
     elif 'lookup' in url.path:
         return testing_data['lookup_response']
+    elif 'homology' in url.path:
+        return testing_data['homology_response']
     else:
         raise NotImplementedError(f"Endpoint {url.path} not implemented for "
                                   "mocking")
+
 
 
 def test_lookup(ensembl_protein_id):
@@ -49,5 +63,78 @@ def test_lookup(ensembl_protein_id):
     with HTTMock(ensembl_mock):
         test = lookup(ensembl_protein_id)
         s = '{"start":3307,"Parent":"ENST00000361390","end":4262,"species":"homo_sapiens","id":"ENSP00000354687","object_type":"Translation","db_type":"core","length":318}'
+        true = json.loads(s)
+        assert test == true
+
+
+def test_lookup_expand_true(ensembl_transcript_id):
+    from khtools.ensembl import lookup
+
+    with HTTMock(ensembl_mock):
+        test = lookup(ensembl_transcript_id, expand=True)
+        s = '''{"Exon": [{"assembly_name": "GRCh38",
+           "db_type": "core",
+           "end": 4262,
+           "id": "ENSE00001435714",
+           "object_type": "Exon",
+           "seq_region_name": "MT",
+           "species": "homo_sapiens",
+           "start": 3307,
+           "strand": 1,
+           "version": 2}],
+ "Parent": "ENSG00000198888",
+ "Translation": {"Parent": "ENST00000361390",
+                 "db_type": "core",
+                 "end": 4262,
+                 "id": "ENSP00000354687",
+                 "length": 318,
+                 "object_type": "Translation",
+                 "species": "homo_sapiens",
+                 "start": 3307},
+ "assembly_name": "GRCh38",
+ "biotype": "protein_coding",
+ "db_type": "core",
+ "display_name": "MT-ND1-201",
+ "end": 4262,
+ "id": "ENST00000361390",
+ "is_canonical": 1,
+ "logic_name": "mt_genbank_import_homo_sapiens",
+ "object_type": "Transcript",
+ "seq_region_name": "MT",
+ "source": "ensembl",
+ "species": "homo_sapiens",
+ "start": 3307,
+ "strand": 1,
+ "version": 2}'''
+        true = json.loads(s)
+        assert test == true
+
+
+def test_get_orthologues(ensembl_gene_id):
+    from khtools.ensembl import get_orthologues
+
+    with HTTMock(ensembl_mock):
+        test = get_orthologues(ensembl_gene_id, 'mouse')
+        s = '''{"data": [{"id": "ENSG00000198888",
+   "homologies": [{"method_link_type": "ENSEMBL_ORTHOLOGUES",
+     "type": "ortholog_one2one",
+     "source": {"id": "ENSG00000198888",
+      "perc_id": 77.044,
+      "align_seq": "MPMANLLLLIVPILIAMAFLMLTERKILGYMQLRKGPNVVGPYGLLQPFADAMKLFTKEPLKPATSTITLYITAPTLALTIALLLWTPLPMPNPLVNLNLGLLFILATSSLAVYSILWSGWASNSNYALIGALRAVAQTISYEVTLAIILLSTLLMSGSFNLSTLITTQEHLWLLLPSWPLAMMWFISTLAETNRTPFDLAEGESELVSGFNIEYAAGPFALFFMAEYTNIIMMNTLTTTIFLGTTYDALSPELYTTYFVTKTLLLTSLFLWIRTAYPRFRYDQLMHLLWKNFLPLTLALLMWYVSMPITISSIPPQT",
+      "taxon_id": 9606,
+      "species": "homo_sapiens",
+      "perc_pos": 88.6792,
+      "cigar_line": "318M",
+      "protein_id": "ENSP00000354687"},
+     "target": {"species": "mus_musculus",
+      "perc_pos": 88.6792,
+      "cigar_line": "318M",
+      "protein_id": "ENSMUSP00000080991",
+      "perc_id": 77.044,
+      "id": "ENSMUSG00000064341",
+      "align_seq": "MFFINILTLLVPILIAMAFLTLVERKILGYMQLRKGPNIVGPYGILQPFADAMKLFMKEPMRPLTTSMSLFIIAPTLSLTLALSLWVPLPMPHPLINLNLGILFILATSSLSVYSILWSGWASNSKYSLFGALRAVAQTISYEVTMAIILLSVLLMNGSYSLQTLITTQEHMWLLLPAWPMAMMWFISTLAETNRAPFDLTEGESELVSGFNVEYAAGPFALFFMAEYTNIILMNALTTIIFLGPLYYINLPELYSTNFMMEALLLSSTFLWIRASYPRFRYDQLMHLLWKNFLPLTLALCMWHISLPIFTAGVPPYM",
+      "taxon_id": 10090},
+     "taxonomy_level": "Euarchontoglires",
+     "dn_ds": null}]}]}'''
         true = json.loads(s)
         assert test == true
