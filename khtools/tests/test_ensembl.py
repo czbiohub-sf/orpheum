@@ -22,7 +22,6 @@ def ensembl_gene_id():
     return "ENSG00000198888"
 
 
-
 @all_requests
 def ensembl_mock(url, request):
     match = re.match(r'.*/(.*?)$', url.path)
@@ -54,7 +53,6 @@ def ensembl_mock(url, request):
     else:
         raise NotImplementedError(f"Endpoint {url.path} not implemented for "
                                   "mocking")
-
 
 
 def test_lookup(ensembl_protein_id):
