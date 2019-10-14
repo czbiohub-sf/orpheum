@@ -143,7 +143,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
                 seqname = f'{description} translation_frame: {frame}'
                 write_fasta(low_complexity_peptide_file_handle, seqname,
                             translation)
-            return -1, n_kmers
+            return -2, n_kmers
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             translation, peptide_graph, peptide_ksize, molecule=molecule,
@@ -198,7 +198,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
                                                             nucleotide_ksize)
         if is_low_complexity:
             scoring_lines.append(
-                [description, -1, n_kmers, 'low complexity'])
+                [description, -1, n_kmers, 'low complexity nucleotide'])
             if low_complexity_file_handle is not None:
                 write_fasta(low_complexity_file_handle, description, sequence)
             continue
@@ -211,7 +211,9 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             noncoding_file_handle=noncoding_file_handle,
             low_complexity_peptide_file_handle=low_complexity_peptide_file_handle)
 
-        if jaccard > jaccard_threshold:
+        if jaccard == -2:
+            line = [description, jaccard, n_kmers, 'low complexity peptide']
+        elif jaccard > jaccard_threshold:
             line = [description, jaccard, n_kmers, 'coding']
         else:
             line = [description, jaccard, n_kmers, 'non-coding']

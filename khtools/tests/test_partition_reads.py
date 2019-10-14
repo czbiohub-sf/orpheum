@@ -63,7 +63,7 @@ def peptide_graph(data_folder):
 @pytest.fixture
 def reads(data_folder):
     return os.path.join(data_folder,
-                        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_first20.fq.gz')
+                        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq.gz')
 
 
 def test_score_reads(reads, peptide_graph):
@@ -91,7 +91,9 @@ SRR306838.17165743 Ibis_Run100924_C3PO:6:86:18789:18450/1,0.0,0,non-coding
 SRR306838.21229494 Ibis_Run100924_C3PO:6:106:6163:7753/1,0.0,0,non-coding
 SRR306838.21218773 Ibis_Run100924_C3PO:6:106:16921:6743/1,0.0,5,non-coding
 SRR306838.20124664 Ibis_Run100924_C3PO:6:101:4701:5309/1,0.05555555555555555,18,non-coding
-SRR306838.16841308 Ibis_Run100924_C3PO:6:85:6205:5805/1,0.0,17,non-coding'''
+SRR306838.16841308 Ibis_Run100924_C3PO:6:85:6205:5805/1,0.0,17,non-coding
+SRR306838.1531 Ibis_Run100924_C3PO:6:1:15718:1062/1,-1.0,2,low complexity nucleotide
+SRR306838.2318 Ibis_Run100924_C3PO:6:1:15779:1141/1,-2.0,7,low complexity peptide'''
     true = pd.read_csv(StringIO(s))
     pdt.assert_equal(test, true)
 
