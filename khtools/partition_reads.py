@@ -304,7 +304,6 @@ def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
         click.echo(f"Writing coding scores of reads to {csv}")
         coding_scores.to_csv(csv)
 
-    if not peptides_are_bloom_filter:
-        maybe_save_peptide_bloom_filter(peptides, peptide_graph,
-                                        save_peptide_bloom_filter)
 
+if __name__ == '__main__':
+    cli()
