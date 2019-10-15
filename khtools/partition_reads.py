@@ -237,8 +237,8 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 
 
 @click.command()
-@click.argument('reads')
 @click.argument('peptides')
+@click.argument('reads', nargs=-1)
 @click.option('--peptide-ksize', default=7,
                 help="K-mer size of the peptide sequence to use. Default: 7")
 @click.option("--save-peptide-bloom-filter", is_flag=True, default=False,
@@ -265,7 +265,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
               help="Print more output")
 @click.option("--debug", is_flag=True,
                   help="Print developer debugger output, including warnings")
-def cli(reads, peptides, peptide_ksize=7, save_peptide_bloom_filter=True,
+def cli(peptides, reads, peptide_ksize=7, save_peptide_bloom_filter=True,
         peptides_are_bloom_filter=False, jaccard_threshold=0.9,
         molecule='protein', csv=False, long_reads=False, verbose=False,
         debug=False):
