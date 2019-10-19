@@ -237,7 +237,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 
 
 @click.command()
-@click.argument('peptides')
+@click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
 @click.option('--peptide-ksize', default=7,
                 help="K-mer size of the peptide sequence to use. Default: 7")
@@ -254,7 +254,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
                    "used")
-@click.option('--csv', default=False,
+@click.option('--csv', default=False, is_flag=True,
                help='Name of csv file to write with all sequence reads and '
                     'their coding scores')
 @click.option("--long-reads", is_flag=True,
@@ -294,18 +294,23 @@ def cli(peptides, reads, peptide_ksize=7, save_peptide_bloom_filter=True,
                                                     peptides_are_bloom_filter)
     click.echo("\tDone!")
 
+    peptides_basename = os.path.basename(peptides)
+    suffix = f"__{peptides_basename}__molecule-{molecule}__" \
+             f"ksize-{peptide_ksize}"
+
     if not peptides_are_bloom_filter:
         maybe_save_peptide_bloom_filter(peptides, peptide_graph,
                                         molecule, peptide_ksize,
                                         save_peptide_bloom_filter)
-
-    prefix = os.path.splitext(reads)[0]
-    coding_scores = score_reads(reads, peptide_graph, peptide_ksize,
-                                jaccard_threshold, molecule, verbose,
-                                prefix=prefix)
-    if csv:
-        click.echo(f"Writing coding scores of reads to {csv}")
-        coding_scores.to_csv(csv)
+    for reads_file in reads:
+        prefix = os.path.splitext(reads_file)[0] + suffix
+        coding_scores = score_reads(reads_file, peptide_graph, peptide_ksize,
+                                    jaccard_threshold, molecule, verbose,
+                                    prefix=prefix)
+        if csv:
+            csv = prefix + "__coding_scores.csv"
+            click.echo(f"Writing coding scores of reads to {csv}")
+            coding_scores.to_csv(csv, index=False)
 
 
 if __name__ == '__main__':
