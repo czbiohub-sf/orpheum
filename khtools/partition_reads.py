@@ -280,6 +280,7 @@ def cli(peptides, reads, peptide_ksize=7, save_peptide_bloom_filter=True,
         Sequence file of peptides
     peptide_ksize : int
         Number of characters in amino acid words
+
     long_reads
     verbose
 

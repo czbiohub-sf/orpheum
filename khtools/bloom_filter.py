@@ -42,7 +42,7 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
         peptide_graph = Nodegraph.load(peptides)
         assert peptide_ksize == peptide_graph.ksize()
     else:
-        print(f"Creating peptide bloom filter with file: {peptides} using " \
+        print(f"Creating peptide bloom filter with file: {peptides}\nUsing " \
                f"ksize: {peptide_ksize} and molecule: {molecule} ...")
         peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
                                                   molecule=molecule)
