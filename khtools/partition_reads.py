@@ -131,7 +131,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     for frame, translation in translations.items():
-        translation = encode_peptide(translation, molecule)
+        translation = encode_peptide(str(translation), molecule)
 
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore')
