@@ -22,6 +22,7 @@ from tqdm import tqdm
 # Import modified 'os' module with LC_LANG set so click doesn't complain.
 # The '# noqa: F401' line prevents the linter from complaining about the unused
 # import.
+DEFAULT_JACCARD_THRESHOLD = 0.5
 
 
 def write_fasta(file_handle, description, sequence):
@@ -30,7 +31,7 @@ def write_fasta(file_handle, description, sequence):
 
 def open_and_announce(filename, seqtype, quiet=False):
     if not quiet:
-        print(f"Writing {seqtype} to {filename}")
+        click.echo(f"Writing {seqtype} to {filename}", err=True)
     return open(filename, 'w')
 
 
@@ -80,21 +81,22 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     n_kmers_in_peptide_db = sum(1 for h in hashes if
                                 peptide_graph.get(h) > 0)
     if verbose > 1:
-        print(f"\ttranslation: \t{translation}")
-        print("\tkmers:", ' '.join(kmers))
+        click.echo(f"\ttranslation: \t{translation}", err=True)
+        click.echo("\tkmers:", ' '.join(kmers), err=True)
 
-    kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
-                           zip(kmers, hashes)}
     if verbose > 1:
+        kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
+                               zip(kmers, hashes)}
         # Print keys (kmers) only
-        print(f"\tK-mers in peptide database:")
-        pprint(kmers_in_peptide_db)
+        click.echo(f"\tK-mers in peptide database:", err=True)
+        click.echo(kmers_in_peptide_db, err=True)
 
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
     if fraction_in_peptide_db > jaccard_threshold:
         if verbose:
-            print(f"\t{translation} is above {jaccard_threshold}")
+            click.echo(f"\t{translation} is above {jaccard_threshold}",
+                        err=True)
         if peptide_file_handle is not None:
             seqname = f'{description} translation_frame: {translation_frame}'
             write_fasta(peptide_file_handle, seqname, translation)
@@ -131,13 +133,17 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     for frame, translation in translations.items():
-        translation = encode_peptide(str(translation), molecule)
+        # Convert back to string
+        translation = str(translation)
 
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore')
             # Ignore Biopython warning of seq objects being strings now
             low_complexity, n_kmers = compute_low_complexity(translation,
                                                              peptide_ksize)
+
+        # Maybe reencode to dayhoff/hp space
+        encoded = encode_peptide(translation, molecule)
         if low_complexity:
             if low_complexity_peptide_file_handle is not None:
                 seqname = f'{description} translation_frame: {frame}'
@@ -146,7 +152,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
             return -2, n_kmers
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
-            translation, peptide_graph, peptide_ksize, molecule=molecule,
+            encoded, peptide_graph, peptide_ksize, molecule=molecule,
             verbose=verbose, description=description, translation_frame=frame,
             peptide_file_handle=peptide_file_handle)
 
@@ -165,14 +171,15 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
 
 
 
-def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
+def score_reads(reads, peptide_graph, peptide_ksize,
+                jaccard_threshold=DEFAULT_JACCARD_THRESHOLD,
                 molecule='protein', verbose=False, prefix=None):
     scoring_lines = []
     nucleotide_ksize = 3*peptide_ksize
 
     if prefix is not None:
         noncoding_file_handle = open_and_announce(
-            f"{prefix}.noncoding_nucleotides.fasta", "Noncoding nucleotides")
+            f"{prefix}.noncoding_nucleotides.fasta", "noncoding nucleotides")
         peptide_file_handle = open_and_announce(
             f"{prefix}.coding_peptides.fasta",
              "all valid protein-coding translation frames")
@@ -219,7 +226,7 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
             line = [description, jaccard, n_kmers, 'non-coding']
         if verbose > 1:
             # pprint(n_kmers)
-            print(f"Jaccard: {jaccard}, n_kmers = {n_kmers}")
+            click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
         scoring_lines.append(line)
 
     if prefix:
@@ -246,15 +253,15 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
                    "Default filename is the name of the")
 @click.option('--peptides-are-bloom-filter', is_flag=True, default=False,
               help="Peptide file is already a bloom filter")
-@click.option('--jaccard-threshold', default=0.9,
+@click.option('--jaccard-threshold', default=DEFAULT_JACCARD_THRESHOLD,
               help="Minimum fraction of peptide k-mers from read in the "
-                   "peptide database for this read to be called a "
-                   "'coding read'. Default: 0.9")
+                   "peptide database for this read to be called a " +
+                   f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD")
 @click.option('--molecule', default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
                    "used")
-@click.option('--csv', default=False, is_flag=True,
+@click.option('--csv', default=False,
                help='Name of csv file to write with all sequence reads and '
                     'their coding scores')
 @click.option("--long-reads", is_flag=True,
@@ -266,7 +273,8 @@ def score_reads(reads, peptide_graph, peptide_ksize, jaccard_threshold=0.9,
 @click.option("--debug", is_flag=True,
                   help="Print developer debugger output, including warnings")
 def cli(peptides, reads, peptide_ksize=7, save_peptide_bloom_filter=True,
-        peptides_are_bloom_filter=False, jaccard_threshold=0.9,
+        peptides_are_bloom_filter=False,
+        jaccard_threshold=DEFAULT_JACCARD_THRESHOLD,
         molecule='protein', csv=False, long_reads=False, verbose=False,
         debug=False):
     """
@@ -303,15 +311,21 @@ def cli(peptides, reads, peptide_ksize=7, save_peptide_bloom_filter=True,
         maybe_save_peptide_bloom_filter(peptides, peptide_graph,
                                         molecule, peptide_ksize,
                                         save_peptide_bloom_filter)
+
+    dfs = []
     for reads_file in reads:
         prefix = os.path.splitext(reads_file)[0] + suffix
-        coding_scores = score_reads(reads_file, peptide_graph, peptide_ksize,
+        df = score_reads(reads_file, peptide_graph, peptide_ksize,
                                     jaccard_threshold, molecule, verbose,
                                     prefix=prefix)
-        if csv:
-            csv = prefix + "__coding_scores.csv"
-            click.echo(f"Writing coding scores of reads to {csv}")
-            coding_scores.to_csv(csv, index=False)
+        df[filename] = reads_file
+        dfs.append(df)
+
+    coding_scores = pd.concat(dfs, ignore_index=True)
+
+    if csv:
+        click.echo(f"Writing coding scores of reads to {csv}", err=True)
+        coding_scores.to_csv(csv, index=False)
 
 
 if __name__ == '__main__':
