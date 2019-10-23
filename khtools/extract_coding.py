@@ -1,5 +1,5 @@
 """
-partition_reads.py
+extract_coding.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """

@@ -24,7 +24,7 @@ def seq():
 
 
 def test_three_frame_translation(seq):
-    from khtools.partition_reads import three_frame_translation
+    from khtools.extract_coding import three_frame_translation
 
     test = [str(x) for x in three_frame_translation(seq)]
     true = ['RLLNTDINNIRKIAI*L*ILFC', 'ACLILTSIILGKSQYNCKSCSV',
@@ -33,7 +33,7 @@ def test_three_frame_translation(seq):
 
 
 def test_three_frame_translation_no_stops(seq):
-    from khtools.partition_reads import three_frame_translation_no_stops
+    from khtools.extract_coding import three_frame_translation_no_stops
 
     test = {k: str(v) for k, v in
             three_frame_translation_no_stops(seq).items()}
@@ -42,7 +42,7 @@ def test_three_frame_translation_no_stops(seq):
 
 
 def test_six_frame_translation_no_stops(seq):
-    from khtools.partition_reads import six_frame_translation_no_stops
+    from khtools.extract_coding import six_frame_translation_no_stops
 
     test = {k: str(v) for k, v in
             six_frame_translation_no_stops(seq).items()}
@@ -81,7 +81,7 @@ LDPPYSRVITQRETENNQMTSE
 
 def test_score_reads(capsys, reads, peptide_bloom_filter, molecule,
                      peptide_ksize, true_scores, true_protein_coding_fasta):
-    from khtools.partition_reads import score_reads
+    from khtools.extract_coding import score_reads
 
     test = score_reads(reads, peptide_bloom_filter,
                        peptide_ksize=peptide_ksize, molecule=molecule)
@@ -97,7 +97,7 @@ def test_score_reads(capsys, reads, peptide_bloom_filter, molecule,
 
 def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
              true_protein_coding_fasta):
-    from khtools.partition_reads import cli
+    from khtools.extract_coding import cli
 
     runner = CliRunner()
     result = runner.invoke(cli,
@@ -110,7 +110,7 @@ def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
 
 def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
                                   peptide_ksize, true_protein_coding_fasta):
-    from khtools.partition_reads import cli
+    from khtools.extract_coding import cli
 
     runner = CliRunner()
     result = runner.invoke(cli,

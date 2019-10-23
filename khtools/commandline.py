@@ -11,7 +11,7 @@ import click
 
 # Within-module imports
 from khtools.hello import hello
-from khtools.partition_reads import cli as partition_reads
+from khtools.extract_coding import cli as extract_coding
 from khtools.bloom_filter import cli as bloom_filter
 
 
@@ -28,7 +28,7 @@ def cli():
     pass
 
 
-cli.add_command(partition_reads, name='partition')
+cli.add_command(extract_coding, name='extract-coding')
 cli.add_command(bloom_filter, name='bloom-filter')
 
 
