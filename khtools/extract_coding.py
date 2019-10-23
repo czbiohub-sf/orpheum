@@ -9,9 +9,10 @@ import warnings
 
 from Bio.Seq import Seq
 import click
+import numpy as np
+import pandas as pd
 import screed
 from sourmash._minhash import hash_murmur
-import pandas as pd
 from khtools.sequence_encodings import encode_peptide
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
@@ -41,6 +42,7 @@ SCORING_DF_COLUMNS = ['read_id',
                       'jaccard_in_peptide_db',
                       'n_kmers',
                       'classification']
+
 
 def write_fasta(file_handle, description, sequence):
     file_handle.write(f">{description}\n{sequence}\n")
@@ -112,11 +114,15 @@ def score_single_translation(translation, peptide_bloom_filter, peptide_ksize,
 
 
 def compute_low_complexity(sequence, ksize):
-    """Check if sequence is low complexity, i.e. low entropy, mostly repetitive"""
+    """Check if sequence is low complexity, i.e. mostly repetitive"""
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore')
         # Ignore Biopython warning of seq objects being strings now
-        kmers = kmerize(sequence, ksize)
+        try:
+            kmers = kmerize(sequence, ksize)
+        except ValueError:
+            # k-mer size is larger than sequence
+            return True, 0
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
@@ -141,6 +147,9 @@ def score_single_sequence(sequence, peptide_bloom_filter, peptide_ksize,
     # in the databse
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
+    if len(translations) == 0:
+        return np.nan, np.nan, "No translation frames without stop codons"
+
     for frame, translation in translations.items():
         # Convert back to string
         translation = str(translation)
@@ -151,9 +160,13 @@ def score_single_sequence(sequence, peptide_bloom_filter, peptide_ksize,
         low_complexity, n_kmers = compute_low_complexity(encoded,
                                                          peptide_ksize)
         if low_complexity:
-            maybe_write_fasta(description + f" translation_frame: {frame}",
-                              low_complexity_peptide_file_handle, translation)
-            return -2, n_kmers
+            if n_kmers > 0:
+                maybe_write_fasta(description + f" translation_frame: {frame}",
+                                  low_complexity_peptide_file_handle, translation)
+                return np.nan, n_kmers, "Low complexity peptide"
+            else:
+                return np.nan, np.nan, "Translated read length was smaller " \
+                                       "than peptide k-mer size"
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded, peptide_bloom_filter, peptide_ksize, molecule=molecule,
@@ -175,10 +188,11 @@ def score_single_sequence(sequence, peptide_bloom_filter, peptide_ksize,
 
     if max_fraction_in_peptide_db <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
-    return max_fraction_in_peptide_db, max_n_kmers
+    return max_fraction_in_peptide_db, max_n_kmers, None
 
 
 def maybe_write_fasta(description, file_handle, sequence):
+    """Write fasta to file handle if it is not None"""
     if file_handle is not None:
         write_fasta(file_handle, description, sequence)
 
@@ -190,6 +204,7 @@ def score_reads(reads, peptide_bloom_filter, peptide_ksize,
                 noncoding_nucleotide_fasta=None,
                 low_complexity_nucleotide_fasta=None,
                 low_complexity_peptide_fasta=None):
+    """Assign a coding score to each read. Where the magic happens."""
     scoring_lines = []
     nucleotide_ksize = 3 * peptide_ksize
 
@@ -197,44 +212,67 @@ def score_reads(reads, peptide_bloom_filter, peptide_ksize,
                                              low_complexity_nucleotide_fasta,
                                              low_complexity_peptide_fasta,
                                              noncoding_nucleotide_fasta)
-
     for record in tqdm(screed.open(reads)):
         description = record['name']
         sequence = record['sequence']
         if verbose:
             print(description)
 
-        # Check if nucleotide sequence is low complexity
-        is_low_complexity, n_kmers = compute_low_complexity(sequence,
-                                                            nucleotide_ksize)
-        if is_low_complexity:
-            scoring_lines.append(
-                [description, -1, n_kmers, 'low complexity nucleotide'])
-            maybe_write_fasta(description, fastas['low_complexity_nucleotide'],
-                              sequence)
-            continue
-
-        jaccard, n_kmers = score_single_sequence(
-            sequence, peptide_bloom_filter, peptide_ksize, molecule, verbose,
-            jaccard_threshold=jaccard_threshold,
-            description=description,
-            noncoding_file_handle=file_handles['noncoding_nucleotide'],
-            coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
-            low_complexity_peptide_file_handle=file_handles['low_complexity_peptide'])
-
-        if verbose > 1:
-            click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
+        jaccard, n_kmers, special_case = maybe_score_single_sequence(
+            description, fastas, file_handles, jaccard_threshold, molecule,
+            nucleotide_ksize, peptide_bloom_filter, peptide_ksize, sequence,
+            verbose)
 
         line = get_coding_score_line(description, jaccard, jaccard_threshold,
-                                     n_kmers)
+                                     n_kmers, special_case)
         scoring_lines.append(line)
 
     maybe_close_files(file_handles)
 
     # Concatenate all the lines into a single dataframe
-
     scoring_df = pd.DataFrame(scoring_lines, columns=SCORING_DF_COLUMNS)
     return scoring_df
+
+
+def maybe_score_single_sequence(description, fastas, file_handles,
+                                jaccard_threshold, molecule, nucleotide_ksize,
+                                peptide_bloom_filter, peptide_ksize, sequence,
+                                verbose):
+    """Check if seq is low complexity/too short, otherwise score it"""
+    # Check if nucleotide sequence is low complexity
+    is_low_complexity, n_kmers = compute_low_complexity(sequence,
+                                                        nucleotide_ksize)
+    if is_low_complexity:
+        jaccard, n_kmers, special_case = too_short_or_low_complexity(
+            description, fastas, n_kmers, sequence)
+    else:
+        jaccard, n_kmers, special_case = score_single_sequence(
+            sequence, peptide_bloom_filter, peptide_ksize, molecule, verbose,
+            jaccard_threshold=jaccard_threshold,
+            description=description,
+            noncoding_file_handle=file_handles['noncoding_nucleotide'],
+            coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
+            low_complexity_peptide_file_handle=file_handles[
+                'low_complexity_peptide'])
+
+        if verbose > 1:
+            click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
+    return jaccard, n_kmers, special_case
+
+
+def too_short_or_low_complexity(description, fastas, n_kmers,
+                                sequence):
+    if n_kmers > 0:
+        jaccard = np.nan
+        special_case = "Low complexity nucleotide"
+        maybe_write_fasta(description, fastas['low_complexity_nucleotide'],
+                          sequence)
+    else:
+        jaccard = np.nan
+        n_kmers = 0
+        special_case = 'Read length was shorter than 3 * preptide ' \
+                       'k-mer size'
+    return jaccard, n_kmers, special_case
 
 
 def maybe_close_files(file_handles):
@@ -243,9 +281,10 @@ def maybe_close_files(file_handles):
             file_handle.close()
 
 
-def get_coding_score_line(description, jaccard, jaccard_threshold, n_kmers):
-    if jaccard == -2:
-        line = [description, jaccard, n_kmers, 'low complexity peptide']
+def get_coding_score_line(description, jaccard, jaccard_threshold, n_kmers,
+                          special_case):
+    if special_case is not None:
+        line = [description, jaccard, n_kmers, special_case]
     elif jaccard > jaccard_threshold:
         line = [description, jaccard, n_kmers, 'coding']
     else:
