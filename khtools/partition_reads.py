@@ -15,7 +15,9 @@ import pandas as pd
 from khtools.sequence_encodings import encode_peptide
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
-                                  maybe_save_peptide_bloom_filter)
+                                  maybe_save_peptide_bloom_filter,
+                                  get_peptide_ksize, DEFAULT_PROTEIN_KSIZE,
+                                  DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE)
 from tqdm import tqdm
 
 
@@ -23,9 +25,6 @@ from tqdm import tqdm
 # The '# noqa: F401' line prevents the linter from complaining about the unused
 # import.
 DEFAULT_JACCARD_THRESHOLD = 0.5
-DEFAULT_PROTEIN_KSIZE = 7
-DEFAULT_DAYHOFF_KSIZE = 12
-DEFAULT_HP_KSIZE = 21
 SEQTYPE_TO_ANNOUNCEMENT = {"noncoding_nucleotide":
                                "nucleotide sequence from reads WITHOUT matches to "
                                "protein-coding peptides",
@@ -279,8 +278,8 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
 @click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
 @click.option('--peptide-ksize', default=None,
-                help="K-mer size of the peptide sequence to use. Defaults for"
-                     " different molecuels are, "
+              help="K-mer size of the peptide sequence to use. Defaults for"
+                     " different molecules are, "
                      f"protein: {DEFAULT_PROTEIN_KSIZE}"
                      f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
                      f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
@@ -393,21 +392,6 @@ def cli(peptides, reads, peptide_ksize=None,
     if csv:
         click.echo(f"Writing coding scores of reads to {csv}", err=True)
         coding_scores.to_csv(csv, index=False)
-
-
-def get_peptide_ksize(molecule, peptide_ksize):
-    if peptide_ksize is None:
-        if molecule == 'protein':
-            peptide_ksize = DEFAULT_PROTEIN_KSIZE
-        elif molecule == 'dayhoff':
-            peptide_ksize = DEFAULT_DAYHOFF_KSIZE
-        elif molecule == 'hydrophobic-polar' or molecule == 'hp':
-            peptide_ksize = DEFAULT_HP_KSIZE
-        else:
-            raise ValueError(f"{molecule} is not a valid protein encoding! "
-                             f"Only one of 'protein', 'hydrophobic-polar', or"
-                             f" 'dayhoff' can be specified")
-    return peptide_ksize
 
 
 if __name__ == '__main__':

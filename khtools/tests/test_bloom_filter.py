@@ -7,11 +7,10 @@ def test_make_peptide_bloom_filter(peptide_fasta, molecule, peptide_ksize):
     test = make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule,
                                      tablesize=1e6)
     TRUE_N_UNIQUE_KMERS = {("protein", 7): 506352,
-                           ("protein", 8): 512787,
                            ("dayhoff", 7): 99863,
-                           ("dayhoff", 8): 223991,
-                           ("hydrophobic-polar", 7): 170,
-                           ("hydrophobic-polar", 8): 317}
+                           ("dayhoff", 12): 488469,
+                           ("hydrophobic-polar", 21): 434810,
+                           ("hydrophobic-polar", 7): 170}
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(molecule, peptide_ksize)]
 
     # For now, assert that the number of kmers is within 5% of the true value
