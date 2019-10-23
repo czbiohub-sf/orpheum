@@ -8,6 +8,7 @@ def test_make_peptide_bloom_filter(peptide_fasta, molecule, peptide_ksize):
                                      tablesize=1e6)
     TRUE_N_UNIQUE_KMERS = {("protein", 7): 506352,
                            ("dayhoff", 7): 99863,
+                           ("dayhoff", 11): 472197,
                            ("dayhoff", 12): 488469,
                            ("hydrophobic-polar", 21): 434810,
                            ("hydrophobic-polar", 7): 170}
