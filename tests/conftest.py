@@ -26,6 +26,7 @@ def peptide_fasta(data_folder):
     return filename
 
 
+
 # Tie the molecule name to its default ksize to make sure we keep getting the
 # right sequences
 @pytest.fixture(params=[('protein', DEFAULT_PROTEIN_KSIZE),
@@ -61,6 +62,16 @@ def peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
 
 
 @pytest.fixture
-def peptide_bloom_filter(peptide_bloom_filter_path):
-    return Nodegraph.load(peptide_bloom_filter_path)
+def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
+                         peptide_ksize):
+    """Load bloom filter from path if exists, otherwise, make it"""
+    try:
+        return Nodegraph.load(peptide_bloom_filter_path)
+    except FileNotFoundError:
+        from khtools.bloom_filter import make_peptide_bloom_filter
+
+        bloom_filter = make_peptide_bloom_filter(peptide_fasta, peptide_ksize,
+                                                 molecule, tablesize=1e6)
+        bloom_filter.save(peptide_bloom_filter_path)
+        return bloom_filter
 
