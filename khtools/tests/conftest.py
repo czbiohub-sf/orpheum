@@ -50,3 +50,10 @@ def peptide_ksize(molecule_ksize):
 @pytest.fixture
 def molecule(molecule_ksize):
     return molecule_ksize[0]
+
+
+@pytest.fixture
+def peptide_bloom_filter(molecule, peptide_ksize):
+    from khtools.bloom_filter import make_peptide_bloom_filter
+
+    bf = make_peptide_bloom_filter(molecule, peptide_ksize)
