@@ -117,6 +117,13 @@ def true_protein_coding_fasta_path(data_folder):
     return os.path.join(data_folder, "extract_coding",
                         "true_protein_coding.fasta")
 
+
+@pytest.fixture
+def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
+    with open(true_protein_coding_fasta_path) as f:
+        return f.read()
+
+
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
                      peptide_ksize,  true_scores,
                      true_scores_path,
@@ -175,9 +182,9 @@ def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
     result = runner.invoke(cli,
                            ['--peptide-ksize', peptide_ksize,
                             '--molecule', molecule,
-                            reads])
+                            peptide_fasta, reads])
     assert result.exit_code == 0
-    assert result.output == true_protein_coding_fasta_string
+    assert true_protein_coding_fasta_string in result.output
 
 
 def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
@@ -192,4 +199,4 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
                             '--molecule', molecule, peptide_bloom_filter_path,
                             reads])
     assert result.exit_code == 0
-    assert result.output == true_protein_coding_fasta_string
+    assert true_protein_coding_fasta_string in result.output
