@@ -67,7 +67,7 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
         return Nodegraph.load(peptide_bloom_filter_path)
-    except FileNotFoundError:
+    except (FileNotFoundError, OSError):
         from khtools.bloom_filter import make_peptide_bloom_filter
 
         bloom_filter = make_peptide_bloom_filter(peptide_fasta, peptide_ksize,

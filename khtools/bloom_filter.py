@@ -10,9 +10,9 @@ from khtools.sequence_encodings import encode_peptide
 
 
 DEFAULT_MAX_TABLESIZE = 1e10
-DEFAULT_PROTEIN_KSIZE = 7
-DEFAULT_DAYHOFF_KSIZE = 12
-DEFAULT_HP_KSIZE = 21
+DEFAULT_PROTEIN_KSIZE = 6
+DEFAULT_DAYHOFF_KSIZE = 11
+DEFAULT_HP_KSIZE = 22
 
 
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
@@ -50,7 +50,6 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
         peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
                                                   molecule=molecule)
     return peptide_bloom_filter
-
 
 
 def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
