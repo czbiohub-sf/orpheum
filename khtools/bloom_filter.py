@@ -40,15 +40,16 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
                                     molecule,
                                     peptides_are_bloom_filter):
     if peptides_are_bloom_filter:
-        click.echo(f"Loading existing bloom filter from {peptides} and making " \
-               "sure the ksizes match", err=True)
+        click.echo(f"Loading existing bloom filter from {peptides} and "
+                   f"making sure the ksizes match", err=True)
         peptide_bloom_filter = Nodegraph.load(peptides)
         assert peptide_ksize == peptide_bloom_filter.ksize()
     else:
-        click.echo(f"Creating peptide bloom filter with file: {peptides}\nUsing " \
-               f"ksize: {peptide_ksize} and molecule: {molecule} ...", err=True)
-        peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                  molecule=molecule)
+        click.echo(f"Creating peptide bloom filter with file: {peptides}\n"
+                   f"Using ksize: {peptide_ksize} and molecule: {molecule} "
+                   f"...", err=True)
+        peptide_bloom_filter = make_peptide_bloom_filter(
+            peptides, peptide_ksize, molecule=molecule)
     return peptide_bloom_filter
 
 
