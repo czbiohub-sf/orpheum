@@ -140,7 +140,7 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
             kmers = kmerize(sequence, ksize)
         except ValueError:
             # k-mer size is larger than sequence
-            return None, 0
+            return None, None
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
@@ -186,13 +186,14 @@ def score_single_read(sequence, peptide_bloom_filter, peptide_ksize,
         # Maybe reencode to dayhoff/hp space
         encoded = encode_peptide(translation, molecule)
 
-        low_complexity = evaluate_is_fastp_low_complexity(encoded)
-        if low_complexity:
+        is_fastp_low_complexity = evaluate_is_fastp_low_complexity(encoded)
+        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(encoded,
+                                                                 peptide_ksize)
+        if is_fastp_low_complexity or is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
                                     " encoding"
-
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded, peptide_bloom_filter, peptide_ksize, molecule=molecule,
@@ -266,9 +267,12 @@ def maybe_score_single_read(description, fastas, file_handles,
                             verbose):
     """Check if read is low complexity/too short, otherwise score it"""
     # Check if nucleotide sequence is low complexity
-    is_low_complexity = evaluate_is_fastp_low_complexity(sequence)
-    if is_low_complexity:
-        n_kmers = np.nan
+    is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
+    is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(sequence,
+                                                             peptide_ksize * 3)
+    if is_fastp_low_complexity or is_kmer_low_complexity:
+        if n_kmers is None:
+            n_kmers = np.nan
         jaccard, n_kmers, special_case = too_short_or_low_complexity(
             description, fastas, n_kmers, sequence)
     else:
@@ -295,8 +299,8 @@ def too_short_or_low_complexity(description, fastas, n_kmers,
                           sequence)
     else:
         jaccard = np.nan
-        n_kmers = 0
-        special_case = 'Read length was shorter than 3 * preptide ' \
+        n_kmers = np.nan
+        special_case = 'Read length was shorter than 3 * peptide ' \
                        'k-mer size'
     return jaccard, n_kmers, special_case
 
