@@ -75,15 +75,12 @@ def true_scores(data_folder, molecule, peptide_ksize):
 
 
 def test_score_reads(capsys, reads, peptide_graph, molecule, peptide_ksize,
-                     # true_scores
-                     ):
+                     true_scores):
     from khtools.partition_reads import score_reads
 
     test = score_reads(reads, peptide_graph, peptide_ksize=peptide_ksize,
                        molecule=molecule)
-    test.to_csv(
-        f"/Users/olgabot/code/kmer-hashing/kh-tools/khtools/tests/data/partition_reads/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__molecule-{molecule}_ksize-{peptide_ksize}.csv")
-    # pdt.assert_equal(test, true_scores)
+    pdt.assert_equal(test, true_scores)
     captured = capsys.readouterr()
 
     # Check that the proper sequences were output
