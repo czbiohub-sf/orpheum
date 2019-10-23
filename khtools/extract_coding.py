@@ -109,7 +109,25 @@ def score_single_translation(translation, peptide_bloom_filter, peptide_ksize,
     return fraction_in_peptide_db, n_kmers
 
 
-def compute_low_complexity(sequence, ksize):
+def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
+    """Use fastp's definition of complexity
+
+    fastp prpject: https://github.com/OpenGene/fastp
+
+    Low complexity = few numbers
+    """
+    complexity = compute_fastp_complexity(seq)
+    return complexity > complexity_threshold
+
+
+def compute_fastp_complexity(seq):
+    n_different_consecutively = sum(1 for i in range(len(seq) - 1)
+                                    if seq[i] != seq[i + 1])
+    complexity = n_different_consecutively / len(seq)
+    return complexity
+
+
+def evaluate_is_kmer_low_complexity(sequence, ksize):
     """Check if sequence is low complexity, i.e. mostly repetitive"""
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore')
@@ -154,23 +172,23 @@ def score_single_read(sequence, peptide_bloom_filter, peptide_ksize,
                                "size + 1"
 
     for frame, translation in translations.items():
+        if len(translation) <= peptide_ksize:
+            return np.nan, np.nan, "Translated read length was smaller " \
+                                   "than peptide k-mer size"
+
         # Convert back to string
         translation = str(translation)
 
         # Maybe reencode to dayhoff/hp space
         encoded = encode_peptide(translation, molecule)
 
-        low_complexity, n_kmers = compute_low_complexity(encoded,
-                                                         peptide_ksize)
+        low_complexity = evaluate_is_fastp_low_complexity(encoded)
         if low_complexity:
-            if n_kmers > 0:
-                maybe_write_fasta(description + f" translation_frame: {frame}",
-                                  low_complexity_peptide_file_handle, translation)
-                return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
-                                        " encoding"
-            else:
-                return np.nan, np.nan, "Translated read length was smaller " \
-                                       "than peptide k-mer size"
+            maybe_write_fasta(description + f" translation_frame: {frame}",
+                              low_complexity_peptide_file_handle, translation)
+            return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
+                                    " encoding"
+
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded, peptide_bloom_filter, peptide_ksize, molecule=molecule,
@@ -244,9 +262,9 @@ def maybe_score_single_read(description, fastas, file_handles,
                             verbose):
     """Check if read is low complexity/too short, otherwise score it"""
     # Check if nucleotide sequence is low complexity
-    is_low_complexity, n_kmers = compute_low_complexity(sequence,
-                                                        nucleotide_ksize)
+    is_low_complexity = evaluate_is_fastp_low_complexity(sequence)
     if is_low_complexity:
+        n_kmers = np.nan
         jaccard, n_kmers, special_case = too_short_or_low_complexity(
             description, fastas, n_kmers, sequence)
     else:
