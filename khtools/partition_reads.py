@@ -83,7 +83,7 @@ def six_frame_translation_no_stops(seq, debug=False):
     return forward_translations
 
 
-def score_single_translation(translation, peptide_graph, peptide_ksize,
+def score_single_translation(translation, peptide_bloom_filter, peptide_ksize,
                              molecule='protein',
                              verbose=True):
     encoded = encode_peptide(translation, molecule)
@@ -94,13 +94,13 @@ def score_single_translation(translation, peptide_graph, peptide_ksize,
     kmers = list(set(kmerize(str(encoded), peptide_ksize)))
     hashes = [hash_murmur(kmer) for kmer in kmers]
     n_kmers = len(kmers)
-    n_kmers_in_peptide_db = sum(1 for h in hashes if peptide_graph.get(h) > 0)
+    n_kmers_in_peptide_db = sum(1 for h in hashes if peptide_bloom_filter.get(h) > 0)
     if verbose > 1:
         click.echo(f"\ttranslation: \t{encoded}", err=True)
         click.echo("\tkmers:", ' '.join(kmers), err=True)
 
     if verbose > 1:
-        kmers_in_peptide_db = {(k, h): peptide_graph.get(h) for k, h in
+        kmers_in_peptide_db = {(k, h): peptide_bloom_filter.get(h) for k, h in
                                zip(kmers, hashes)}
         # Print keys (kmers) only
         click.echo(f"\tK-mers in peptide database:", err=True)
@@ -125,7 +125,7 @@ def compute_low_complexity(sequence, ksize):
     return False, n_kmers
 
 
-def score_single_sequence(sequence, peptide_graph, peptide_ksize,
+def score_single_sequence(sequence, peptide_bloom_filter, peptide_ksize,
                           molecule='protein', verbose=True,
                           jaccard_threshold=0.9,
                           description=None,
@@ -156,7 +156,7 @@ def score_single_sequence(sequence, peptide_graph, peptide_ksize,
             return -2, n_kmers
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
-            encoded, peptide_graph, peptide_ksize, molecule=molecule,
+            encoded, peptide_bloom_filter, peptide_ksize, molecule=molecule,
             verbose=verbose)
 
         # Save the highest jaccard
@@ -183,7 +183,7 @@ def maybe_write_fasta(description, file_handle, sequence):
         write_fasta(file_handle, description, sequence)
 
 
-def score_reads(reads, peptide_graph, peptide_ksize,
+def score_reads(reads, peptide_bloom_filter, peptide_ksize,
                 jaccard_threshold=DEFAULT_JACCARD_THRESHOLD,
                 molecule='protein', verbose=False,
                 coding_nucleotide_fasta=None,
@@ -215,7 +215,7 @@ def score_reads(reads, peptide_graph, peptide_ksize,
             continue
 
         jaccard, n_kmers = score_single_sequence(
-            sequence, peptide_graph, peptide_ksize, molecule, verbose,
+            sequence, peptide_bloom_filter, peptide_ksize, molecule, verbose,
             jaccard_threshold=jaccard_threshold,
             description=description,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
@@ -362,7 +362,7 @@ def cli(peptides, reads, peptide_ksize=None,
 
     peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
 
-    peptide_graph = maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
+    peptide_bloom_filter = maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
                                                     molecule,
                                                     peptides_are_bloom_filter)
     click.echo("\tDone!")
@@ -372,13 +372,13 @@ def cli(peptides, reads, peptide_ksize=None,
              f"ksize-{peptide_ksize}"
 
     if not peptides_are_bloom_filter:
-        maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+        maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
                                         molecule, peptide_ksize,
                                         save_peptide_bloom_filter)
 
     dfs = []
     for reads_file in reads:
-        df = score_reads(reads_file, peptide_graph, peptide_ksize,
+        df = score_reads(reads_file, peptide_bloom_filter, peptide_ksize,
                          jaccard_threshold, molecule, verbose,
                          coding_nucleotide_fasta=coding_nucleotide_fasta,
                          noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,

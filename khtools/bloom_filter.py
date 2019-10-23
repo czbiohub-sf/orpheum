@@ -15,7 +15,7 @@ DEFAULT_MAX_TABLESIZE = 1e10
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
                               n_tables=4, tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
-    peptide_graph = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+    peptide_bloom_filter = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     with screed.open(peptide_fasta) as records:
         for record in records:
@@ -29,47 +29,42 @@ def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
 
                 # .add can take the hashed integer so we can hash the peptide
                 #  kmer and add it directly
-                peptide_graph.add(hashed)
-    return peptide_graph
+                peptide_bloom_filter.add(hashed)
+    return peptide_bloom_filter
 
 
 def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
                                     molecule,
                                     peptides_are_bloom_filter):
     if peptides_are_bloom_filter:
-        print(f"Loading existing bloom filter from {peptides} and making " \
-               "sure the ksizes match")
-        peptide_graph = Nodegraph.load(peptides)
-        assert peptide_ksize == peptide_graph.ksize()
+        click.echo(f"Loading existing bloom filter from {peptides} and making " \
+               "sure the ksizes match", err=True)
+        peptide_bloom_filter = Nodegraph.load(peptides)
+        assert peptide_ksize == peptide_bloom_filter.ksize()
     else:
-        print(f"Creating peptide bloom filter with file: {peptides}\nUsing " \
-               f"ksize: {peptide_ksize} and molecule: {molecule} ...")
-        peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
+        click.echo(f"Creating peptide bloom filter with file: {peptides}\nUsing " \
+               f"ksize: {peptide_ksize} and molecule: {molecule} ...", err=True)
+        peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
                                                   molecule=molecule)
-    return peptide_graph
+    return peptide_bloom_filter
 
 
 
-def maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
                                     molecule, ksize,
                                     save_peptide_bloom_filter):
     if save_peptide_bloom_filter:
 
         if isinstance(save_peptide_bloom_filter, str):
             filename = save_peptide_bloom_filter
-            peptide_graph.save(save_peptide_bloom_filter)
+            peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
             suffix = f'.molecule-{molecule}_ksize-{ksize}.bloomfilter.nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
-        print(f"Writing peptide bloom filter to {filename}")
-        peptide_graph.save(filename)
-        print("\tDone!")
-
-
-DEFAULT_PROTEIN_KSIZE = 7
-DEFAULT_DAYHOFF_KSIZE = 12
-DEFAULT_HP_KSIZE = 21
+        click.echo(f"Writing peptide bloom filter to {filename}", err=True)
+        peptide_bloom_filter.save(filename)
+        click.echo("\tDone!", err=True)
 
 
 @click.command()
@@ -109,12 +104,12 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None):
     """
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-    peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
+    peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
                                               molecule)
-    click.echo("\tDone!")
+    click.echo("\tDone!", err=True)
 
     save_peptide_bloom_filter = save_as if save_as is not None else True
-    maybe_save_peptide_bloom_filter(peptides, peptide_graph,
+    maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
                                     molecule, peptide_ksize,
                                     save_peptide_bloom_filter=save_peptide_bloom_filter)
 
