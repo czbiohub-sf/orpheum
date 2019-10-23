@@ -80,12 +80,12 @@ LDPPYSRVITQRETENNQMTSE
 """
 
 
-def test_score_reads(capsys, reads, peptide_graph, molecule, peptide_ksize,
-                     true_scores, true_protein_coding_fasta):
+def test_score_reads(capsys, reads, peptide_bloom_filter, molecule,
+                     peptide_ksize, true_scores, true_protein_coding_fasta):
     from khtools.partition_reads import score_reads
 
-    test = score_reads(reads, peptide_graph, peptide_ksize=peptide_ksize,
-                       molecule=molecule)
+    test = score_reads(reads, peptide_bloom_filter,
+                       peptide_ksize=peptide_ksize, molecule=molecule)
     pdt.assert_equal(test, true_scores)
     captured = capsys.readouterr()
 
@@ -96,15 +96,28 @@ def test_score_reads(capsys, reads, peptide_graph, molecule, peptide_ksize,
     assert '22it' in captured.err
 
 
-def test_cli(reads, peptide_bloom_filter, molecule, peptide_ksize,
+def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
              true_protein_coding_fasta):
     from khtools.partition_reads import cli
 
     runner = CliRunner()
     result = runner.invoke(cli,
                            ['--peptide-ksize', peptide_ksize,
+                            '--molecule', molecule,
+                            reads])
+    assert result.exit_code == 0
+    assert result.output == true_protein_coding_fasta
+
+
+def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
+                                  peptide_ksize, true_protein_coding_fasta):
+    from khtools.partition_reads import cli
+
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['--peptide-ksize', peptide_ksize,
                             "--peptides-are-bloom-filter",
-                            '--molecule', molecule, peptide_bloom_filter,
+                            '--molecule', molecule, peptide_bloom_filter_path,
                             reads])
     assert result.exit_code == 0
     assert result.output == true_protein_coding_fasta
