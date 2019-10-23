@@ -67,10 +67,19 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_graph,
         print("\tDone!")
 
 
+DEFAULT_PROTEIN_KSIZE = 7
+DEFAULT_DAYHOFF_KSIZE = 12
+DEFAULT_HP_KSIZE = 21
+
+
 @click.command()
 @click.argument('peptides')
-@click.option('--peptide-ksize', default=7,
-                help="K-mer size of the peptide sequence to use. Default: 7")
+@click.option('--peptide-ksize', default=None,
+                help="K-mer size of the peptide sequence to use. Defaults for"
+                     " different molecules are, "
+                     f"protein: {DEFAULT_PROTEIN_KSIZE}"
+                     f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
+                     f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
 @click.option('--molecule', default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -78,8 +87,8 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_graph,
 @click.option('--save-as', default=None,
               help='If provided, save peptide bloom filter as this filename. '
                    'Otherwise, add ksize and molecule name to input filename.')
-def cli(peptides, peptide_ksize=7, molecule='protein', save_as=None):
-    """
+def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None):
+    """Make a peptide bloom filter for your peptides
 
     \b
     Parameters
@@ -99,6 +108,7 @@ def cli(peptides, peptide_ksize=7, molecule='protein', save_as=None):
 
     """
     # \b above prevents rewrapping of paragraph
+    peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
     peptide_graph = make_peptide_bloom_filter(peptides, peptide_ksize,
                                               molecule)
     click.echo("\tDone!")
@@ -108,3 +118,17 @@ def cli(peptides, peptide_ksize=7, molecule='protein', save_as=None):
                                     molecule, peptide_ksize,
                                     save_peptide_bloom_filter=save_peptide_bloom_filter)
 
+
+def get_peptide_ksize(molecule, peptide_ksize):
+    if peptide_ksize is None:
+        if molecule == 'protein':
+            peptide_ksize = DEFAULT_PROTEIN_KSIZE
+        elif molecule == 'dayhoff':
+            peptide_ksize = DEFAULT_DAYHOFF_KSIZE
+        elif molecule == 'hydrophobic-polar' or molecule == 'hp':
+            peptide_ksize = DEFAULT_HP_KSIZE
+        else:
+            raise ValueError(f"{molecule} is not a valid protein encoding! "
+                             f"Only one of 'protein', 'hydrophobic-polar', or"
+                             f" 'dayhoff' can be specified")
+    return peptide_ksize
