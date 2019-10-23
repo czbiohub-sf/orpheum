@@ -33,7 +33,8 @@ def peptide_fasta(data_folder):
                                      marks=pytest.mark.xfail),
                         ('hydrophobic-polar', DEFAULT_HP_KSIZE),
                         pytest.param(('hydrophobic-polar', DEFAULT_PROTEIN_KSIZE),
-                                     marks=pytest.mark.xfail)],
+                                     marks=pytest.mark.xfail)
+                        ],
                 ids=['protein_default_ksize', 'dayhoff_default_ksize',
                      'dayhoff_protein_ksize_xfail',
                      'hp_default_ksize', 'hp_protein_ksize_xfail'])
