@@ -74,6 +74,8 @@ COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
+    if len(seq) < ksize:
+        raise ValueError("Sequence length is longer than k-mer size")
     return set(seq[i:i+ksize] for i in range(len(seq)-ksize+1))
 
 
@@ -84,7 +86,6 @@ def jaccardize(set1, set2):
         return len(set1.intersection(set2))/denominator
     else:
         return denominator
-
 
 
 def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
@@ -164,7 +165,7 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     weak_strong_df = kmer_comparison_table(
         id1, weak_strong1, id2, weak_strong2,
         molecule_name='weak_strong', ksizes=ksizes)
-    
+
     amino_keto1 = amino_keto_ize(seq1)
     amino_keto2 = amino_keto_ize(seq2)
 
@@ -176,7 +177,7 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
                                           molecule_name='nucleotide',
                                           ksizes=ksizes)
 
-    df = pd.concat([purine_primimdine_df, nucleotide_df, 
+    df = pd.concat([purine_primimdine_df, nucleotide_df,
                     weak_strong_df, amino_keto_df], ignore_index=True)
     return df
 
@@ -239,7 +240,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                      moltype='protein', n_background=100):
     """
-    
+
     Parameters
     ----------
     seqlist : list
