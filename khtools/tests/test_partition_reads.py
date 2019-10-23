@@ -53,17 +53,12 @@ def test_six_frame_translation_no_stops(seq):
     assert test == true
 
 
-@pytest.fixture
-def peptide_graph(data_folder, molecule, peptide_ksize):
-    filename = os.path.join(data_folder, 'bloom_filter',
-                            f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_ksize-{peptide_ksize}.bloomfilter.nodegraph')
-    return Nodegraph.load(filename)
-
 
 @pytest.fixture
 def reads(data_folder):
     return os.path.join(data_folder,
                         'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq.gz')
+
 
 @pytest.fixture
 def true_scores(data_folder, molecule, peptide_ksize):
@@ -74,8 +69,19 @@ def true_scores(data_folder, molecule, peptide_ksize):
     return pd.read_csv(filename, index_col=0)
 
 
+@pytest.fixture
+def true_protein_coding_fasta():
+    return """>SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2
+TEQDLQLYCDFPNIIDVSIKQA
+>SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1
+QSSSPEFRVQSFSERTNARKKNNH
+>SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2
+LDPPYSRVITQRETENNQMTSE
+"""
+
+
 def test_score_reads(capsys, reads, peptide_graph, molecule, peptide_ksize,
-                     true_scores):
+                     true_scores, true_protein_coding_fasta):
     from khtools.partition_reads import score_reads
 
     test = score_reads(reads, peptide_graph, peptide_ksize=peptide_ksize,
@@ -84,24 +90,21 @@ def test_score_reads(capsys, reads, peptide_graph, molecule, peptide_ksize,
     captured = capsys.readouterr()
 
     # Check that the proper sequences were output
-    true_protein_coding_fasta = """>SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2
-TEQDLQLYCDFPNIIDVSIKQA
->SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1
-QSSSPEFRVQSFSERTNARKKNNH
->SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2
-LDPPYSRVITQRETENNQMTSE
-"""
     assert captured.out == true_protein_coding_fasta
 
     # Check tqdm iterations
     assert '22it' in captured.err
 
 
-def test_cli(reads, peptide_fasta, molecule, peptide_ksize):
+def test_cli(reads, peptide_bloom_filter, molecule, peptide_ksize,
+             true_protein_coding_fasta):
     from khtools.partition_reads import cli
 
     runner = CliRunner()
     result = runner.invoke(cli,
                            ['--peptide-ksize', peptide_ksize,
-                            '--molecule', molecule, peptide_fasta, reads])
+                            "--peptides-are-bloom-filter",
+                            '--molecule', molecule, peptide_bloom_filter,
+                            reads])
     assert result.exit_code == 0
+    assert result.output == true_protein_coding_fasta
