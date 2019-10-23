@@ -362,9 +362,8 @@ def cli(peptides, reads, peptide_ksize=None,
 
     peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
 
-    peptide_bloom_filter = maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                    molecule,
-                                                    peptides_are_bloom_filter)
+    peptide_bloom_filter = maybe_make_peptide_bloom_filter(
+        peptides, peptide_ksize, molecule, peptides_are_bloom_filter)
     click.echo("\tDone!")
 
     if not peptides_are_bloom_filter:
@@ -374,12 +373,13 @@ def cli(peptides, reads, peptide_ksize=None,
 
     dfs = []
     for reads_file in reads:
-        df = score_reads(reads_file, peptide_bloom_filter, peptide_ksize,
-                         jaccard_threshold, molecule, verbose,
-                         coding_nucleotide_fasta=coding_nucleotide_fasta,
-                         noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
-                         low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
-                         low_complexity_peptide_fasta=low_complexity_peptide_fasta)
+        df = score_reads(
+            reads_file, peptide_bloom_filter, peptide_ksize,
+            jaccard_threshold, molecule, verbose,
+            coding_nucleotide_fasta=coding_nucleotide_fasta,
+            noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
+            low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
+            low_complexity_peptide_fasta=low_complexity_peptide_fasta)
         df[reads_file] = reads_file
         dfs.append(df)
 
