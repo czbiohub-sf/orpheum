@@ -26,6 +26,7 @@ from tqdm import tqdm
 # The '# noqa: F401' line prevents the linter from complaining about the unused
 # import.
 DEFAULT_JACCARD_THRESHOLD = 0.5
+DEFAULT_HP_JACCARD_THRESHOLD = 0.8
 SEQTYPE_TO_ANNOUNCEMENT = {"noncoding_nucleotide":
                                "nucleotide sequence from reads WITHOUT matches to "
                                "protein-coding peptides",
@@ -225,13 +226,15 @@ def maybe_write_fasta(description, file_handle, sequence):
 
 
 def score_reads(reads, peptide_bloom_filter, peptide_ksize,
-                jaccard_threshold=DEFAULT_JACCARD_THRESHOLD,
+                jaccard_threshold=None,
                 molecule='protein', verbose=False,
                 coding_nucleotide_fasta=None,
                 noncoding_nucleotide_fasta=None,
                 low_complexity_nucleotide_fasta=None,
                 low_complexity_peptide_fasta=None):
     """Assign a coding score to each read. Where the magic happens."""
+    jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
+
     scoring_lines = []
     nucleotide_ksize = 3 * peptide_ksize
 
@@ -261,6 +264,15 @@ def score_reads(reads, peptide_bloom_filter, peptide_ksize,
     return scoring_df
 
 
+def get_jaccard_threshold(jaccard_threshold, molecule):
+    if jaccard_threshold is None:
+        if molecule == 'hp' or molecule == 'hydrophobic-polar':
+            jaccard_threshold = DEFAULT_HP_JACCARD_THRESHOLD
+        else:
+            jaccard_threshold = DEFAULT_JACCARD_THRESHOLD
+    return jaccard_threshold
+
+
 def maybe_score_single_read(description, fastas, file_handles,
                             jaccard_threshold, molecule, nucleotide_ksize,
                             peptide_bloom_filter, peptide_ksize, sequence,
@@ -268,11 +280,8 @@ def maybe_score_single_read(description, fastas, file_handles,
     """Check if read is low complexity/too short, otherwise score it"""
     # Check if nucleotide sequence is low complexity
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
-    is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(sequence,
-                                                             peptide_ksize * 3)
-    if is_fastp_low_complexity or is_kmer_low_complexity:
-        if n_kmers is None:
-            n_kmers = np.nan
+    if is_fastp_low_complexity:
+        n_kmers = np.nan
         jaccard, n_kmers, special_case = too_short_or_low_complexity(
             description, fastas, n_kmers, sequence)
     else:

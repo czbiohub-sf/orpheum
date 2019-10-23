@@ -96,7 +96,7 @@ def test_six_frame_translation_no_stops(seq):
 @pytest.fixture
 def reads(data_folder):
     return os.path.join(data_folder,
-                        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq.gz')
+                        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
 
 
 @pytest.fixture
@@ -109,7 +109,7 @@ def true_scores_path(data_folder, molecule, peptide_ksize):
 
 @pytest.fixture
 def true_scores(true_scores_path):
-    return pd.read_csv(true_scores_path, index_col=0)
+    return pd.read_csv(true_scores_path)
 
 
 @pytest.fixture
@@ -118,14 +118,18 @@ def true_protein_coding_fasta_path(data_folder):
                         "true_protein_coding.fasta")
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
-                     peptide_ksize,  #true_scores,
+                     peptide_ksize,  true_scores,
                      true_scores_path,
                      true_protein_coding_fasta_path):
     from khtools.extract_coding import score_reads
 
     test = score_reads(reads, peptide_bloom_filter,
                        peptide_ksize=peptide_ksize, molecule=molecule)
-    # pdt.assert_equal(test, true_scores)
+
+    # Check that scoring was the same
+    pdt.assert_equal(test, true_scores)
+
+    # --- Check fasta output --- #
     captured = capsys.readouterr()
     test_names = []
     for line in captured.out.splitlines():
@@ -138,8 +142,13 @@ def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
     # Check that precision is high -- everything in "test" was truly coding
     assert all(test_name in true_names for test_name in test_names)
 
+    captured_lines = captured.out.splitlines()
+    with open(true_protein_coding_fasta_path) as f:
+        for true_line in f.readlines():
+            assert true_line.strip() in captured_lines
+
     # Check tqdm iterations
-    assert '22it' in captured.err
+    assert '23it' in captured.err
 
 
 def write_fasta_string_to_file(fasta_string, folder, prefix):
