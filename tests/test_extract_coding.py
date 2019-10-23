@@ -23,6 +23,20 @@ def seq():
         warnings.simplefilter("ignore")
         return Seq(s)
 
+@pytest.fixture
+def low_complexity_seq():
+    return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACC" \
+           "CCCAACACCC"
+
+
+@pytest.fixture(params=['seq', 'low_complexity_seq'])
+def type_seq(request, seq, low_complexity_seq):
+    if request.param == 'seq':
+        return request.param, seq
+    elif request.param == 'low_complexity_seq':
+        return request.param, low_complexity_seq
+
+
 
 def test_three_frame_translation(seq):
     from khtools.extract_coding import three_frame_translation
@@ -31,6 +45,31 @@ def test_three_frame_translation(seq):
     true = ['RLLNTDINNIRKIAI*L*ILFC', 'ACLILTSIILGKSQYNCKSCSV',
             'LA*Y*HQ*Y*ENRNITVNPVL']
     assert test == true
+
+
+def test_compute_fastp_low_complexity(type_seq):
+    from khtools.extract_coding import compute_fastp_complexity
+
+    seqtype, seq = type_seq
+    test = compute_fastp_complexity(seq)
+    if seqtype == 'seq':
+        assert test == 0.746268656716418
+    elif seqtype == 'low_complexity_seq':
+        assert test == 0.2631578947368421
+
+
+def test_evaluate_is_fastp_low_complexity(type_seq):
+    from khtools.extract_coding import evaluate_is_fastp_low_complexity
+
+    seqtype, seq = type_seq
+
+    test = evaluate_is_fastp_low_complexity(seq)
+    if seqtype == 'seq':
+        # regular sequence is not low complexity
+        assert not test
+    elif seqtype == 'low_complexity_seq':
+        # low complexity sequence should evaluate to low complexity!
+        assert test
 
 
 def test_three_frame_translation_no_stops(seq):
