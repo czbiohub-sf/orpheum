@@ -117,7 +117,7 @@ def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
     Low complexity = Many runs of the same base in a row
     """
     complexity = compute_fastp_complexity(seq)
-    return complexity > complexity_threshold
+    return complexity < complexity_threshold
 
 
 def compute_fastp_complexity(seq):
