@@ -365,10 +365,13 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
                    "suffix denoting the protein encoding and peptide ksize")
 @click.option('--peptides-are-bloom-filter', is_flag=True, default=False,
               help="Peptide file is already a bloom filter")
-@click.option('--jaccard-threshold', default=DEFAULT_JACCARD_THRESHOLD,
+@click.option('--jaccard-threshold', default=None,
               help="Minimum fraction of peptide k-mers from read in the "
                    "peptide database for this read to be called a " +
-                   f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD}")
+                   f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
+                   f" protein and dayhoff encodings, and "
+                   f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
+                   f"(hp) encoding")
 @click.option('--molecule', default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -395,7 +398,7 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
 def cli(peptides, reads, peptide_ksize=None,
         save_peptide_bloom_filter=True,
         peptides_are_bloom_filter=False,
-        jaccard_threshold=DEFAULT_JACCARD_THRESHOLD,
+        jaccard_threshold=None,
         molecule='protein', csv=False, long_reads=False,
         coding_nucleotide_fasta=None,
         noncoding_nucleotide_fasta=None,
