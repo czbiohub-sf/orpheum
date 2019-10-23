@@ -21,4 +21,4 @@ SRR306838.20124664 Ibis_Run100924_C3PO:6:101:4701:5309/1,0.1111111111111111,18.0
 SRR306838.16841308 Ibis_Run100924_C3PO:6:85:6205:5805/1,0.17647058823529413,17.0,Non-coding
 SRR306838.1531 Ibis_Run100924_C3PO:6:1:15718:1062/1,,,Read length was shorter than 3 * peptide k-mer size
 SRR306838.2318 Ibis_Run100924_C3PO:6:1:15779:1141/1,,,Read length was shorter than 3 * peptide k-mer size
-adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein encoding
+adversarial_low_complexity_peptide,,,Low complexity peptide in protein encoding

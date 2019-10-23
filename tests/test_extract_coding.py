@@ -125,6 +125,7 @@ def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
 
     test = score_reads(reads, peptide_bloom_filter,
                        peptide_ksize=peptide_ksize, molecule=molecule)
+    test.to_csv(true_scores_path, index=False)
 
     # Check that scoring was the same
     pdt.assert_equal(test, true_scores)
