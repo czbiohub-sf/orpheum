@@ -59,3 +59,11 @@ def peptide_bloom_filter(data_folder, molecule, peptide_ksize):
                             f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_ksize-{peptide_ksize}.bloomfilter.nodegraph')
     return Nodegraph.load(filename)
 
+
+
+@pytest.fixture
+def peptide_bloom_filter(data_folder, molecule, peptide_ksize):
+    filename = os.path.join(data_folder, 'bloom_filter',
+                            f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_ksize-{peptide_ksize}.bloomfilter.nodegraph')
+    return Nodegraph.load(filename)
+
