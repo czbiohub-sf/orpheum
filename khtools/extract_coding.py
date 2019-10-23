@@ -114,7 +114,7 @@ def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
 
     fastp prpject: https://github.com/OpenGene/fastp
 
-    Low complexity = few numbers
+    Low complexity = Many runs of the same base in a row
     """
     complexity = compute_fastp_complexity(seq)
     return complexity > complexity_threshold
@@ -128,7 +128,11 @@ def compute_fastp_complexity(seq):
 
 
 def evaluate_is_kmer_low_complexity(sequence, ksize):
-    """Check if sequence is low complexity, i.e. mostly repetitive"""
+    """Check if sequence is low complexity, i.e. mostly repetitive
+
+    By this definition, the sequence is not complex if its number of unique
+    k-mers is smaller than half the number of expected k-mers
+    """
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore')
         # Ignore Biopython warning of seq objects being strings now
@@ -136,7 +140,7 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
             kmers = kmerize(sequence, ksize)
         except ValueError:
             # k-mer size is larger than sequence
-            return True, 0
+            return None, 0
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
