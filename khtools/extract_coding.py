@@ -188,12 +188,10 @@ def score_single_read(sequence, peptide_bloom_filter, peptide_ksize,
         encoded = encode_peptide(translation, molecule)
 
         is_fastp_low_complexity = evaluate_is_fastp_low_complexity(encoded)
-        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(encoded,
-                                                                 peptide_ksize)
-        if is_fastp_low_complexity or is_kmer_low_complexity:
+        if is_fastp_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
+            return np.nan, np.nan, f"Low complexity peptide in {molecule}" \
                                     " encoding"
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
