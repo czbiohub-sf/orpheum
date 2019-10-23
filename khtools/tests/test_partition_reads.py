@@ -4,7 +4,6 @@ import warnings
 
 from Bio.Seq import Seq
 from click.testing import CliRunner
-from khmer import Nodegraph
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
