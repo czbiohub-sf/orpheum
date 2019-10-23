@@ -367,10 +367,6 @@ def cli(peptides, reads, peptide_ksize=None,
                                                     peptides_are_bloom_filter)
     click.echo("\tDone!")
 
-    peptides_basename = os.path.basename(peptides)
-    suffix = f"__{peptides_basename}__molecule-{molecule}__" \
-             f"ksize-{peptide_ksize}"
-
     if not peptides_are_bloom_filter:
         maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
                                         molecule, peptide_ksize,
