@@ -161,9 +161,6 @@ def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
         for true_line in f.readlines():
             assert true_line.strip() in captured_lines
 
-    # Check tqdm iterations
-    assert '23it' in captured.err
-
 
 def write_fasta_string_to_file(fasta_string, folder, prefix):
     test_fasta_filename = os.path.join(folder, prefix + '.fasta')
