@@ -5,7 +5,6 @@ from pprint import pprint
 import random
 import time
 
-
 import pandas as pd
 from sourmash.logging import notify
 
@@ -15,54 +14,54 @@ from .sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
     botvinnikize
 
-divergence_estimates = pd.Series({"Amniota": 312,
-                                  'Bilateria': 824,
-                                  "Boreoeutheria": 96,
+divergence_estimates = pd.Series({
+    "Amniota": 312,
+    'Bilateria': 824,
+    "Boreoeutheria": 96,
 
-                                  # Old world monkeys
-                                  'Catarrhini': 29.4,
-                                  "Euarchontoglires": 76,
+    # Old world monkeys
+    'Catarrhini': 29.4,
+    "Euarchontoglires": 76,
 
-                                  # Bony vertebrates
-                                  'Euteleostomi': 435,
-                                  'Eutheria': 105,
+    # Bony vertebrates
+    'Euteleostomi': 435,
+    'Eutheria': 105,
 
-                                  # Jawed vertebrates
-                                  'Gnathostomata': 473,
+    # Jawed vertebrates
+    'Gnathostomata': 473,
 
-                                  # A primate suborder
-                                  'Haplorrhini': 67,
+    # A primate suborder
+    'Haplorrhini': 67,
 
-                                  # Great apes (includes orangutan)
-                                  'Hominidae': 15.8,
+    # Great apes (includes orangutan)
+    'Hominidae': 15.8,
 
-                                  # Gorilla, human, chimp
-                                  'Homininae': 9.1,
+    # Gorilla, human, chimp
+    'Homininae': 9.1,
 
-                                  # Apes (includes gibbons)
-                                  'Hominoidea': 20.2,
+    # Apes (includes gibbons)
+    'Hominoidea': 20.2,
+    'Mammalia': 177,
+    "Opisthokonta": 1105,
+    'Primates': 74,
 
-                                  'Mammalia': 177,
-                                  "Opisthokonta": 1105,
-                                  'Primates': 74,
+    # tetrapods and the lobe-finned fishes
+    'Sarcopterygii': 413,
+    'Simiiformes': 43,
 
-                                  # tetrapods and the lobe-finned fishes
-                                  'Sarcopterygii': 413,
-                                  'Simiiformes': 43,
+    # Tetrapods - 4-limbed
+    'Tetrapoda': 352,
 
-                                  # Tetrapods - 4-limbed
-                                  'Tetrapoda': 352,
-
-                                  # Includes Eutheria (placental mammals) and
-                                  # Metatheria (maruspials)
-                                  'Theria': 159,
-
-                                  'NA': 0})
+    # Includes Eutheria (placental mammals) and
+    # Metatheria (maruspials)
+    'Theria': 159,
+    'NA': 0
+})
 divergence_estimates = divergence_estimates.sort_values()
 
 
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
-         21, 23, 24, 25
+    21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
 # Hydrophobic/hydrophilic mapping
@@ -115,50 +114,56 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
 
-    protein_df = kmer_comparison_table(id1, seq1, id2, seq2,
-                                       molecule_name='protein', ksizes=ksizes)
+    protein_df = kmer_comparison_table(id1,
+                                       seq1,
+                                       id2,
+                                       seq2,
+                                       molecule_name='protein',
+                                       ksizes=ksizes)
 
     botvinnik1 = botvinnikize(seq1)
     botvinnik2 = botvinnikize(seq2)
 
-    botvinnik_df = kmer_comparison_table(
-        id1,
-        botvinnik1,
-        id2,
-        botvinnik2,
-        molecule_name='botvinnik',
-        ksizes=ksizes)
+    botvinnik_df = kmer_comparison_table(id1,
+                                         botvinnik1,
+                                         id2,
+                                         botvinnik2,
+                                         molecule_name='botvinnik',
+                                         ksizes=ksizes)
 
     dayhoff1 = dayhoffize(seq1)
     dayhoff2 = dayhoffize(seq2)
 
-    dayhoff_df = kmer_comparison_table(id1, dayhoff1, id2, dayhoff2,
-                                       molecule_name='dayhoff', ksizes=ksizes)
+    dayhoff_df = kmer_comparison_table(id1,
+                                       dayhoff1,
+                                       id2,
+                                       dayhoff2,
+                                       molecule_name='dayhoff',
+                                       ksizes=ksizes)
 
     dayhoff_v2_1 = dayhoff_v2_ize(seq1)
     dayhoff_v2_2 = dayhoff_v2_ize(seq2)
 
-    dayhoff_v2_df = kmer_comparison_table(
-        id1,
-        dayhoff_v2_1,
-        id2,
-        dayhoff_v2_2,
-        molecule_name='dayhoff_v2',
-        ksizes=ksizes)
+    dayhoff_v2_df = kmer_comparison_table(id1,
+                                          dayhoff_v2_1,
+                                          id2,
+                                          dayhoff_v2_2,
+                                          molecule_name='dayhoff_v2',
+                                          ksizes=ksizes)
 
     hp1 = hpize(seq1)
     hp2 = hpize(seq2)
 
-    hp_df = kmer_comparison_table(
-        id1,
-        hp1,
-        id2,
-        hp2,
-        molecule_name='hydrophobic-polar',
-        ksizes=ksizes)
+    hp_df = kmer_comparison_table(id1,
+                                  hp1,
+                                  id2,
+                                  hp2,
+                                  molecule_name='hydrophobic-polar',
+                                  ksizes=ksizes)
 
-    df = pd.concat([protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df,
-                    hp_df], ignore_index=True)
+    df = pd.concat(
+        [protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df, hp_df],
+        ignore_index=True)
     return df
 
 
@@ -171,29 +176,43 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     purine_pyrimidine2 = purine_pyrimidize(seq2)
 
     purine_primimdine_df = kmer_comparison_table(
-        id1, purine_pyrimidine1, id2, purine_pyrimidine2,
-        molecule_name='purine_pyrimidine', ksizes=ksizes)
+        id1,
+        purine_pyrimidine1,
+        id2,
+        purine_pyrimidine2,
+        molecule_name='purine_pyrimidine',
+        ksizes=ksizes)
 
     weak_strong1 = weak_strong_ize(seq1)
     weak_strong2 = weak_strong_ize(seq2)
 
-    weak_strong_df = kmer_comparison_table(
-        id1, weak_strong1, id2, weak_strong2,
-        molecule_name='weak_strong', ksizes=ksizes)
+    weak_strong_df = kmer_comparison_table(id1,
+                                           weak_strong1,
+                                           id2,
+                                           weak_strong2,
+                                           molecule_name='weak_strong',
+                                           ksizes=ksizes)
 
     amino_keto1 = amino_keto_ize(seq1)
     amino_keto2 = amino_keto_ize(seq2)
 
-    amino_keto_df = kmer_comparison_table(
-        id1, amino_keto1, id2, amino_keto2,
-        molecule_name='amino_keto', ksizes=ksizes)
+    amino_keto_df = kmer_comparison_table(id1,
+                                          amino_keto1,
+                                          id2,
+                                          amino_keto2,
+                                          molecule_name='amino_keto',
+                                          ksizes=ksizes)
 
-    nucleotide_df = kmer_comparison_table(id1, seq1, id2, seq2,
+    nucleotide_df = kmer_comparison_table(id1,
+                                          seq1,
+                                          id2,
+                                          seq2,
                                           molecule_name='nucleotide',
                                           ksizes=ksizes)
 
-    df = pd.concat([purine_primimdine_df, nucleotide_df,
-                    weak_strong_df, amino_keto_df], ignore_index=True)
+    df = pd.concat(
+        [purine_primimdine_df, nucleotide_df, weak_strong_df, amino_keto_df],
+        ignore_index=True)
     return df
 
 
@@ -210,9 +229,13 @@ def compare_args_unpack(args, ksizes, moltype):
     return compare_seqs(*args, ksizes=ksizes, moltype=moltype)
 
 
-def get_comparison_at_index(index, seqlist1, seqlist2,
-                            ksizes=KSIZES, n_background=100,
-                            moltype='protein', verbose=False):
+def get_comparison_at_index(index,
+                            seqlist1,
+                            seqlist2,
+                            ksizes=KSIZES,
+                            n_background=100,
+                            moltype='protein',
+                            verbose=False):
     """Returns similarities of all the combinations of signature at index in
     the siglist with the rest of the indices starting at index + 1. Doesn't
     redundantly calculate signatures with all the other indices prior to
@@ -245,16 +268,19 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
         pprint(seq_iterator)
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
-    notify(
-        "comparison for index {} done in {:.5f} seconds",
-        index,
-        time.time() - startt,
-        end='\r')
+    notify("comparison for index {} done in {:.5f} seconds",
+           index,
+           time.time() - startt,
+           end='\r')
     return comparision_df_list
 
 
-def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
-                     moltype='protein', n_background=100):
+def compare_all_seqs(seqlist1,
+                     seqlist2=None,
+                     n_jobs=4,
+                     ksizes=KSIZES,
+                     moltype='protein',
+                     n_background=100):
     """
 
     Parameters
@@ -279,13 +305,12 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     # siglist, ignore_abundance, downsample, for computing all the signatures
     # The only changing parameter that will be mapped from the pool is the
     # index
-    func = partial(
-        get_comparison_at_index,
-        seqlist1=seqlist1,
-        seqlist2=seqlist2,
-        n_background=n_background,
-        ksizes=ksizes,
-        moltype=moltype)
+    func = partial(get_comparison_at_index,
+                   seqlist1=seqlist1,
+                   seqlist2=seqlist2,
+                   n_background=n_background,
+                   ksizes=ksizes,
+                   moltype=moltype)
     notify("Created similarity func")
 
     # Initialize multiprocess.pool
@@ -302,8 +327,8 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     result = pool.imap(func, range(len_seqlist1), chunksize=chunksize)
     notify("Initialized multiprocessing pool.imap")
 
-    peptide_kmer_comparisons = pd.concat(
-        itertools.chain(*result), ignore_index=True)
+    peptide_kmer_comparisons = pd.concat(itertools.chain(*result),
+                                         ignore_index=True)
 
     notify(f"Total time: {time.time() - t0}")
     return peptide_kmer_comparisons

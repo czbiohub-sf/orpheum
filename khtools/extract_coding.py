@@ -27,21 +27,21 @@ DEFAULT_JACCARD_THRESHOLD = 0.5
 DEFAULT_HP_JACCARD_THRESHOLD = 0.8
 SEQTYPE_TO_ANNOUNCEMENT = {
     "noncoding_nucleotide":
-        "nucleotide sequence from reads WITHOUT matches to "
-        "protein-coding peptides",
+    "nucleotide sequence from reads WITHOUT matches to "
+    "protein-coding peptides",
     "coding_nucleotide":
-        "nucleotide sequence from reads WITH protein-coding translation"
-        " frame nucleotides",
+    "nucleotide sequence from reads WITH protein-coding translation"
+    " frame nucleotides",
     "low_complexity_nucleotide":
-        "nucleotide sequence from low complexity (low entropy) reads",
-    "low_complexity_peptide": "peptide sequence from low "
-                              "complexity (low entropy) translated"
-                              " reads"
+    "nucleotide sequence from low complexity (low entropy) reads",
+    "low_complexity_peptide":
+    "peptide sequence from low "
+    "complexity (low entropy) translated"
+    " reads"
 }
-SCORING_DF_COLUMNS = ['read_id',
-                      'jaccard_in_peptide_db',
-                      'n_kmers',
-                      'classification']
+SCORING_DF_COLUMNS = [
+    'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
+]
 
 
 def write_fasta(file_handle, description, sequence):
@@ -70,8 +70,11 @@ def three_frame_translation(seq, debug=False):
 
 def three_frame_translation_no_stops(seq, debug=False, sign=1):
     """Remove translations with stop codons & keep track of reading frame"""
-    return {sign * (i + 1): t for i, t in
-            enumerate(three_frame_translation(seq, debug)) if '*' not in t}
+    return {
+        sign * (i + 1): t
+        for i, t in enumerate(three_frame_translation(seq, debug))
+        if '*' not in t
+    }
 
 
 def six_frame_translation_no_stops(seq, debug=False):
@@ -85,22 +88,24 @@ def six_frame_translation_no_stops(seq, debug=False):
     return forward_translations
 
 
-def score_single_translation(translation, peptide_bloom_filter, peptide_ksize,
+def score_single_translation(translation,
+                             peptide_bloom_filter,
+                             peptide_ksize,
                              molecule='protein',
                              verbose=True):
     encoded = encode_peptide(translation, molecule)
     kmers = list(set(kmerize(str(encoded), peptide_ksize)))
     hashes = [hash_murmur(kmer) for kmer in kmers]
     n_kmers = len(kmers)
-    n_kmers_in_peptide_db = sum(
-        1 for h in hashes if peptide_bloom_filter.get(h) > 0)
+    n_kmers_in_peptide_db = sum(1 for h in hashes
+                                if peptide_bloom_filter.get(h) > 0)
     if verbose > 1:
         click.echo(f"\ttranslation: \t{encoded}", err=True)
         click.echo("\tkmers:", ' '.join(kmers), err=True)
 
     if verbose > 1:
-        kmers_in_peptide_db = {(k, h): peptide_bloom_filter.get(h) for k, h in
-                               zip(kmers, hashes)}
+        kmers_in_peptide_db = {(k, h): peptide_bloom_filter.get(h)
+                               for k, h in zip(kmers, hashes)}
         # Print keys (kmers) only
         click.echo(f"\tK-mers in peptide database:", err=True)
         click.echo(kmers_in_peptide_db, err=True)
@@ -150,8 +155,11 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
     return False, n_kmers
 
 
-def score_single_read(sequence, peptide_bloom_filter, peptide_ksize,
-                      molecule='protein', verbose=True,
+def score_single_read(sequence,
+                      peptide_bloom_filter,
+                      peptide_ksize,
+                      molecule='protein',
+                      verbose=True,
                       jaccard_threshold=0.9,
                       description=None,
                       noncoding_file_handle=None,
@@ -169,9 +177,11 @@ def score_single_read(sequence, peptide_bloom_filter, peptide_ksize,
     if len(translations) == 0:
         return np.nan, np.nan, "No translation frames without stop codons"
 
-    translations = {frame: translation for frame, translation
-                    in translations.items()
-                    if len(translation) > peptide_ksize}
+    translations = {
+        frame: translation
+        for frame, translation in translations.items()
+        if len(translation) > peptide_ksize
+    }
     if len(translations) == 0:
         return np.nan, np.nan, "All translations shorter than peptide k-mer " \
                                "size + 1"
@@ -195,7 +205,10 @@ def score_single_read(sequence, peptide_bloom_filter, peptide_ksize,
                                    " encoding"
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
-            encoded, peptide_bloom_filter, peptide_ksize, molecule=molecule,
+            encoded,
+            peptide_bloom_filter,
+            peptide_ksize,
+            molecule=molecule,
             verbose=verbose)
 
         # Save the highest jaccard
@@ -223,9 +236,12 @@ def maybe_write_fasta(description, file_handle, sequence):
         write_fasta(file_handle, description, sequence)
 
 
-def score_reads(reads, peptide_bloom_filter, peptide_ksize,
+def score_reads(reads,
+                peptide_bloom_filter,
+                peptide_ksize,
                 jaccard_threshold=None,
-                molecule='protein', verbose=False,
+                molecule='protein',
+                verbose=False,
                 coding_nucleotide_fasta=None,
                 noncoding_nucleotide_fasta=None,
                 low_complexity_nucleotide_fasta=None,
@@ -249,11 +265,12 @@ def score_reads(reads, peptide_bloom_filter, peptide_ksize,
 
             jaccard, n_kmers, special_case = maybe_score_single_read(
                 description, fastas, file_handles, jaccard_threshold, molecule,
-                nucleotide_ksize, peptide_bloom_filter, peptide_ksize, sequence,
-                verbose)
+                nucleotide_ksize, peptide_bloom_filter, peptide_ksize,
+                sequence, verbose)
 
-            line = get_coding_score_line(description, jaccard, jaccard_threshold,
-                                         n_kmers, special_case)
+            line = get_coding_score_line(description, jaccard,
+                                         jaccard_threshold, n_kmers,
+                                         special_case)
             scoring_lines.append(line)
 
     maybe_close_files(file_handles)
@@ -285,7 +302,11 @@ def maybe_score_single_read(description, fastas, file_handles,
             description, fastas, n_kmers, sequence)
     else:
         jaccard, n_kmers, special_case = score_single_read(
-            sequence, peptide_bloom_filter, peptide_ksize, molecule, verbose,
+            sequence,
+            peptide_bloom_filter,
+            peptide_ksize,
+            molecule,
+            verbose,
             jaccard_threshold=jaccard_threshold,
             description=description,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
@@ -298,8 +319,7 @@ def maybe_score_single_read(description, fastas, file_handles,
     return jaccard, n_kmers, special_case
 
 
-def too_short_or_low_complexity(description, fastas, n_kmers,
-                                sequence):
+def too_short_or_low_complexity(description, fastas, n_kmers, sequence):
     if n_kmers > 0:
         jaccard = np.nan
         special_case = "Low complexity nucleotide"
@@ -333,15 +353,16 @@ def get_coding_score_line(description, jaccard, jaccard_threshold, n_kmers,
 def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
                       low_complexity_peptide_fasta,
                       noncoding_nucleotide_fasta):
-    fastas = {"noncoding_nucleotide": noncoding_nucleotide_fasta,
-              "coding_nucleotide": coding_nucleotide_fasta,
-              "low_complexity_nucleotide": low_complexity_nucleotide_fasta,
-              "low_complexity_peptide": low_complexity_peptide_fasta}
+    fastas = {
+        "noncoding_nucleotide": noncoding_nucleotide_fasta,
+        "coding_nucleotide": coding_nucleotide_fasta,
+        "low_complexity_nucleotide": low_complexity_nucleotide_fasta,
+        "low_complexity_peptide": low_complexity_peptide_fasta
+    }
     file_handles = {}
     for seqtype, fasta in fastas.items():
         if fasta is not None:
-            file_handles[seqtype] = open_and_announce(
-                fasta, seqtype)
+            file_handles[seqtype] = open_and_announce(fasta, seqtype)
         else:
             file_handles[seqtype] = None
     return fastas, file_handles
@@ -350,55 +371,68 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
 @click.command()
 @click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
-@click.option('--peptide-ksize', default=None,
+@click.option('--peptide-ksize',
+              default=None,
               help="K-mer size of the peptide sequence to use. Defaults for"
-                   " different molecules are, "
-                   f"protein: {DEFAULT_PROTEIN_KSIZE}"
-                   f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
-                   f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
-@click.option("--save-peptide-bloom-filter", is_flag=True, default=False,
+              " different molecules are, "
+              f"protein: {DEFAULT_PROTEIN_KSIZE}"
+              f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
+              f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
+@click.option("--save-peptide-bloom-filter",
+              is_flag=True,
+              default=False,
               help="If specified, save the peptide bloom filter. "
-                   "Default filename is the name of the fasta file plus a "
-                   "suffix denoting the protein encoding and peptide ksize")
-@click.option('--peptides-are-bloom-filter', is_flag=True, default=False,
+              "Default filename is the name of the fasta file plus a "
+              "suffix denoting the protein encoding and peptide ksize")
+@click.option('--peptides-are-bloom-filter',
+              is_flag=True,
+              default=False,
               help="Peptide file is already a bloom filter")
-@click.option('--jaccard-threshold', default=None,
+@click.option('--jaccard-threshold',
+              default=None,
               help="Minimum fraction of peptide k-mers from read in the "
-                   "peptide database for this read to be called a " +
-                   f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
-                   f" protein and dayhoff encodings, and "
-                   f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
-                   f"(hp) encoding")
-@click.option('--molecule', default='protein',
+              "peptide database for this read to be called a " +
+              f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
+              f" protein and dayhoff encodings, and "
+              f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
+              f"(hp) encoding")
+@click.option('--molecule',
+              default='protein',
               help="The type of amino acid encoding to use. Default is "
-                   "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-                   "used")
-@click.option('--csv', default=False,
+              "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+              "used")
+@click.option('--csv',
+              default=False,
               help='Name of csv file to write with all sequence reads and '
-                   'their coding scores')
+              'their coding scores')
 @click.option("--coding-nucleotide-fasta",
               help="If specified, save the coding nucleotides to this file")
 @click.option("--noncoding-nucleotide-fasta",
               help="If specified, save the noncoding nucleotides to this file")
 @click.option("--low-complexity-nucleotide-fasta",
               help="If specified, save the low-complexity nucleotides to this"
-                   " file")
+              " file")
 @click.option("--low-complexity-peptide-fasta",
               help="If specified, save the low-complexity peptides to this "
-                   "file")
-@click.option("--long-reads", is_flag=True,
+              "file")
+@click.option("--long-reads",
+              is_flag=True,
               help="If set, then only considers reading frames starting with "
-                   "start codon (ATG) and ending in a stop codon "
-                   "(TAG, TAA, TGA)")
-@click.option("--verbose", is_flag=True,
-              help="Print more output")
-@click.option("--debug", is_flag=True,
+              "start codon (ATG) and ending in a stop codon "
+              "(TAG, TAA, TGA)")
+@click.option("--verbose", is_flag=True, help="Print more output")
+@click.option("--debug",
+              is_flag=True,
               help="Print developer debugger output, including warnings")
-def cli(peptides, reads, peptide_ksize=None,
+def cli(peptides,
+        reads,
+        peptide_ksize=None,
         save_peptide_bloom_filter=True,
         peptides_are_bloom_filter=False,
         jaccard_threshold=None,
-        molecule='protein', csv=False, long_reads=False,
+        molecule='protein',
+        csv=False,
+        long_reads=False,
         coding_nucleotide_fasta=None,
         noncoding_nucleotide_fasta=None,
         low_complexity_nucleotide_fasta=None,
@@ -452,8 +486,12 @@ def cli(peptides, reads, peptide_ksize=None,
     dfs = []
     for reads_file in reads:
         df = score_reads(
-            reads_file, peptide_bloom_filter, peptide_ksize,
-            jaccard_threshold, molecule, verbose,
+            reads_file,
+            peptide_bloom_filter,
+            peptide_ksize,
+            jaccard_threshold,
+            molecule,
+            verbose,
             coding_nucleotide_fasta=coding_nucleotide_fasta,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,

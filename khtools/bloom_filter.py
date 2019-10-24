@@ -9,18 +9,21 @@ from tqdm import tqdm
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide
 
-
 DEFAULT_MAX_TABLESIZE = 1e10
 DEFAULT_PROTEIN_KSIZE = 7
 DEFAULT_DAYHOFF_KSIZE = 11
 DEFAULT_HP_KSIZE = 21
 
 
-def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
-                              n_tables=4, tablesize=DEFAULT_MAX_TABLESIZE):
+def make_peptide_bloom_filter(peptide_fasta,
+                              peptide_ksize,
+                              molecule='protein',
+                              n_tables=4,
+                              tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = Nodegraph(
-        peptide_ksize, tablesize, n_tables=n_tables)
+    peptide_bloom_filter = Nodegraph(peptide_ksize,
+                                     tablesize,
+                                     n_tables=n_tables)
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
@@ -38,26 +41,29 @@ def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
     return peptide_bloom_filter
 
 
-def maybe_make_peptide_bloom_filter(peptides, peptide_ksize,
-                                    molecule,
+def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
                                     peptides_are_bloom_filter):
     if peptides_are_bloom_filter:
-        click.echo(f"Loading existing bloom filter from {peptides} and "
-                   f"making sure the ksizes match", err=True)
+        click.echo(
+            f"Loading existing bloom filter from {peptides} and "
+            f"making sure the ksizes match",
+            err=True)
         peptide_bloom_filter = Nodegraph.load(peptides)
         assert peptide_ksize == peptide_bloom_filter.ksize()
     else:
-        click.echo(f"Creating peptide bloom filter with file: {peptides}\n"
-                   f"Using ksize: {peptide_ksize} and molecule: {molecule} "
-                   f"...", err=True)
-        peptide_bloom_filter = make_peptide_bloom_filter(
-            peptides, peptide_ksize, molecule=molecule)
+        click.echo(
+            f"Creating peptide bloom filter with file: {peptides}\n"
+            f"Using ksize: {peptide_ksize} and molecule: {molecule} "
+            f"...",
+            err=True)
+        peptide_bloom_filter = make_peptide_bloom_filter(peptides,
+                                                         peptide_ksize,
+                                                         molecule=molecule)
     return peptide_bloom_filter
 
 
-def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
-                                    molecule, ksize,
-                                    save_peptide_bloom_filter):
+def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
+                                    ksize, save_peptide_bloom_filter):
     if save_peptide_bloom_filter:
 
         if isinstance(save_peptide_bloom_filter, str):
@@ -75,19 +81,22 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
 
 @click.command()
 @click.argument('peptides')
-@click.option('--peptide-ksize', default=None,
+@click.option('--peptide-ksize',
+              default=None,
               help="K-mer size of the peptide sequence to use. Defaults for"
               " different molecules are, "
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
-@click.option('--molecule', default='protein',
+@click.option('--molecule',
+              default='protein',
               help="The type of amino acid encoding to use. Default is "
-                   "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-                   "used")
-@click.option('--save-as', default=None,
+              "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+              "used")
+@click.option('--save-as',
+              default=None,
               help='If provided, save peptide bloom filter as this filename. '
-                   'Otherwise, add ksize and molecule name to input filename.')
+              'Otherwise, add ksize and molecule name to input filename.')
 def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None):
     """Make a peptide bloom filter for your peptides
 

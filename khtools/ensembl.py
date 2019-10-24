@@ -4,7 +4,6 @@ import sys
 
 import requests
 
-
 # Create a logger
 logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__file__)
@@ -18,8 +17,10 @@ def maybe_get_cds(transcript_id):
         return None
 
 
-def get_rna_sequence_from_protein_id(protein_id, ignore_errors=False,
-                                     verbose=False, type='cdna'):
+def get_rna_sequence_from_protein_id(protein_id,
+                                     ignore_errors=False,
+                                     verbose=False,
+                                     type='cdna'):
     server = "https://rest.ensembl.org"
     ext = f"/lookup/id/{protein_id}?content-type=application/json"
 

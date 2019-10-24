@@ -13,12 +13,13 @@ import click
 from khtools.extract_coding import cli as extract_coding
 from khtools.bloom_filter import cli as bloom_filter
 
-
 click.option = partial(click.option, show_default=True)
 
 settings = dict(help_option_names=['-h', '--help'])
 
-@click.group(options_metavar='', subcommand_metavar='<command>',
+
+@click.group(options_metavar='',
+             subcommand_metavar='<command>',
              context_settings=settings)
 def cli():
     """
@@ -30,7 +31,6 @@ def cli():
 
 cli.add_command(extract_coding, name='extract-coding')
 cli.add_command(bloom_filter, name='bloom-filter')
-
 
 if __name__ == "__main__":
     cli()

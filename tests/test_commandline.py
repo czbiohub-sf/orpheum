@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 test_commandline
 ----------------------------------
@@ -36,4 +35,3 @@ def test_cli_long_help():
     result = runner.invoke(cli, ["--help"])
 
     assert result.exit_code == 0
-

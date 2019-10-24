@@ -132,24 +132,9 @@ BOTVINNIK_MAPPING = {
     "P": "m"
 }
 
-PURINE_PYRIMIDINE_MAPPING = {
-    "A": "R",
-    "C": "Y",
-    "G": "R",
-    "T": "Y"
-}
-AMINO_KETO_MAPPING = {
-    "A": "M",
-    "C": "M",
-    "G": "K",
-    "T": "K"
-}
-WEAK_STRONG_MAPPING = {
-    "A": "W",
-    "C": "S",
-    "G": "S",
-    "T": "W"
-}
+PURINE_PYRIMIDINE_MAPPING = {"A": "R", "C": "Y", "G": "R", "T": "Y"}
+AMINO_KETO_MAPPING = {"A": "M", "C": "M", "G": "K", "T": "K"}
+WEAK_STRONG_MAPPING = {"A": "W", "C": "S", "G": "S", "T": "W"}
 AMINO_KETO_TRANSLATION = str.maketrans(AMINO_KETO_MAPPING)
 WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
 PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)

@@ -2,8 +2,6 @@ import os
 
 from khmer import Nodegraph
 import pytest
-
-
 """
 conftest.py contains fixtures or functions-turned-variables that can be
 used in any test
@@ -15,8 +13,7 @@ from khtools.bloom_filter import DEFAULT_PROTEIN_KSIZE, DEFAULT_DAYHOFF_KSIZE, \
 @pytest.fixture
 def data_folder():
     """Absolute path to where test data is stored"""
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                        './data')
+    return os.path.join(os.path.abspath(os.path.dirname(__file__)), './data')
 
 
 @pytest.fixture
@@ -26,7 +23,6 @@ def peptide_fasta(data_folder):
     return filename
 
 
-
 # Tie the molecule name to its default ksize to make sure we keep getting the
 # right sequences
 @pytest.fixture(params=[('protein', DEFAULT_PROTEIN_KSIZE),
@@ -34,12 +30,14 @@ def peptide_fasta(data_folder):
                         pytest.param(('dayhoff', DEFAULT_PROTEIN_KSIZE),
                                      marks=pytest.mark.xfail),
                         ('hydrophobic-polar', DEFAULT_HP_KSIZE),
-                        pytest.param(('hydrophobic-polar', DEFAULT_PROTEIN_KSIZE),
-                                     marks=pytest.mark.xfail)
-                        ],
-                ids=['protein_default_ksize', 'dayhoff_default_ksize',
-                     'dayhoff_protein_ksize_xfail',
-                     'hp_default_ksize', 'hp_protein_ksize_xfail'])
+                        pytest.param(
+                            ('hydrophobic-polar', DEFAULT_PROTEIN_KSIZE),
+                            marks=pytest.mark.xfail)],
+                ids=[
+                    'protein_default_ksize', 'dayhoff_default_ksize',
+                    'dayhoff_protein_ksize_xfail', 'hp_default_ksize',
+                    'hp_protein_ksize_xfail'
+                ])
 def molecule_ksize(request):
     return request.param
 
@@ -56,8 +54,10 @@ def molecule(molecule_ksize):
 
 @pytest.fixture
 def peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
-    filename = os.path.join(data_folder, 'bloom_filter',
-                            f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_ksize-{peptide_ksize}.bloomfilter.nodegraph')
+    filename = os.path.join(
+        data_folder, 'bloom_filter',
+        f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_ksize-{peptide_ksize}.bloomfilter.nodegraph'
+    )
     return filename
 
 
@@ -70,8 +70,9 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
     except (FileNotFoundError, OSError):
         from khtools.bloom_filter import make_peptide_bloom_filter
 
-        bloom_filter = make_peptide_bloom_filter(peptide_fasta, peptide_ksize,
-                                                 molecule, tablesize=1e6)
+        bloom_filter = make_peptide_bloom_filter(peptide_fasta,
+                                                 peptide_ksize,
+                                                 molecule,
+                                                 tablesize=1e6)
         bloom_filter.save(peptide_bloom_filter_path)
         return bloom_filter
-

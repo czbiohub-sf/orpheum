@@ -30,14 +30,9 @@ def compare_all_pairs(siglist, n_jobs=None):
         values = _compare_serial(siglist, iterator)
     else:
         # This creates a condensed distance matrix
-        condensed = Parallel(
-            n_jobs=n_jobs)(
-            delayed(
-                jaccard_utils.jaccard_sigs)(
-                i,
-                j,
-                siglist) for i,
-            j in iterator)
+        condensed = Parallel(n_jobs=n_jobs)(
+            delayed(jaccard_utils.jaccard_sigs)(i, j, siglist)
+            for i, j in iterator)
         values = squareform(condensed)
 
     return values

@@ -23,6 +23,7 @@ def seq():
         warnings.simplefilter("ignore")
         return Seq(s)
 
+
 @pytest.fixture
 def low_complexity_seq():
     return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACC" \
@@ -37,13 +38,14 @@ def type_seq(request, seq, low_complexity_seq):
         return request.param, low_complexity_seq
 
 
-
 def test_three_frame_translation(seq):
     from khtools.extract_coding import three_frame_translation
 
     test = [str(x) for x in three_frame_translation(seq)]
-    true = ['RLLNTDINNIRKIAI*L*ILFC', 'ACLILTSIILGKSQYNCKSCSV',
-            'LA*Y*HQ*Y*ENRNITVNPVL']
+    true = [
+        'RLLNTDINNIRKIAI*L*ILFC', 'ACLILTSIILGKSQYNCKSCSV',
+        'LA*Y*HQ*Y*ENRNITVNPVL'
+    ]
     assert test == true
 
 
@@ -75,8 +77,10 @@ def test_evaluate_is_fastp_low_complexity(type_seq):
 def test_three_frame_translation_no_stops(seq):
     from khtools.extract_coding import three_frame_translation_no_stops
 
-    test = {k: str(v) for k, v in
-            three_frame_translation_no_stops(seq).items()}
+    test = {
+        k: str(v)
+        for k, v in three_frame_translation_no_stops(seq).items()
+    }
     true = {2: 'ACLILTSIILGKSQYNCKSCSV'}
     assert test == true
 
@@ -84,27 +88,29 @@ def test_three_frame_translation_no_stops(seq):
 def test_six_frame_translation_no_stops(seq):
     from khtools.extract_coding import six_frame_translation_no_stops
 
-    test = {k: str(v) for k, v in
-            six_frame_translation_no_stops(seq).items()}
-    true = {2: 'ACLILTSIILGKSQYNCKSCSV',
-            -2: 'TEQDLQLYCDFPNIIDVSIKQA',
-            -3: 'QNRIYSYIAIFLILLMSVLSK'}
+    test = {k: str(v) for k, v in six_frame_translation_no_stops(seq).items()}
+    true = {
+        2: 'ACLILTSIILGKSQYNCKSCSV',
+        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
+        -3: 'QNRIYSYIAIFLILLMSVLSK'
+    }
     assert test == true
-
 
 
 @pytest.fixture
 def reads(data_folder):
-    return os.path.join(data_folder,
-                        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
+    return os.path.join(
+        data_folder,
+        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
 
 
 @pytest.fixture
 def true_scores_path(data_folder, molecule, peptide_ksize):
-    return os.path.join(data_folder, "extract_coding",
-                            "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
-                            f"subsampled_n22__molecule-{molecule}_ksize-"
-                            f"{peptide_ksize}.csv")
+    return os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
+        f"subsampled_n22__molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.csv")
 
 
 @pytest.fixture
@@ -125,13 +131,14 @@ def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
-                     peptide_ksize,  true_scores,
-                     true_scores_path,
+                     peptide_ksize, true_scores, true_scores_path,
                      true_protein_coding_fasta_path):
     from khtools.extract_coding import score_reads
 
-    test = score_reads(reads, peptide_bloom_filter,
-                       peptide_ksize=peptide_ksize, molecule=molecule)
+    test = score_reads(reads,
+                       peptide_bloom_filter,
+                       peptide_ksize=peptide_ksize,
+                       molecule=molecule)
     test.to_csv(true_scores_path, index=False)
 
     # Check that scoring was the same
@@ -179,10 +186,10 @@ def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
     from khtools.extract_coding import cli
 
     runner = CliRunner()
-    result = runner.invoke(cli,
-                           ['--peptide-ksize', peptide_ksize,
-                            '--molecule', molecule,
-                            peptide_fasta, reads])
+    result = runner.invoke(cli, [
+        '--peptide-ksize', peptide_ksize, '--molecule', molecule,
+        peptide_fasta, reads
+    ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
 
@@ -193,11 +200,10 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
     from khtools.extract_coding import cli
 
     runner = CliRunner()
-    result = runner.invoke(cli,
-                           ['--peptide-ksize', peptide_ksize,
-                            "--peptides-are-bloom-filter",
-                            '--molecule', molecule, peptide_bloom_filter_path,
-                            reads])
+    result = runner.invoke(cli, [
+        '--peptide-ksize', peptide_ksize, "--peptides-are-bloom-filter",
+        '--molecule', molecule, peptide_bloom_filter_path, reads
+    ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
 
@@ -209,12 +215,11 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
     csv = os.path.join(tmpdir, 'coding_scores.csv')
 
     runner = CliRunner()
-    result = runner.invoke(cli,
-                           ['--peptide-ksize', peptide_ksize,
-                            "--csv", csv,
-                            "--peptides-are-bloom-filter",
-                            '--molecule', molecule, peptide_bloom_filter_path,
-                            reads])
+    result = runner.invoke(cli, [
+        '--peptide-ksize', peptide_ksize, "--csv", csv,
+        "--peptides-are-bloom-filter", '--molecule', molecule,
+        peptide_bloom_filter_path, reads
+    ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(csv)

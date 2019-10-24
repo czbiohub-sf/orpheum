@@ -14,8 +14,8 @@ from .s3_utils import savefig
 def _compute_neighbor_adjacencies(data, n_neighbors=5):
     # Convert to distances by subtracting from 1
     X = 1 - data
-    nbrs = NearestNeighbors(n_neighbors=n_neighbors, metric='precomputed').fit(
-        X)
+    nbrs = NearestNeighbors(n_neighbors=n_neighbors,
+                            metric='precomputed').fit(X)
     distances, indices = nbrs.kneighbors(X)
 
     # Replace integers with cell ids
@@ -29,27 +29,30 @@ def _compute_neighbor_adjacencies(data, n_neighbors=5):
     return neighbor_indices_tidy.values
 
 
-def add_color_cols(metadata, color_cols=['cell_ontology_class'],
+def add_color_cols(metadata,
+                   color_cols=['cell_ontology_class'],
                    palettes=dict(cell_ontology_class='tab10')):
     """Add a hexadecimal color for the categorical values in color_cols"""
     for col in color_cols:
         palette = palettes[col]
-        colors = sourmash_utils.category_colors(metadata[col],
-                                   palette=palette)
+        colors = sourmash_utils.category_colors(metadata[col], palette=palette)
         new_col = f'{col}_color'
         metadata.loc[:, new_col] = colors
     return metadata
 
 
-def nearest_neighbor_graph(data, metadata, n_neighbors=5,
+def nearest_neighbor_graph(data,
+                           metadata,
+                           n_neighbors=5,
                            color_cols=['cell_ontology_class'],
                            palettes=dict(cell_ontology_class='tab10')):
-    metadata = add_color_cols(metadata, color_cols=color_cols,
+    metadata = add_color_cols(metadata,
+                              color_cols=color_cols,
                               palettes=palettes)
 
     G = nx.Graph()
-    nodes = [(cell_id, attr.to_dict()) for cell_id, attr in
-             metadata.iterrows()]
+    nodes = [(cell_id, attr.to_dict())
+             for cell_id, attr in metadata.iterrows()]
     G.add_nodes_from(nodes)
 
     neighbor_adjacencies = _compute_neighbor_adjacencies(
@@ -69,16 +72,24 @@ def _add_legend(colors, labels, title):
     # Remove the sorting column
     label_color_df.drop('labels_lower', inplace=True, axis=1)
 
-    legend_elements = [Line2D([0], [0], color='w', marker='o', markersize=10,
-                              markerfacecolor=color, label=label, alpha=0.5)
-                       for i, (color, label) in label_color_df.iterrows()]
+    legend_elements = [
+        Line2D([0], [0],
+               color='w',
+               marker='o',
+               markersize=10,
+               markerfacecolor=color,
+               label=label,
+               alpha=0.5) for i, (color, label) in label_color_df.iterrows()
+    ]
 
     ax = plt.gca()
     ax.legend(handles=legend_elements, title=title, frameon=False)
     return ax
 
 
-def draw_graph(G, label_col='cell_ontology_class', edge_color='black',
+def draw_graph(G,
+               label_col='cell_ontology_class',
+               edge_color='black',
                legend=True,
                **kwargs):
     label_color_col = f"{label_col}_color"
@@ -88,16 +99,27 @@ def draw_graph(G, label_col='cell_ontology_class', edge_color='black',
 
     if 'pos' not in kwargs:
         kwargs['pos'] = nx.spring_layout(G)
-    nx.draw(G, node_color=colors, alpha=0.5, edge_color=edge_color,
-            linewidths=0.5, **kwargs)
+    nx.draw(G,
+            node_color=colors,
+            alpha=0.5,
+            edge_color=edge_color,
+            linewidths=0.5,
+            **kwargs)
 
     if legend:
         _add_legend(colors, labels, label_col)
 
 
-def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
-                         figure_folder, figure_prefix, title,
-                         edge_color='black', legend=True,
+def build_graph_and_plot(data,
+                         metadata,
+                         n_neighbors,
+                         color_cols,
+                         palettes,
+                         figure_folder,
+                         figure_prefix,
+                         title,
+                         edge_color='black',
+                         legend=True,
                          **kwargs):
     """
 
@@ -120,7 +142,8 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        graph = nearest_neighbor_graph(data, metadata,
+        graph = nearest_neighbor_graph(data,
+                                       metadata,
                                        n_neighbors=n_neighbors,
                                        color_cols=color_cols,
                                        palettes=palettes)
@@ -131,8 +154,12 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
         fig, ax = plt.subplots()
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            draw_graph(graph, edge_color=edge_color, label_col=label, pos=pos,
-                       legend=legend, **kwargs)
+            draw_graph(graph,
+                       edge_color=edge_color,
+                       label_col=label,
+                       pos=pos,
+                       legend=legend,
+                       **kwargs)
         ax.set_title(title)
         figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
         png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'

@@ -16,6 +16,7 @@ import pytest
 def folder():
     return "test-folder"
 
+
 @pytest.fixture
 def ksize():
     return 3
@@ -25,6 +26,7 @@ def ksize():
 def ksizes():
     return [2, 3, 4]
 
+
 @pytest.fixture
 def nucleotide_seq1():
     return "GATTACA"
@@ -33,6 +35,7 @@ def nucleotide_seq1():
 @pytest.fixture
 def nucleotide_seq2():
     return "GATTTTAAAACA"
+
 
 @pytest.fixture
 def peptide_seq1():
@@ -63,9 +66,12 @@ def test_jaccardize(nucleotide_seq1):
 def test_kmer_comparison_table(nucleotide_seq1, nucleotide_seq2, ksizes):
     from khtools.compare_kmer_content import kmer_comparison_table
 
-    test = kmer_comparison_table('seq1', nucleotide_seq1,
-                                 'seq2', nucleotide_seq2,
-                                 'nucleotide', ksizes=ksizes)
+    test = kmer_comparison_table('seq1',
+                                 nucleotide_seq1,
+                                 'seq2',
+                                 nucleotide_seq2,
+                                 'nucleotide',
+                                 ksizes=ksizes)
     s = """id1,id2,ksize,jaccard,molecule
 seq1,seq2,2,1.0,nucleotide
 seq1,seq2,3,0.8,nucleotide

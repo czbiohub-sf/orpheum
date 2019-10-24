@@ -1,7 +1,6 @@
 import os
 import subprocess
 
-
 # Set input language USA unicode encoding setting
 # Necessary because click assumes ascii input unless otherwise specified
 # https://click.palletsprojects.com/en/7.x/python3/
@@ -60,7 +59,8 @@ def get_stdout_stderr_from_command(command):
     lines : list
         Newline-separated strings from output of command
     """
-    result = subprocess.run(command, stdout=subprocess.PIPE,
+    result = subprocess.run(command,
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
     stdout = decode(result.stdout)
     stderr = decode(result.stderr)
