@@ -1,3 +1,5 @@
+=======
+import os
 import warnings
 
 from matplotlib.lines import Line2D
@@ -18,8 +20,8 @@ def _compute_neighbor_adjacencies(data, n_neighbors=5):
     distances, indices = nbrs.kneighbors(X)
 
     # Replace integers with cell ids
-    neighbor_indices = pd.DataFrame(indices, index=X.index)
-    neighbor_indices = neighbor_indices.applymap(lambda x: X.index[x])
+    neighbor_indices = pd.DataFrame(indices, index=X.columns)
+    neighbor_indices = neighbor_indices.applymap(lambda x: X.columns[x])
 
     # Make (cell_1, cell_2) adjacency list
     neighbor_indices_tidy = neighbor_indices.unstack()
@@ -34,7 +36,7 @@ def add_color_cols(metadata, color_cols=['cell_ontology_class'],
     for col in color_cols:
         palette = palettes[col]
         colors = sourmash_utils.category_colors(metadata[col],
-                                                palette=palette)
+                                   palette=palette)
         new_col = f'{col}_color'
         metadata.loc[:, new_col] = colors
     return metadata
@@ -135,5 +137,6 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
         ax.set_title(title)
         figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
         png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'
+
         savefig(fig, png, dpi=150)
     return graph, pos

@@ -5,16 +5,12 @@ def jaccard_sigs(i, j, siglist):
     return siglist[i].jaccard(siglist[j])
 
 
-def jaccard_sigs_idf(i, j, siglist, inverse_document_frequency,
-                     mean_idf_per_cell):
-    i_hashes = filter_idf(
-        siglist[i].get_mins(),
-        inverse_document_frequency,
-        mean_idf_per_cell)
-    j_hashes = filter_idf(
-        siglist[j].get_mins(),
-        inverse_document_frequency,
-        mean_idf_per_cell)
+
+def jaccard_sigs_idf(i, j, siglist, idf, mean_idf_per_cell, ):
+    i_hashes = filter_idf(siglist[i].get_mins(),
+                          idf, mean_idf_per_cell)
+    j_hashes = filter_idf(siglist[j].get_mins(),
+                          idf, mean_idf_per_cell)
     return jaccard(i_hashes, j_hashes)
 
 
