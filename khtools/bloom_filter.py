@@ -4,7 +4,7 @@ import click
 from khmer import Nodegraph
 import screed
 from sourmash._minhash import hash_murmur
-import tqdm
+from tqdm import tqdm
 
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide
