@@ -240,20 +240,21 @@ def score_reads(reads, peptide_bloom_filter, peptide_ksize,
                                              low_complexity_nucleotide_fasta,
                                              low_complexity_peptide_fasta,
                                              noncoding_nucleotide_fasta)
-    for record in tqdm(screed.open(reads)):
-        description = record['name']
-        sequence = record['sequence']
-        if verbose:
-            print(description)
+    with screed.open(reads) as records:
+        for record in tqdm(records):
+            description = record['name']
+            sequence = record['sequence']
+            if verbose:
+                print(description)
 
-        jaccard, n_kmers, special_case = maybe_score_single_read(
-            description, fastas, file_handles, jaccard_threshold, molecule,
-            nucleotide_ksize, peptide_bloom_filter, peptide_ksize, sequence,
-            verbose)
+            jaccard, n_kmers, special_case = maybe_score_single_read(
+                description, fastas, file_handles, jaccard_threshold, molecule,
+                nucleotide_ksize, peptide_bloom_filter, peptide_ksize, sequence,
+                verbose)
 
-        line = get_coding_score_line(description, jaccard, jaccard_threshold,
-                                     n_kmers, special_case)
-        scoring_lines.append(line)
+            line = get_coding_score_line(description, jaccard, jaccard_threshold,
+                                         n_kmers, special_case)
+            scoring_lines.append(line)
 
     maybe_close_files(file_handles)
 

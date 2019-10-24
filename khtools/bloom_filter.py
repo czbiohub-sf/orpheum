@@ -4,6 +4,7 @@ import click
 from khmer import Nodegraph
 import screed
 from sourmash._minhash import hash_murmur
+import tqdm
 
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide
@@ -22,7 +23,7 @@ def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
         peptide_ksize, tablesize, n_tables=n_tables)
 
     with screed.open(peptide_fasta) as records:
-        for record in records:
+        for record in tqdm(records):
             if '*' in record['sequence']:
                 continue
             sequence = encode_peptide(record['sequence'], molecule)
