@@ -12,7 +12,7 @@ coverage:
 	coverage report --show-missing
 
 lint:
-	flake8 --exclude docs khtools
+	flake8 --exclude docs khtools tests
 
 conda_install:
 	conda install --file conda_requirements.txt
