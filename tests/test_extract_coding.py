@@ -200,3 +200,28 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
                             reads])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
+
+
+def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
+                 peptide_ksize, true_protein_coding_fasta_string, true_scores):
+    from khtools.extract_coding import cli
+
+    csv = os.path.join(tmpdir, 'coding_scores.csv')
+
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['--peptide-ksize', peptide_ksize,
+                            "--csv", csv,
+                            "--peptides-are-bloom-filter",
+                            '--molecule', molecule, peptide_bloom_filter_path,
+                            reads])
+    assert result.exit_code == 0
+    assert true_protein_coding_fasta_string in result.output
+    assert os.path.exists(csv)
+
+    # the CLI adds the filename to the scoring dataframe
+    true = true_scores.copy()
+    true['filename'] = reads
+
+    test_scores = pd.read_csv(csv)
+    pdt.assert_equal(test_scores, true)

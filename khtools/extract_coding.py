@@ -457,7 +457,7 @@ def cli(peptides, reads, peptide_ksize=None,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
             low_complexity_peptide_fasta=low_complexity_peptide_fasta)
-        df[reads_file] = reads_file
+        df['filename'] = reads_file
         dfs.append(df)
 
     coding_scores = pd.concat(dfs, ignore_index=True)
