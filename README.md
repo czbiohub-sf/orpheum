@@ -1,13 +1,10 @@
 Kmer-hashing tools
 ================================
 
-[![image](https://img.shields.io/travis/khtools.svg)](https://travis-ci.org/khtools)
+[![image](https://img.shields.io/travis/czbiohub/kh-tools.svg)](https://travis-ci.com/czbiohub/kh-tools)
 
 
-[![codecov](https://codecov.io/gh/khtools/branch/master/graph/badge.svg)](https://codecov.io/gh/khtools)
-
-[![image](https://img.shields.io/pypi/v/%7B%7B%20cookiecutter.repo_name%20%7D%7D.svg)](https://pypi.python.org/pypi/%7B%7B%20cookiecutter.repo_name%20%7D%7D)
-
+[![codecov](https://codecov.io/gh/czbiohub/kh-tools/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/kh-tools)
 
 What is khtools?
 -------------------------------------
