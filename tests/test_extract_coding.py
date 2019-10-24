@@ -1,4 +1,3 @@
-from io import StringIO
 import os
 import warnings
 
@@ -26,8 +25,8 @@ def seq():
 
 @pytest.fixture
 def low_complexity_seq():
-    return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACC" \
-           "CCCAACACCC"
+    return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA" \
+           "CACACCCCCAACACCC"
 
 
 @pytest.fixture(params=['seq', 'low_complexity_seq'])

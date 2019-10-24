@@ -6,8 +6,8 @@ import pytest
 conftest.py contains fixtures or functions-turned-variables that can be
 used in any test
 """
-from khtools.bloom_filter import DEFAULT_PROTEIN_KSIZE, DEFAULT_DAYHOFF_KSIZE, \
-    DEFAULT_HP_KSIZE
+from khtools.bloom_filter import DEFAULT_PROTEIN_KSIZE, \
+    DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE
 
 
 @pytest.fixture
@@ -56,7 +56,8 @@ def molecule(molecule_ksize):
 def peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
     filename = os.path.join(
         data_folder, 'bloom_filter',
-        f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_ksize-{peptide_ksize}.bloomfilter.nodegraph'
+        f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_'
+        f'ksize-{peptide_ksize}.bloomfilter.nodegraph'
     )
     return filename
 

@@ -1,4 +1,3 @@
-import math
 
 
 def test_make_peptide_bloom_filter(peptide_fasta, molecule, peptide_ksize):

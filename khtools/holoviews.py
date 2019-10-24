@@ -4,7 +4,7 @@ import warnings
 # 3rd-party modules
 import holoviews as hv
 from holoviews import opts, dim
-from holoviews.operation.datashader import datashade, bundle_graph
+from holoviews.operation.datashader import bundle_graph
 import networkx as nx
 import pandas as pd
 
@@ -28,7 +28,8 @@ COLOR_COLS = [
 
 PALETTES = dict(species='Set2', cell_label='tab20')
 
-SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
+SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_' \
+                     'log2sketchsize-{log2sketchsize}'
 
 N_NEIGHBORS = 5
 
@@ -197,7 +198,7 @@ def draw_holoviews_graphs(graph_dict):
     kdims = [
         hv.Dimension(('molecule', "molecule"), default=molecule),
         hv.Dimension(('ksize', "k-mer size"), default=ksize),
-        hv.Dimension(('log2_num_hashes', "$\log_2$ num hashes"),
+        hv.Dimension(('log2_num_hashes', "$log_2$ num hashes"),
                      default=log2sketchsize),
     ]
 
