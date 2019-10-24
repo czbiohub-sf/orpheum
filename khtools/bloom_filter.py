@@ -30,14 +30,18 @@ def make_peptide_bloom_filter(peptide_fasta,
             if '*' in record['sequence']:
                 continue
             sequence = encode_peptide(record['sequence'], molecule)
-            kmers = kmerize(sequence, peptide_ksize)
-            for kmer in kmers:
-                # Convert the k-mer into an integer
-                hashed = hash_murmur(kmer)
+            try:
+                kmers = kmerize(sequence, peptide_ksize)
+                for kmer in kmers:
+                    # Convert the k-mer into an integer
+                    hashed = hash_murmur(kmer)
 
-                # .add can take the hashed integer so we can hash the peptide
-                #  kmer and add it directly
-                peptide_bloom_filter.add(hashed)
+                    # .add can take the hashed integer so we can hash the
+                    #  peptide kmer and add it directly
+                    peptide_bloom_filter.add(hashed)
+            except ValueError:
+                # Sequence length is smaller than k-mer size
+                continue
     return peptide_bloom_filter
 
 
