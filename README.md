@@ -2,8 +2,6 @@ Kmer-hashing tools
 ================================
 
 [![image](https://img.shields.io/travis/czbiohub/kh-tools.svg)](https://travis-ci.com/czbiohub/kh-tools)
-
-
 [![codecov](https://codecov.io/gh/czbiohub/kh-tools/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/kh-tools)
 
 What is khtools?
