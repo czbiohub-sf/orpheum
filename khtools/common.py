@@ -4,8 +4,8 @@ import os
 from . import jupyter_utils
 
 
-
 FIGURE_FOLDER = os.path.join('..', 'figures')
+
 
 def get_notebook_basename():
     notebook_path = jupyter_utils.get_notebook_name()

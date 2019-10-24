@@ -10,7 +10,6 @@ from functools import partial
 import click
 
 # Within-module imports
-from khtools.hello import hello
 from khtools.extract_coding import cli as extract_coding
 from khtools.bloom_filter import cli as bloom_filter
 
@@ -23,7 +22,8 @@ settings = dict(help_option_names=['-h', '--help'])
              context_settings=settings)
 def cli():
     """
-    Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices
+    Kmer hashing tools contains data cleaning and visualization code for
+    analyzing sequencing datasets at the k-mer level
     """
     pass
 

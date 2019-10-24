@@ -18,7 +18,8 @@ DEFAULT_HP_KSIZE = 21
 def make_peptide_bloom_filter(peptide_fasta, peptide_ksize, molecule='protein',
                               n_tables=4, tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+    peptide_bloom_filter = Nodegraph(
+        peptide_ksize, tablesize, n_tables=n_tables)
 
     with screed.open(peptide_fasta) as records:
         for record in records:
@@ -62,7 +63,8 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
             filename = save_peptide_bloom_filter
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
-            suffix = f'.molecule-{molecule}_ksize-{ksize}.bloomfilter.nodegraph'
+            suffix = f'.molecule-{molecule}_ksize-{ksize}.bloomfilter.' \
+                     f'nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
         click.echo(f"Writing peptide bloom filter to {filename}", err=True)
@@ -73,11 +75,11 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
 @click.command()
 @click.argument('peptides')
 @click.option('--peptide-ksize', default=None,
-                help="K-mer size of the peptide sequence to use. Defaults for"
-                     " different molecules are, "
-                     f"protein: {DEFAULT_PROTEIN_KSIZE}"
-                     f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
-                     f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
+              help="K-mer size of the peptide sequence to use. Defaults for"
+              " different molecules are, "
+              f"protein: {DEFAULT_PROTEIN_KSIZE}"
+              f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
+              f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
 @click.option('--molecule', default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -108,13 +110,16 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None):
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                              molecule)
+                                                     molecule)
     click.echo("\tDone!", err=True)
 
     save_peptide_bloom_filter = save_as if save_as is not None else True
-    maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
-                                    molecule, peptide_ksize,
-                                    save_peptide_bloom_filter=save_peptide_bloom_filter)
+    maybe_save_peptide_bloom_filter(
+        peptides,
+        peptide_bloom_filter,
+        molecule,
+        peptide_ksize,
+        save_peptide_bloom_filter=save_peptide_bloom_filter)
 
 
 def get_peptide_ksize(molecule, peptide_ksize):

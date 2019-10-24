@@ -1,5 +1,6 @@
 DNA_ALPHABET = "A", "C", "G", "T"
-AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
+AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", \
+                            "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
 DAYHOFF_MAPPING = {
     "C": "a",
 
@@ -128,9 +129,9 @@ BOTVINNIK_MAPPING = {
     "M": "i",
     "W": "j",
     "H": "k",
-    "Q": "l",
     "P": "m"
 }
+
 PURINE_PYRIMIDINE_MAPPING = {
     "A": "R",
     "C": "Y",
@@ -158,8 +159,10 @@ HP_TRANSLATION = str.maketrans(HP_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 
-VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', 'dayhoff', 'hydrophobic-polar', 'hp'
+VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', 'dayhoff', \
+                          'hydrophobic-polar', 'hp'
 # Nucleic acid mappings
+
 
 def amino_keto_ize(seq):
     return seq.translate(AMINO_KETO_TRANSLATION)
@@ -198,6 +201,6 @@ def encode_peptide(peptide_sequence, molecule):
     elif molecule in VALID_PEPTIDE_MOLECULES:
         return peptide_sequence
     else:
-        raise ValueError(f"{molecule} is not a valid amino acid encoding, " \
-                          "only " \
-                          "{', '.join(VALID_PEPTIDE_MOLECULES} can be used")
+        raise ValueError(f"{molecule} is not a valid amino acid encoding, "
+                         "only "
+                         "{', '.join(VALID_PEPTIDE_MOLECULES} can be used")

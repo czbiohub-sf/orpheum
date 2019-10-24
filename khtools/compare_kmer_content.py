@@ -1,6 +1,5 @@
 from functools import partial
 import itertools
-import math
 import multiprocessing
 from pprint import pprint
 import random
@@ -54,18 +53,19 @@ divergence_estimates = pd.Series({"Amniota": 312,
                                   # Tetrapods - 4-limbed
                                   'Tetrapoda': 352,
 
-                                  # Includes Eutheria (placental mammals) and Metatheria (maruspials)
+                                  # Includes Eutheria (placental mammals) and
+                                  # Metatheria (maruspials)
                                   'Theria': 159,
 
                                   'NA': 0})
 divergence_estimates = divergence_estimates.sort_values()
 
 
-
-KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25
+KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
+         21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
-## Hydrophobic/hydrophilic mapping
+# Hydrophobic/hydrophilic mapping
 
 # From: Brüne, D., Andrade-Navarro, M. A., & Mier, P. (2018).
 # Proteome-wide comparison between the amino acid composition of domains and
@@ -76,21 +76,21 @@ def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
     if len(seq) < ksize:
         raise ValueError("Sequence length is longer than k-mer size")
-    return set(seq[i:i+ksize] for i in range(len(seq)-ksize+1))
+    return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
 
 
 def jaccardize(set1, set2):
     """Compute jaccard index of two sets"""
     denominator = min(len(set1), len(set2))
     if denominator > 0:
-        return len(set1.intersection(set2))/denominator
+        return len(set1.intersection(set2)) / denominator
     else:
         return denominator
 
 
 def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
-    kmers1 = set(seq1[i:i+ksize] for i in range(len(seq1)-ksize+1))
-    kmers2 = set(seq2[i:i+ksize] for i in range(len(seq2)-ksize+1))
+    kmers1 = set(seq1[i:i + ksize] for i in range(len(seq1) - ksize + 1))
+    kmers2 = set(seq2[i:i + ksize] for i in range(len(seq2) - ksize + 1))
     jaccard = jaccardize(kmers1, kmers2)
     if debug:
         print("len(kmers1):", len(kmers1))
@@ -121,8 +121,13 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     botvinnik1 = botvinnikize(seq1)
     botvinnik2 = botvinnikize(seq2)
 
-    botvinnik_df = kmer_comparison_table(id1, botvinnik1, id2, botvinnik2,
-                                         molecule_name='botvinnik', ksizes=ksizes)
+    botvinnik_df = kmer_comparison_table(
+        id1,
+        botvinnik1,
+        id2,
+        botvinnik2,
+        molecule_name='botvinnik',
+        ksizes=ksizes)
 
     dayhoff1 = dayhoffize(seq1)
     dayhoff2 = dayhoffize(seq2)
@@ -133,14 +138,24 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     dayhoff_v2_1 = dayhoff_v2_ize(seq1)
     dayhoff_v2_2 = dayhoff_v2_ize(seq2)
 
-    dayhoff_v2_df = kmer_comparison_table(id1, dayhoff_v2_1, id2, dayhoff_v2_2,
-                                          molecule_name='dayhoff_v2', ksizes=ksizes)
+    dayhoff_v2_df = kmer_comparison_table(
+        id1,
+        dayhoff_v2_1,
+        id2,
+        dayhoff_v2_2,
+        molecule_name='dayhoff_v2',
+        ksizes=ksizes)
 
     hp1 = hpize(seq1)
     hp2 = hpize(seq2)
 
-    hp_df = kmer_comparison_table(id1, hp1, id2, hp2,
-                                  molecule_name='hydrophobic-polar', ksizes=ksizes)
+    hp_df = kmer_comparison_table(
+        id1,
+        hp1,
+        id2,
+        hp2,
+        molecule_name='hydrophobic-polar',
+        ksizes=ksizes)
 
     df = pd.concat([protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df,
                     hp_df], ignore_index=True)
@@ -198,9 +213,10 @@ def compare_args_unpack(args, ksizes, moltype):
 def get_comparison_at_index(index, seqlist1, seqlist2,
                             ksizes=KSIZES, n_background=100,
                             moltype='protein', verbose=False):
-    """Returns similarities of all the combinations of signature at index in the
-    siglist with the rest of the indices starting at index + 1. Doesn't redundantly
-    calculate signatures with all the other indices prior to index - 1
+    """Returns similarities of all the combinations of signature at index in
+    the siglist with the rest of the indices starting at index + 1. Doesn't
+    redundantly calculate signatures with all the other indices prior to
+    index - 1
 
     :param int index: generate masks from this image
     :param boolean ignore_abundance
@@ -211,8 +227,8 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
         based on the cosine similarity.
     :param boolean downsample by max_hash if True
     :param siglist list of signatures
-    :return: list of similarities for the combinations of signature at index with
-    rest of the signatures from index+1
+    :return: list of similarities for the combinations of signature at index
+    with rest of the signatures from index+1
     """
     startt = time.time()
     pairs_iterator = [(seqlist1[index], seqlist2[index])]
@@ -261,7 +277,8 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 
     # Initialize the function using func.partial with the common arguments like
     # siglist, ignore_abundance, downsample, for computing all the signatures
-    # The only changing parameter that will be mapped from the pool is the index
+    # The only changing parameter that will be mapped from the pool is the
+    # index
     func = partial(
         get_comparison_at_index,
         seqlist1=seqlist1,
@@ -280,12 +297,13 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         chunksize += 1
     notify("Calculated chunk size for multiprocessing")
 
-    # This will not generate the results yet, since pool.imap returns a generator
+    # This will not generate the results yet, since pool.imap returns a
+    # generator
     result = pool.imap(func, range(len_seqlist1), chunksize=chunksize)
     notify("Initialized multiprocessing pool.imap")
 
-    peptide_kmer_comparisons = pd.concat(itertools.chain(*result), ignore_index=True)
+    peptide_kmer_comparisons = pd.concat(
+        itertools.chain(*result), ignore_index=True)
 
     notify(f"Total time: {time.time() - t0}")
     return peptide_kmer_comparisons
-
