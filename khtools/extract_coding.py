@@ -179,6 +179,66 @@ def score_single_read(sequence,
                       noncoding_file_handle=None,
                       coding_nucleotide_file_handle=None,
                       low_complexity_peptide_file_handle=None):
+    """Predict whether a nucleotide sequence could be protein-coding
+
+    Parameters
+    ----------
+    sequence : str
+        Nucleotide sequence to predict on
+    peptide_bloom_filter : khmer.Nodegraph
+        Database of known peptide k-mers from a well-studied organism, e.g.
+        human protein-coding sequences. Must have been built on peptides using
+        the same k-mer size and molecular encoding as specified here, otherwise
+        the results will make no sense
+    peptide_ksize : int
+        Length of the peptide words in sequence. Must match the k-mer size used
+        for the peptide_bloom_filter otherwise nothing will match, or only
+        false positives will match.
+    molecule : str
+        One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
+        encode the protein-coding space. Where "protein"|"peptide" is the
+        original 20-letter amino acid encoding, Dayhoff ("dayhoff") is a lossy
+        6-letter encoding that categorizes the amino acids into:
+            1. Cysteine,
+            2. Small (A, G, P, S, T)
+            3. Acid and Amide (D, E, N, Q)
+            4. Basic (H, K, R)
+            5. Hydrophobic (I, L, M, V)
+            6. Aromatic (F, W, Y)
+        Hydrophobic-polar maps to a mere two categories:
+            1. Hydrophobic (A, F, G, I, L, M, P, V, W, Y)
+            2. Polar (C, D, E, H, K, N, Q, R, S, T)
+    verbose : bool
+        Whether or not to print a lot of stuff
+    jaccard_threshold : float
+        Value between 0 and 1. By default, the (empirically-chosen) "best"
+        threshold is chosen for each molecule. For "protein" and  "dayhoff",
+        the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
+        so lossy it's more likely to match random sequence. These thresholds
+        were determined empirically with a pre-chosen human RNA-seq dataset and
+        human peptides.
+    description : str
+        The identifier in the sequence file, i.e. the name or descriptor of the
+        sequence
+    noncoding_file_handle : None or file
+        If not None, write noncoding nucleotide reads to this file handle
+    coding_nucleotide_file_handle : None or file
+        If not None, write coding nucleotides reads to this file handle
+    low_complexity_peptide_file_handle : None or file
+        If not None, write low complexity peptide sequences to this file handle
+
+    Returns
+    -------
+    max_fraction_in_peptide_db : float
+        Of all reading frames, the maximum number of k-mers that matches the
+        peptide database
+    max_n_kmers: int
+        Of all reading frames, the maximum number of k-mers observed in the
+        translated, encoded peptide
+    special_case : str or None
+        Additional message to write in the output csv describing the reason
+        why this sequence is or isn't protein-coding
+    """
     # Convert to BioPython sequence object for translation
     seq = Seq(sequence)
 
@@ -473,6 +533,20 @@ def cli(peptides,
         Sequence file of peptides
     peptide_ksize : int
         Number of characters in amino acid words
+    molecule : str
+        One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
+        encode the protein-coding space. Where "protein"|"peptide" is the
+        original 20-letter amino acid encoding, Dayhoff ("dayhoff") is a lossy
+        6-letter encoding that categorizes the amino acids into:
+            1. Cysteine,
+            2. Small (A, G, P, S, T)
+            3. Acid and Amide (D, E, N, Q)
+            4. Basic (H, K, R)
+            5. Hydrophobic (I, L, M, V)
+            6. Aromatic (F, W, Y)
+        Hydrophobic-polar maps to a mere two categories:
+            1. Hydrophobic (A, F, G, I, L, M, P, V, W, Y)
+            2. Polar (C, D, E, H, K, N, Q, R, S, T)
 
     long_reads
     verbose
