@@ -165,9 +165,8 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
-    if n_kmers <= min_kmer_entropy:
-        return True, n_kmers
-    return False, n_kmers
+    is_low_complexity = n_kmers <= min_kmer_entropy
+    return is_low_complexity, n_kmers
 
 
 def score_single_read(sequence,
