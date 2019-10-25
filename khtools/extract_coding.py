@@ -242,6 +242,10 @@ def score_single_read(sequence,
     # Convert to BioPython sequence object for translation
     seq = Seq(sequence)
 
+    # In case this is used from the Python API and the default threshold isn't
+    # specified
+    jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
+
     # Convert to BioPython sequence object for translation
     translations = six_frame_translation_no_stops(seq)
     # For all translations, use the one with the maximum number of k-mers
