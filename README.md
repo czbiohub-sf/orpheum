@@ -96,7 +96,10 @@ would be considered low complexity, as it translates to either
 `LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL` (3'5' Frame 1),
 or `CCCCCCCCCCCCCCCCCCCCCCCCCCCCC` (3'5' Frame 2). As these sequences have few
 k-mers and are difficult to assess for how "coding" they are, we ignore them.
-To save the sequence of low-complexity peptides to a fasta, use the flag
+Unlike for nucleotides where we look at runs of consecutive bases, we require
+the translated peptide to contain greater than `(L - k + 1)/2` k-mers, where
+`L` is the length of the sequence and `k` is the k-mer size. To save the
+sequence of low-complexity peptides to a fasta, use the flag
 `--low-complexity-peptides-fasta`.
 
 ```
