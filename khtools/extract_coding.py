@@ -212,8 +212,8 @@ def score_single_read(sequence,
         # Maybe reencode to dayhoff/hp space
         encoded = encode_peptide(translation, molecule)
 
-        is_fastp_low_complexity = evaluate_is_fastp_low_complexity(encoded)
-        if is_fastp_low_complexity:
+        is_kmer_low_complexity = evaluate_is_kmer_low_complexity(encoded)
+        if is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             return np.nan, np.nan, f"Low complexity peptide in {molecule}" \
