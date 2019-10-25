@@ -81,16 +81,16 @@ HP_MAPPING = {
     "Y": "h",
 
     # Hydrophilic - polar
-    "N": 'p',
     "C": 'p',
-    "S": "p",
-    "T": "p",
-    "D": "p",
+    "D": 'p',
     "E": "p",
-    "R": "p",
     "H": "p",
     "K": "p",
-    "Q": "p"
+    "N": "p",
+    "Q": "p",
+    "R": "p",
+    "S": "p",
+    "T": "p"
 }
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
