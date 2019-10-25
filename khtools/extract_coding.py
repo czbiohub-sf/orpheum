@@ -512,10 +512,10 @@ def cli(peptides,
         noncoding_nucleotide_fasta=None,
         low_complexity_nucleotide_fasta=None,
         low_complexity_peptide_fasta=None,
-        verbose=False,
-        debug=False):
+        verbose=False):
     """Writes coding peptides from reads to standard output
 
+    \b
     Sane defaults for peptide_ksize for different peptide encodings:
     - with "protein" or "peptide" --> --peptide-ksize = 5-10
       7 is pretty universal but can go down to 5 for less species specificity
@@ -533,6 +533,18 @@ def cli(peptides,
         Sequence file of peptides
     peptide_ksize : int
         Number of characters in amino acid words
+    save_peptide_bloom_filter : str or bool
+        Whether or not to save the created bloom filter to file. If a string,
+        save to this filename
+    peptides_are_bloom_filter : bool
+        Input ilfe of peptides is already a bloom filter
+    jaccard_threshold : float
+        Value between 0 and 1. By default, the (empirically-chosen) "best"
+        threshold is chosen for each molecule. For "protein" and  "dayhoff",
+        the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
+        so lossy it's more likely to match random sequence. These thresholds
+        were determined empirically with a pre-chosen human RNA-seq dataset and
+        human peptides.
     molecule : str
         One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
         encode the protein-coding space. Where "protein"|"peptide" is the
@@ -547,16 +559,33 @@ def cli(peptides,
         Hydrophobic-polar maps to a mere two categories:
             1. Hydrophobic (A, F, G, I, L, M, P, V, W, Y)
             2. Polar (C, D, E, H, K, N, Q, R, S, T)
-
-    long_reads
-    verbose
+    csv : str
+        Save the coding scores as a csv to this file
+    long_reads : bool -- NOT IMPLEMENTED!!
+        Input sequencing reads are long reads. Not implemented, but the plan
+        is, instead of doing 6-frame translation as on the short reads, test
+        all ATG (start codon) to stop codon reading frames for the one(s) that
+        matches the known peptide database best. Unknown whether this requires
+        new thresholds
+    verbose : bool
+        Whether or not to print lots of stuff. Can specify multiple, e.g. -vv
+        if you really like having everything in stdout
+    coding_nucleotide_fasta : None or str
+        If specified, save coding nucleotide sequence to this file
+    noncoding_nucleotide_fasta : None or str
+        If specified, save noncoding nucleotide sequence to this file
+    low_complexity_nucleotide_fasta : None or str
+        If specified, save low complexity nucleotide sequence to this file
+    low_complexity_peptide_fasta : None or str
+        If specified, save low complexity peptide sequence to this file
 
     \b
     Returns
     -------
-
+    coding_peptides : str
+        Outputs a fasta-formatted sequence of translated peptides
     """
-    # \b above prevents rewrapping of paragraph
+    # \b above prevents re-wrapping of paragraphs
 
     if long_reads:
         raise NotImplementedError("Not implemented! ... yet :)")
