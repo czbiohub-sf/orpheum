@@ -265,10 +265,6 @@ def score_single_read(sequence,
                                "size + 1"
 
     for frame, translation in translations.items():
-        if len(translation) <= peptide_ksize:
-            return np.nan, np.nan, "Translated read length was smaller " \
-                                   "than peptide k-mer size"
-
         # Convert back to string
         translation = str(translation)
 
