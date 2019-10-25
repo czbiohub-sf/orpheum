@@ -37,9 +37,11 @@ khtools extract_coding peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 
 #### Save the "coding scores" to a csv
 
-The "coding score" is obtained by the
+The "coding score" of each read is calculated by translating each read in six
+frames, then is calculatating the
 [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index) between any of the
- six translated frames of the read and the peptide database.
+ six translated frames of the read and the peptide database. The final coding
+ score is the maximum Jaccard index across all reading frames.
 
 ```
 khtools extract_coding --csv coding_scores.csv peptides.fa.gz *.fastq.gz > coding_peptides.fasta
