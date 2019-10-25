@@ -118,9 +118,24 @@ def score_single_translation(translation,
 def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
     """Use fastp's definition of complexity
 
-    fastp prpject: https://github.com/OpenGene/fastp
+    By this definition, low complexity sequence is defined by consecutive runs
+    of same base in a row, e.g.
+    CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACCCCCAACAC
+    is low complexity. The threshold is 0.3 as used in the fastp prpject:
+    https://github.com/OpenGene/fastp
 
-    Low complexity = Many runs of the same base in a row
+    Parameters
+    ----------
+    seq : str
+        Sequence to compute complexity on
+    complexity_threshold : float, defaault 0.3
+        Value between 0 and 1. The default is 0.3 because that is the default
+        in the command line program fastp
+
+    Returns
+    -------
+    is_low_complexity : bool
+        Whether or not the sequence passes the complexity threshold
     """
     complexity = compute_fastp_complexity(seq)
     return complexity < complexity_threshold
