@@ -76,7 +76,8 @@ complexity is determined by the same method as the read trimmer
 percentage of the sequence has consecutive runs of the same base,
 or mathematically, how often `seq[i] = seq[i+1]`. The default threshold is
 `0.3`. As an example, the sequence `CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACCCCCAACACCC`
-would be considered low complexity.
+would be considered low complexity. While this sequence has many nucleotide
+k-mers, it is likely a result of a sequencing error and we ignore it.
 
 ```
 khtools extract_coding --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
@@ -93,7 +94,10 @@ would be considered low complexity, as it translates to either
 `SSSSSSSSSSSSSSSSSSSSSSSSSSSSS` (5'3' Frame 2),
 `AAAAAAAAAAAAAAAAAAAAAAAAAAAAA` (5'3' Frame 3 and 3'5' Frame 3),
 `LLLLLLLLLLLLLLLLLLLLLLLLLLLLLL` (3'5' Frame 1),
-or `CCCCCCCCCCCCCCCCCCCCCCCCCCCCC` (3'5' Frame 2).
+or `CCCCCCCCCCCCCCCCCCCCCCCCCCCCC` (3'5' Frame 2). As these sequences have few
+k-mers and are difficult to assess for how "coding" they are, we ignore them.
+To save the sequence of low-complexity peptides to a fasta, use the flag
+`--low-complexity-peptides-fasta`.
 
 ```
 khtools extract_coding --low-complexity-peptides-fasta low_complexity_peptides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
