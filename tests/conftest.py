@@ -23,6 +23,21 @@ def peptide_fasta(data_folder):
     return filename
 
 
+@pytest.fixture
+def adversarial_peptide_fasta(data_folder):
+    filename = os.path.join(data_folder, 'bloom_filter',
+                            'Homo_sapiens.GRCh38.pep.first1000lines.fa')
+    return filename
+
+
+@pytest.fixture(params=['normal', 'adversarial'])
+def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
+    if request.param == 'normal':
+        return peptide_fasta
+    else:
+        return adversarial_peptide_fasta
+
+
 # Tie the molecule name to its default ksize to make sure we keep getting the
 # right sequences
 @pytest.fixture(params=[('protein', DEFAULT_PROTEIN_KSIZE),
