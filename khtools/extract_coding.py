@@ -238,6 +238,7 @@ def score_single_read(sequence,
                            err=True)
             seqname = f'{description} translation_frame: {frame}'
             write_fasta(sys.stdout, seqname, translation)
+            maybe_write_fasta(seqname, coding_nucleotide_file_handle, sequence)
 
     if max_fraction_in_peptide_db <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
