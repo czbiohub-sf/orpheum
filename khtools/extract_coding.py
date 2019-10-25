@@ -271,11 +271,13 @@ def score_single_read(sequence,
         # Maybe reencode to dayhoff/hp space
         encoded = encode_peptide(translation, molecule)
 
-        is_kmer_low_complexity = evaluate_is_kmer_low_complexity(encoded)
+        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(
+            encoded, peptide_ksize)
+
         if is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            return np.nan, np.nan, f"Low complexity peptide in {molecule}" \
+            return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
                                    " encoding"
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
@@ -496,9 +498,6 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
               "start codon (ATG) and ending in a stop codon "
               "(TAG, TAA, TGA)")
 @click.option("--verbose", is_flag=True, help="Print more output")
-@click.option("--debug",
-              is_flag=True,
-              help="Print developer debugger output, including warnings")
 def cli(peptides,
         reads,
         peptide_ksize=None,
@@ -567,9 +566,6 @@ def cli(peptides,
         all ATG (start codon) to stop codon reading frames for the one(s) that
         matches the known peptide database best. Unknown whether this requires
         new thresholds
-    verbose : bool
-        Whether or not to print lots of stuff. Can specify multiple, e.g. -vv
-        if you really like having everything in stdout
     coding_nucleotide_fasta : None or str
         If specified, save coding nucleotide sequence to this file
     noncoding_nucleotide_fasta : None or str
@@ -578,6 +574,9 @@ def cli(peptides,
         If specified, save low complexity nucleotide sequence to this file
     low_complexity_peptide_fasta : None or str
         If specified, save low complexity peptide sequence to this file
+    verbose : bool
+        Whether or not to print lots of stuff. Can specify multiple, e.g. -vv
+        if you really like having everything in stdout
 
     \b
     Returns
