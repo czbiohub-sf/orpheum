@@ -1,3 +1,4 @@
+import math
 import os
 
 import click
@@ -9,7 +10,7 @@ from tqdm import tqdm
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide
 
-DEFAULT_MAX_TABLESIZE = 1e10
+DEFAULT_MAX_TABLESIZE = 1e8
 DEFAULT_PROTEIN_KSIZE = 7
 DEFAULT_DAYHOFF_KSIZE = 11
 DEFAULT_HP_KSIZE = 21
