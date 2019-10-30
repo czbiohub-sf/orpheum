@@ -12,7 +12,7 @@ from khtools.sequence_encodings import encode_peptide
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
-DEFAULT_MAX_TABLESIZE = 1e9
+DEFAULT_MAX_TABLESIZE = 1e8
 
 # Default k-mer sizes for different alphabets
 DEFAULT_PROTEIN_KSIZE = 7
