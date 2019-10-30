@@ -68,3 +68,24 @@ def test_cli_options(peptide_fasta, molecule, peptide_ksize):
         peptide_fasta,
     ])
     assert result.exit_code == 0
+
+
+def test_get_peptide_ksize(molecule):
+    from khtools.bloom_filter import get_peptide_ksize, DEFAULT_PROTEIN_KSIZE, \
+        DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
+
+    test = get_peptide_ksize(molecule, peptide_ksize=None)
+    if molecule == 'protein':
+        assert test == DEFAULT_PROTEIN_KSIZE
+    elif molecule == 'dayhoff':
+        assert test == DEFAULT_DAYHOFF_KSIZE
+    elif molecule == 'hydrophobic-polar':
+        assert test == DEFAULT_HP_KSIZE
+
+
+def test_get_peptide_ksize(molecule):
+    from khtools.bloom_filter import get_peptide_ksize
+
+    peptide_ksize = 123
+    test = get_peptide_ksize(molecule, peptide_ksize)
+    assert test == peptide_ksize
