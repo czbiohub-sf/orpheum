@@ -280,7 +280,7 @@ def score_single_read(sequence,
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
-                                   " encoding"
+                                    " encoding"
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded,
@@ -602,7 +602,7 @@ def cli(peptides,
 
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
         peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
-    n_tables=n_tables, tablesize=tablesize)
+        n_tables=n_tables, tablesize=tablesize)
     click.echo("\tDone!")
 
     if not peptides_are_bloom_filter:

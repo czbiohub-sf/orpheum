@@ -52,7 +52,7 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
                     'protein_default_ksize', 'dayhoff_default_ksize',
                     'dayhoff_protein_ksize_xfail', 'hp_default_ksize',
                     'hp_protein_ksize_xfail'
-                ])
+])
 def molecule_ksize(request):
     return request.param
 
