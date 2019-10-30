@@ -1,5 +1,7 @@
 from khmer import Nodegraph
 
+from click.testing import CliRunner
+
 
 def test_make_peptide_bloom_filter(variable_peptide_fasta,
                                    molecule, peptide_ksize):
@@ -8,6 +10,7 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
     test = make_peptide_bloom_filter(variable_peptide_fasta,
                                      peptide_ksize,
                                      molecule,
+                                     n_tables=4,
                                      tablesize=1e6)
     if 'first1000lines' in variable_peptide_fasta:
         TRUE_N_UNIQUE_KMERS = {
@@ -43,3 +46,25 @@ def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
                                            peptides_are_bloom_filter=True)
 
     assert isinstance(test, Nodegraph)
+
+
+def test_cli_minimum(peptide_fasta):
+    from khtools.bloom_filter import cli
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [
+        peptide_fasta,
+    ])
+    assert result.exit_code == 0
+
+
+def test_cli_options(peptide_fasta, molecule, peptide_ksize):
+    from khtools.bloom_filter import cli
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [
+        '--peptide-ksize', peptide_ksize, '--molecule', molecule,
+        "--tablesize", "1e4",
+        peptide_fasta,
+    ])
+    assert result.exit_code == 0

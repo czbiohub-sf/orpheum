@@ -17,7 +17,9 @@ from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
                                   maybe_save_peptide_bloom_filter,
                                   get_peptide_ksize, DEFAULT_PROTEIN_KSIZE,
-                                  DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE)
+                                  DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE,
+                                  DEFAULT_N_TABLES, DEFAULT_MAX_TABLESIZE,
+                                  BASED_INT)
 from tqdm import tqdm
 
 # Import modified 'os' module with LC_LANG set so click doesn't complain.
@@ -492,6 +494,12 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
 @click.option("--low-complexity-peptide-fasta",
               help="If specified, save the low-complexity peptides to this "
               "file")
+@click.option('--tablesize', type=BASED_INT,
+              default="1e8",
+              help='Size of the bloom filter table to use')
+@click.option('--n-tables', type=int,
+              default=DEFAULT_N_TABLES,
+              help='Size of the bloom filter table to use')
 @click.option("--long-reads",
               is_flag=True,
               help="If set, then only considers reading frames starting with "
@@ -506,11 +514,12 @@ def cli(peptides,
         jaccard_threshold=None,
         molecule='protein',
         csv=False,
-        long_reads=False,
         coding_nucleotide_fasta=None,
         noncoding_nucleotide_fasta=None,
         low_complexity_nucleotide_fasta=None,
         low_complexity_peptide_fasta=None,
+        tablesize=DEFAULT_MAX_TABLESIZE, n_tables=DEFAULT_N_TABLES,
+        long_reads=False,
         verbose=False):
     """Writes coding peptides from reads to standard output
 
@@ -592,7 +601,8 @@ def cli(peptides,
     peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
 
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
-        peptides, peptide_ksize, molecule, peptides_are_bloom_filter)
+        peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
+    n_tables=n_tables, tablesize=tablesize)
     click.echo("\tDone!")
 
     if not peptides_are_bloom_filter:

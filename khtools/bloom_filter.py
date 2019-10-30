@@ -26,11 +26,13 @@ class BasedIntParamType(click.ParamType):
 
     def convert(self, value, param, ctx):
         try:
+            if isinstance(value, int):
+                return value
             if 'e' in value:
                 sigfig, exponent = value.split('e')
-                sigfig = int(sigfig)
+                sigfig = float(sigfig)
                 exponent = int(exponent)
-                return sigfig * 10 ** exponent
+                return int(sigfig * 10 ** exponent)
             return int(value, 10)
         except TypeError:
             self.fail(
@@ -78,6 +80,7 @@ def make_peptide_bloom_filter(peptide_fasta,
 
 def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
                                     peptides_are_bloom_filter,
+                                    n_tables=DEFAULT_N_TABLES,
                                     tablesize=DEFAULT_MAX_TABLESIZE):
     if peptides_are_bloom_filter:
         click.echo(
@@ -94,7 +97,7 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
             err=True)
         peptide_bloom_filter = make_peptide_bloom_filter(
             peptides, peptide_ksize, molecule=molecule,
-            tablesize=DEFAULT_MAX_TABLESIZE)
+            n_tables=n_tables, tablesize=tablesize)
     return peptide_bloom_filter
 
 
@@ -134,7 +137,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               help='If provided, save peptide bloom filter as this filename. '
               'Otherwise, add ksize and molecule name to input filename.')
 @click.option('--tablesize', type=BASED_INT,
-              default=DEFAULT_MAX_TABLESIZE,
+              default="1e8",
               help='Size of the bloom filter table to use')
 @click.option('--n-tables', type=int,
               default=DEFAULT_N_TABLES,
