@@ -42,6 +42,7 @@ class BasedIntParamType(click.ParamType):
         except ValueError:
             self.fail(f"{value!r} is not a valid integer", param, ctx)
 
+
 BASED_INT = BasedIntParamType()
 
 
