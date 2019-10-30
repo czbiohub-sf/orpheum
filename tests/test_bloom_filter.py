@@ -1,3 +1,4 @@
+from khmer import Nodegraph
 
 
 def test_make_peptide_bloom_filter(variable_peptide_fasta,
@@ -30,3 +31,15 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
     # For now, assert that the number of kmers is within 5% of the true value
     assert test.n_unique_kmers() > true_n_unique_kmers * 0.95
     assert test.n_unique_kmers() < true_n_unique_kmers * 1.05
+
+
+def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
+                                         molecule, peptide_ksize):
+    from khtools.bloom_filter import maybe_make_peptide_bloom_filter
+
+    test = maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
+                                           peptide_ksize,
+                                           molecule,
+                                           peptides_are_bloom_filter=True)
+
+    assert isinstance(test, Nodegraph)
