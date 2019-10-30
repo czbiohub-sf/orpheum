@@ -10,16 +10,45 @@ from tqdm import tqdm
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide
 
-DEFAULT_MAX_TABLESIZE = 1e8
+# khmer Nodegraph features
+DEFAULT_N_TABLES = 4
+DEFAULT_MAX_TABLESIZE = 1e9
+
+# Default k-mer sizes for different alphabets
 DEFAULT_PROTEIN_KSIZE = 7
 DEFAULT_DAYHOFF_KSIZE = 11
 DEFAULT_HP_KSIZE = 21
 
 
+# Cribbed from https://click.palletsprojects.com/en/7.x/parameters/
+class BasedIntParamType(click.ParamType):
+    name = "integer"
+
+    def convert(self, value, param, ctx):
+        try:
+            if 'e' in value:
+                sigfig, exponent = value.split('e')
+                sigfig = int(sigfig)
+                exponent = int(exponent)
+                return sigfig * 10 ** exponent
+            return int(value, 10)
+        except TypeError:
+            self.fail(
+                "expected string for int() conversion, got "
+                f"{value!r} of type {type(value).__name__}",
+                param,
+                ctx,
+            )
+        except ValueError:
+            self.fail(f"{value!r} is not a valid integer", param, ctx)
+
+BASED_INT = BasedIntParamType()
+
+
 def make_peptide_bloom_filter(peptide_fasta,
                               peptide_ksize,
-                              molecule='protein',
-                              n_tables=4,
+                              molecule,
+                              n_tables,
                               tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
     peptide_bloom_filter = Nodegraph(peptide_ksize,
@@ -47,7 +76,8 @@ def make_peptide_bloom_filter(peptide_fasta,
 
 
 def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
-                                    peptides_are_bloom_filter):
+                                    peptides_are_bloom_filter,
+                                    tablesize=DEFAULT_MAX_TABLESIZE):
     if peptides_are_bloom_filter:
         click.echo(
             f"Loading existing bloom filter from {peptides} and "
@@ -61,9 +91,9 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
             f"Using ksize: {peptide_ksize} and molecule: {molecule} "
             f"...",
             err=True)
-        peptide_bloom_filter = make_peptide_bloom_filter(peptides,
-                                                         peptide_ksize,
-                                                         molecule=molecule)
+        peptide_bloom_filter = make_peptide_bloom_filter(
+            peptides, peptide_ksize, molecule=molecule,
+            tablesize=DEFAULT_MAX_TABLESIZE)
     return peptide_bloom_filter
 
 
@@ -87,7 +117,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
 @click.command()
 @click.argument('peptides')
 @click.option('--peptide-ksize',
-              default=None,
+              default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
               " different molecules are, "
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
@@ -102,7 +132,14 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               default=None,
               help='If provided, save peptide bloom filter as this filename. '
               'Otherwise, add ksize and molecule name to input filename.')
-def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None):
+@click.option('--tablesize', type=BASED_INT,
+              default=DEFAULT_MAX_TABLESIZE,
+              help='Size of the bloom filter table to use')
+@click.option('--n-tables', type=int,
+              default=DEFAULT_N_TABLES,
+              help='Size of the bloom filter table to use')
+def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
+        tablesize=DEFAULT_MAX_TABLESIZE, n_tables=DEFAULT_N_TABLES):
     """Make a peptide bloom filter for your peptides
 
     \b
@@ -125,7 +162,9 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None):
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                     molecule)
+                                                     molecule,
+                                                     n_tables=n_tables,
+                                                     tablesize=tablesize)
     click.echo("\tDone!", err=True)
 
     save_peptide_bloom_filter = save_as if save_as is not None else True
