@@ -1,6 +1,7 @@
 from khmer import Nodegraph
 
 from click.testing import CliRunner
+import pytest
 
 
 def test_make_peptide_bloom_filter(variable_peptide_fasta,
@@ -70,9 +71,9 @@ def test_cli_options(peptide_fasta, molecule, peptide_ksize):
     assert result.exit_code == 0
 
 
-def test_get_peptide_ksize(molecule):
-    from khtools.bloom_filter import get_peptide_ksize, DEFAULT_PROTEIN_KSIZE, \
-        DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
+def test_get_peptide_ksize_default(molecule):
+    from khtools.bloom_filter import get_peptide_ksize, \
+        DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
 
     test = get_peptide_ksize(molecule, peptide_ksize=None)
     if molecule == 'protein':
@@ -83,9 +84,17 @@ def test_get_peptide_ksize(molecule):
         assert test == DEFAULT_HP_KSIZE
 
 
-def test_get_peptide_ksize(molecule):
+def test_get_peptide_ksize_with_ksize(molecule):
     from khtools.bloom_filter import get_peptide_ksize
 
     peptide_ksize = 123
     test = get_peptide_ksize(molecule, peptide_ksize)
     assert test == peptide_ksize
+
+
+def test_get_peptide_ksize_with_bad_molecule():
+    from khtools.bloom_filter import get_peptide_ksize
+
+    peptide_ksize = 123
+    with pytest.raises(ValueError):
+        get_peptide_ksize("not a real molecule type", peptide_ksize)
