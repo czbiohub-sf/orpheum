@@ -603,7 +603,7 @@ def cli(peptides,
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
         peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
         n_tables=n_tables, tablesize=tablesize)
-    click.echo("\tDone!")
+    click.echo("\tDone!", err=True)
 
     if not peptides_are_bloom_filter:
         maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
