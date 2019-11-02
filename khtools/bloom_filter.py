@@ -96,7 +96,14 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
             f"making sure the ksizes match",
             err=True)
         peptide_bloom_filter = load_nodegraph(peptides)
-        assert peptide_ksize == peptide_bloom_filter.ksize()
+        if peptide_ksize is not None:
+            try:
+                assert peptide_ksize == peptide_bloom_filter.ksize()
+            except AssertionError:
+                raise ValueError(f"Given peptide ksize ({peptide_ksize}) and "
+                                 f"ksize found in bloom filter "
+                                 f"({peptide_bloom_filter.ksize()}) are not"
+                                 f"equal")
     else:
         click.echo(
             f"Creating peptide bloom filter with file: {peptides}\n"
