@@ -1,7 +1,7 @@
 import os
 
 import click
-from khmer import Nodegraph
+import khmer
 import screed
 from sourmash._minhash import hash_murmur
 from tqdm import tqdm
@@ -11,12 +11,21 @@ from khtools.sequence_encodings import encode_peptide, VALID_PEPTIDE_MOLECULES
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
-DEFAULT_MAX_TABLESIZE = 1e8
+DEFAULT_MAX_TABLESIZE = int(1e8)
 
 # Default k-mer sizes for different alphabets
 DEFAULT_PROTEIN_KSIZE = 7
 DEFAULT_DAYHOFF_KSIZE = 11
 DEFAULT_HP_KSIZE = 21
+
+
+def load_nodegraph(*args, **kwargs):
+    try:
+        # khmer 2.1.1
+        return khmer.load_nodegraph(*args, **kwargs)
+    except AttributeError:
+        # khmer 3+/master branch
+        return khmer.Nodegraph.load(*args, **kwargs)
 
 
 # Cribbed from https://click.palletsprojects.com/en/7.x/parameters/
@@ -50,12 +59,12 @@ BASED_INT = BasedIntParamType()
 def make_peptide_bloom_filter(peptide_fasta,
                               peptide_ksize,
                               molecule,
-                              n_tables,
+                              n_tables=DEFAULT_N_TABLES,
                               tablesize=DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = Nodegraph(peptide_ksize,
-                                     tablesize,
-                                     n_tables=n_tables)
+    peptide_bloom_filter = khmer.Nodegraph(peptide_ksize,
+                                           tablesize,
+                                           n_tables=n_tables)
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
@@ -86,7 +95,7 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
             f"Loading existing bloom filter from {peptides} and "
             f"making sure the ksizes match",
             err=True)
-        peptide_bloom_filter = Nodegraph.load(peptides)
+        peptide_bloom_filter = load_nodegraph(peptides)
         assert peptide_ksize == peptide_bloom_filter.ksize()
     else:
         click.echo(
