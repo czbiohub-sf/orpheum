@@ -16,7 +16,7 @@ from khtools.sequence_encodings import encode_peptide
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
                                   maybe_save_peptide_bloom_filter,
-                                  get_peptide_ksize, DEFAULT_PROTEIN_KSIZE,
+                                  DEFAULT_PROTEIN_KSIZE,
                                   DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE,
                                   DEFAULT_N_TABLES, DEFAULT_MAX_TABLESIZE,
                                   BASED_INT)
@@ -317,7 +317,6 @@ def maybe_write_fasta(description, file_handle, sequence):
 
 def score_reads(reads,
                 peptide_bloom_filter,
-                peptide_ksize,
                 jaccard_threshold=None,
                 molecule='protein',
                 verbose=False,
@@ -327,6 +326,7 @@ def score_reads(reads,
                 low_complexity_peptide_fasta=None):
     """Assign a coding score to each read. Where the magic happens."""
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
+    peptide_ksize = peptide_bloom_filter.ksize()
 
     scoring_lines = []
     nucleotide_ksize = 3 * peptide_ksize
@@ -598,8 +598,6 @@ def cli(peptides,
     if long_reads:
         raise NotImplementedError("Not implemented! ... yet :)")
 
-    peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
         peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
         n_tables=n_tables, tablesize=tablesize)
@@ -607,18 +605,16 @@ def cli(peptides,
 
     if not peptides_are_bloom_filter:
         maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
-                                        molecule, peptide_ksize,
-                                        save_peptide_bloom_filter)
+                                        molecule, save_peptide_bloom_filter)
 
     dfs = []
     for reads_file in reads:
         df = score_reads(
             reads_file,
             peptide_bloom_filter,
-            peptide_ksize,
-            jaccard_threshold,
-            molecule,
-            verbose,
+            jaccard_threshold=jaccard_threshold,
+            molecule=molecule,
+            verbose=verbose,
             coding_nucleotide_fasta=coding_nucleotide_fasta,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,

@@ -117,8 +117,9 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
 
 
 def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
-                                    ksize, save_peptide_bloom_filter):
+                                    save_peptide_bloom_filter):
     if save_peptide_bloom_filter:
+        ksize = peptide_bloom_filter.ksize()
 
         if isinstance(save_peptide_bloom_filter, str):
             filename = save_peptide_bloom_filter
@@ -191,7 +192,6 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
         peptides,
         peptide_bloom_filter,
         molecule,
-        peptide_ksize,
         save_peptide_bloom_filter=save_peptide_bloom_filter)
 
 

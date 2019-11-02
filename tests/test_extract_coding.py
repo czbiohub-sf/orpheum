@@ -130,13 +130,12 @@ def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
-                     peptide_ksize, true_scores, true_scores_path,
+                     true_scores, true_scores_path,
                      true_protein_coding_fasta_path):
     from khtools.extract_coding import score_reads
 
     test = score_reads(reads,
                        peptide_bloom_filter,
-                       peptide_ksize=peptide_ksize,
                        molecule=molecule)
 
     # Check that scoring was the same
