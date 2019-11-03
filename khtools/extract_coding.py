@@ -468,21 +468,11 @@ def maybe_write_csv(coding_scores, csv):
 def maybe_write_json_summary(coding_scores, reads, json_summary):
     if json_summary:
         classification_groups = coding_scores.groupby('classification').size()
-        mean_jaccard = coding_scores.jaccard.mean()
-        median_jaccard = coding_scores.jaccard.median()
-        min_jaccard = coding_scores.jaccard.min()
-        max_jaccard = coding_scores.jaccard.max()
-        stddev_jaccard = coding_scores.jaccard.std()
-
+        jaccard_info = coding_scores.jaccard.describe()
         metadata = {'filenames': reads,
-                    'jaccard_info': {'mean': mean_jaccard,
-                                     'min': min_jaccard,
-                                     'max': max_jaccard,
-                                     'median': median_jaccard,
-                                     'stddev': stddev_jaccard},
+                    'jaccard_info': jaccard_info.todict(),
                     'classification_group_counts':
-                        classification_groups.todict()
-                    }
+                        classification_groups.todict()}
         with open(json_summary) as f:
             click.echo(f"Writing extract_coding summary to {json_summary}")
             json.dump(metadata, fp=f)
