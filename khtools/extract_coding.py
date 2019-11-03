@@ -46,6 +46,17 @@ SCORING_DF_COLUMNS = [
 ]
 
 
+def validate_jaccard(ctx, param, value):
+    """Ensure Jaccard threshold is between 0 and 1"""
+    try:
+        jaccard = float(value)
+        assert jaccard <= 1
+        assert jaccard >= 0
+        return jaccard
+    except (ValueError, AssertionError):
+        raise click.BadParameter('--jaccard-threshold needs to be between '
+                                 '0 and 1')
+
 def write_fasta(file_handle, description, sequence):
     file_handle.write(f">{description}\n{sequence}\n")
 
@@ -468,7 +479,7 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
               default=False,
               help="Peptide file is already a bloom filter")
 @click.option('--jaccard-threshold',
-              default=None,
+              default=None, type=click.FLOAT, callback=validate_jaccard,
               help="Minimum fraction of peptide k-mers from read in the "
               "peptide database for this read to be called a " +
               f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
