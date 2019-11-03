@@ -3,6 +3,7 @@ extract_coding.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+import json
 import sys
 import warnings
 
@@ -458,6 +459,29 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
     return fastas, file_handles
 
 
+def maybe_write_json_summary(coding_scores, reads, json_summary):
+    if json_summary:
+        classification_groups = coding_scores.groupby('classification').size()
+        mean_jaccard = coding_scores.jaccard.mean()
+        median_jaccard = coding_scores.jaccard.median()
+        min_jaccard = coding_scores.jaccard.min()
+        max_jaccard = coding_scores.jaccard.max()
+        stddev_jaccard = coding_scores.jaccard.std()
+
+        metadata = {'filenames': reads,
+                    'jaccard_info': {'mean': mean_jaccard,
+                                     'min': min_jaccard,
+                                     'max': max_jaccard,
+                                     'median': median_jaccard,
+                                     'stddev': stddev_jaccard},
+                    'classification_group_counts':
+                        classification_groups.todict()
+                    }
+        with open(json_summary) as f:
+            click.echo(f"Writing extract_coding summary to {json_summary}")
+            json.dump(metadata, fp=f)
+
+
 @click.command()
 @click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
@@ -495,6 +519,11 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
               default=False,
               help='Name of csv file to write with all sequence reads and '
               'their coding scores')
+@click.option('--json-summary',
+              default=False,
+              help='Name of json file to write summarization of coding/'
+                   'noncoding/other categorizations, the '
+                   'min/max/mean/median/stddev of Jaccard scores, and other')
 @click.option("--coding-nucleotide-fasta",
               help="If specified, save the coding nucleotides to this file")
 @click.option("--noncoding-nucleotide-fasta",
@@ -525,6 +554,7 @@ def cli(peptides,
         jaccard_threshold=None,
         molecule='protein',
         csv=False,
+        json_summary=False,
         coding_nucleotide_fasta=None,
         noncoding_nucleotide_fasta=None,
         low_complexity_nucleotide_fasta=None,
@@ -638,6 +668,8 @@ def cli(peptides,
     if csv:
         click.echo(f"Writing coding scores of reads to {csv}", err=True)
         coding_scores.to_csv(csv, index=False)
+
+    maybe_write_json_summary(coding_scores, reads, json_summary)
 
 
 if __name__ == '__main__':
