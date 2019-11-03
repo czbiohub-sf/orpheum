@@ -459,6 +459,12 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
     return fastas, file_handles
 
 
+def maybe_write_csv(coding_scores, csv):
+    if csv:
+        click.echo(f"Writing coding scores of reads to {csv}", err=True)
+        coding_scores.to_csv(csv, index=False)
+
+
 def maybe_write_json_summary(coding_scores, reads, json_summary):
     if json_summary:
         classification_groups = coding_scores.groupby('classification').size()
@@ -665,11 +671,9 @@ def cli(peptides,
 
     coding_scores = pd.concat(dfs, ignore_index=True)
 
-    if csv:
-        click.echo(f"Writing coding scores of reads to {csv}", err=True)
-        coding_scores.to_csv(csv, index=False)
-
+    maybe_write_csv(coding_scores, csv)
     maybe_write_json_summary(coding_scores, reads, json_summary)
+
 
 
 if __name__ == '__main__':
