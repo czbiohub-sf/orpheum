@@ -54,8 +54,8 @@ def validate_jaccard(ctx, param, value):
         assert jaccard >= 0
         return jaccard
     except (ValueError, AssertionError):
-        raise click.BadParameter('--jaccard-threshold needs to be between '
-                                 '0 and 1')
+        raise click.BadParameter(f'--jaccard-threshold needs to be a number'
+                                 f' between 0 and 1, but {value} was provided')
 
 def write_fasta(file_handle, description, sequence):
     file_handle.write(f">{description}\n{sequence}\n")
