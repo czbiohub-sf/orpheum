@@ -49,6 +49,8 @@ SCORING_DF_COLUMNS = [
 
 def validate_jaccard(ctx, param, value):
     """Ensure Jaccard threshold is between 0 and 1"""
+    if value is None:
+        return value
     try:
         jaccard = float(value)
         assert jaccard <= 1
