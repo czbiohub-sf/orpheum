@@ -5,3 +5,14 @@ click
 setuptools>=38.6.0
 tqdm
 colorama
+pandas
+ipykernel
+requests
+notebook
+scipy
+joblib
+matplotlib
+seaborn
+networkx
+sklearn
+s3fs

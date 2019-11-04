@@ -36,7 +36,7 @@ Usage
 Greet a name multiple times!
 
 ```
-$ Kmer-hashing tools hello --name "Rosalind Franklin" --count 10 
+$ khtools hello --name "Rosalind Franklin" --count 10 
 ```
 
 
