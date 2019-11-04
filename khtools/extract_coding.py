@@ -467,14 +467,25 @@ def maybe_write_csv(coding_scores, csv):
         coding_scores.to_csv(csv, index=False)
 
 
-def maybe_write_json_summary(coding_scores, reads, json_summary):
+def maybe_write_json_summary(coding_scores, json_summary):
     if json_summary:
-        classification_groups = coding_scores.groupby('classification').size()
-        jaccard_info = coding_scores.jaccard_in_peptide_db.describe()
-        metadata = {'filenames': reads,
-                    'jaccard_info': jaccard_info.to_dict(),
-                    'classification_group_counts':
-                        classification_groups.to_dict()}
+        grouped = coding_scores.groupby(['filename', 'classification'])
+        classification_groups = grouped.size()
+        jaccard_info = grouped.jaccard_in_peptide_db.describe()
+
+        metadata = {
+            'across_all_files': {
+                'jaccard_info':
+                    coding_scores.jaccard_in_peptide_db.describe().to_dict(),
+                'classification_value_counts':
+                    coding_scores.classification.value_counts().to_dict()
+            },
+            'per_filename': {
+                'jaccard_info': jaccard_info.to_dict(),
+                'classification_value_counts':
+                    classification_groups.to_dict()
+            }
+        }
         with open(json_summary, 'w') as f:
             click.echo(f"Writing extract_coding summary to {json_summary}")
             json.dump(metadata, fp=f)
