@@ -468,7 +468,7 @@ def maybe_write_csv(coding_scores, csv):
 def maybe_write_json_summary(coding_scores, reads, json_summary):
     if json_summary:
         classification_groups = coding_scores.groupby('classification').size()
-        jaccard_info = coding_scores.jaccard.describe()
+        jaccard_info = coding_scores.jaccard_in_peptide_db.describe()
         metadata = {'filenames': reads,
                     'jaccard_info': jaccard_info.todict(),
                     'classification_group_counts':
