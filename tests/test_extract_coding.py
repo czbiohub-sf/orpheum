@@ -254,34 +254,21 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
     pdt.assert_equal(test_scores, true)
 
 
-def test_cli_coding_nucleotide_fasta(tmpdir, reads, peptide_bloom_filter_path,
-                                     molecule, peptide_ksize,
-                                     true_protein_coding_fasta_string,
-                                     true_scores):
+def test_cli_coding_nucleotide_fasta(tmpdir, reads, peptide_fasta):
     from khtools.extract_coding import cli
 
     coding_nucleotide_fasta = os.path.join(tmpdir, 'coding_nucleotides.fasta')
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize,
         "--coding-nucleotide-fasta", coding_nucleotide_fasta,
-        "--peptides-are-bloom-filter", '--molecule', molecule,
-        peptide_bloom_filter_path, reads
+        peptide_fasta, reads
     ])
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(coding_nucleotide_fasta)
 
 
-def test_cli_noncoding_fasta(
-        tmpdir,
-        reads,
-        peptide_bloom_filter_path,
-        molecule,
-        peptide_ksize,
-        true_protein_coding_fasta_string,
-        true_scores):
+def test_cli_noncoding_fasta(tmpdir, reads, peptide_fasta):
     from khtools.extract_coding import cli
 
     noncoding_nucleotide_fasta = os.path.join(tmpdir,
@@ -289,24 +276,14 @@ def test_cli_noncoding_fasta(
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize,
         "--noncoding-nucleotide-fasta", noncoding_nucleotide_fasta,
-        "--peptides-are-bloom-filter", '--molecule', molecule,
-        peptide_bloom_filter_path, reads
+        peptide_fasta, reads
     ])
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(noncoding_nucleotide_fasta)
 
 
-def test_cli_low_complexity_nucleotide(
-        tmpdir,
-        reads,
-        peptide_bloom_filter_path,
-        molecule,
-        peptide_ksize,
-        true_protein_coding_fasta_string,
-        true_scores):
+def test_cli_low_complexity_nucleotide(tmpdir, reads, peptide_fasta):
     from khtools.extract_coding import cli
 
     low_complexity_nucleotide_fasta = os.path.join(
@@ -314,24 +291,17 @@ def test_cli_low_complexity_nucleotide(
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize,
         "--low-complexity-nucleotide-fasta", low_complexity_nucleotide_fasta,
-        "--peptides-are-bloom-filter", '--molecule', molecule,
-        peptide_bloom_filter_path, reads
+        peptide_fasta, reads
     ])
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(low_complexity_nucleotide_fasta)
 
 
 def test_cli_low_complexity_peptide(
         tmpdir,
         reads,
-        peptide_bloom_filter_path,
-        molecule,
-        peptide_ksize,
-        true_protein_coding_fasta_string,
-        true_scores):
+        peptide_fasta):
     from khtools.extract_coding import cli
 
     low_complexity_peptide_fasta = os.path.join(tmpdir,
@@ -339,13 +309,10 @@ def test_cli_low_complexity_peptide(
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize,
         "--low-complexity-peptide-fasta", low_complexity_peptide_fasta,
-        "--peptides-are-bloom-filter", '--molecule', molecule,
-        peptide_bloom_filter_path, reads
+        peptide_fasta, reads
     ])
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(low_complexity_peptide_fasta)
 
 
