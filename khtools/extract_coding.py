@@ -4,6 +4,7 @@ extract_coding.py
 Partition reads into coding, noncoding, and low-complexity bins
 """
 import json
+import math
 import sys
 import warnings
 
@@ -45,6 +46,7 @@ SEQTYPE_TO_ANNOUNCEMENT = {
 SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
+
 
 
 def validate_jaccard(ctx, param, value):
@@ -477,6 +479,7 @@ def maybe_write_json_summary(coding_scores, json_summary):
 
         classification_value_counts = \
             coding_scores.classification.value_counts()
+        classification_percentages = 100*classification_value_counts/classification_value_counts.sum()
 
         metadata = {
             'across_all_files': {
@@ -485,15 +488,14 @@ def maybe_write_json_summary(coding_scores, json_summary):
                 'classification_value_counts':
                     classification_value_counts.to_dict(),
                 'classification_percentages':
-                    100*classification_value_counts/
-                        classification_value_counts.sum()
+                    classification_percentages.to_dict()
             },
             'per_filename': {
                 'jaccard_info': jaccard_info.to_dict(),
                 'classification_value_counts':
                     filenmame_classification_counts.to_dict(),
                 'classification_percentages':
-                    filenmame_classification_percentages
+                    filenmame_classification_percentages.to_dict()
             }
         }
         with open(json_summary, 'w') as f:
@@ -685,7 +687,7 @@ def cli(peptides,
     coding_scores = pd.concat(dfs, ignore_index=True)
 
     maybe_write_csv(coding_scores, csv)
-    maybe_write_json_summary(coding_scores, reads, json_summary)
+    maybe_write_json_summary(coding_scores, json_summary)
 
 
 
