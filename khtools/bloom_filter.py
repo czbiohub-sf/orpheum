@@ -125,6 +125,7 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
                                  f"({peptide_bloom_filter.ksize()}) are not"
                                  f"equal")
     else:
+        peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
         click.echo(
             f"Creating peptide bloom filter with file: {peptides}\n"
             f"Using ksize: {peptide_ksize} and molecule: {molecule} "
