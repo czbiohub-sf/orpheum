@@ -1,3 +1,4 @@
+import math
 import os
 
 import click
@@ -17,6 +18,25 @@ DEFAULT_MAX_TABLESIZE = int(1e8)
 DEFAULT_PROTEIN_KSIZE = 7
 DEFAULT_DAYHOFF_KSIZE = 11
 DEFAULT_HP_KSIZE = 21
+
+
+def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
+                                        n_hash_functions=DEFAULT_N_TABLES,
+                                        tablesize=DEFAULT_MAX_TABLESIZE):
+    exponent = - n_hash_functions * n_total_kmers / tablesize
+    print(f"exponent: {exponent}")
+
+    # Probability that a single k-mer is randomly in the data
+    # per_kmer_fpr = math.pow(1 - math.exp(exponent), n_hash_functions)
+
+    # Use built-in `exp1m` = exp - 1
+    # - (exp - 1) = 1 - exp
+    per_kmer_fpr = math.pow(- math.expm1(exponent), n_hash_functions)
+    print(f"per kmer false positive rate: {per_kmer_fpr}")
+
+    # Probability that the number of k-mers in the read are all false positives
+    per_read_fpr = math.pow(per_kmer_fpr, n_kmers_in_read)
+    return per_read_fpr
 
 
 def load_nodegraph(*args, **kwargs):
