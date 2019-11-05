@@ -349,25 +349,15 @@ def test_cli_low_complexity_peptide(
     assert os.path.exists(low_complexity_peptide_fasta)
 
 
-def test_cli_json_summary(
-        tmpdir,
-        reads,
-        peptide_bloom_filter_path,
-        molecule,
-        peptide_ksize,
-        true_protein_coding_fasta_string,
-        true_scores):
+def test_cli_json_summary(tmpdir, reads, peptide_fasta):
     from khtools.extract_coding import cli
 
     json_summary = os.path.join(tmpdir, 'coding_summary.json')
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize,
         "--json-summary", json_summary,
-        "--peptides-are-bloom-filter", '--molecule', molecule,
-        peptide_bloom_filter_path, reads
+        peptide_fasta, reads
     ])
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(json_summary)

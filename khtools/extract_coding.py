@@ -471,32 +471,18 @@ def maybe_write_csv(coding_scores, csv):
 
 def maybe_write_json_summary(coding_scores, json_summary):
     if json_summary:
-        grouped = coding_scores.groupby(['filename', 'classification'])
-        filenmame_classification_counts = grouped.size()
-        filenmame_classification_percentages = \
-            100 * filenmame_classification_counts/coding_scores.filename.value_counts()
-        jaccard_info = grouped.jaccard_in_peptide_db.describe()
-
         classification_value_counts = \
             coding_scores.classification.value_counts()
-        classification_percentages = 100*classification_value_counts/classification_value_counts.sum()
+        classification_percentages = \
+            100 * classification_value_counts / classification_value_counts.sum()
 
         metadata = {
-            'across_all_files': {
-                'jaccard_info':
-                    coding_scores.jaccard_in_peptide_db.describe().to_dict(),
-                'classification_value_counts':
-                    classification_value_counts.to_dict(),
-                'classification_percentages':
-                    classification_percentages.to_dict()
-            },
-            'per_filename': {
-                'jaccard_info': jaccard_info.to_dict(),
-                'classification_value_counts':
-                    filenmame_classification_counts.to_dict(),
-                'classification_percentages':
-                    filenmame_classification_percentages.to_dict()
-            }
+            'jaccard_info':
+                coding_scores.jaccard_in_peptide_db.describe().to_dict(),
+            'classification_value_counts':
+                classification_value_counts.to_dict(),
+            'classification_percentages':
+                classification_percentages.to_dict()
         }
         with open(json_summary, 'w') as f:
             click.echo(f"Writing extract_coding summary to {json_summary}")
