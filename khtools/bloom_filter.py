@@ -106,6 +106,24 @@ def make_peptide_bloom_filter(peptide_fasta,
     return peptide_bloom_filter
 
 
+def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
+    """Create a bloom filter out of peptide sequences"""
+    peptide_set = set([])
+
+    with screed.open(peptide_fasta) as records:
+        for record in tqdm(records):
+            if '*' in record['sequence']:
+                continue
+            sequence = encode_peptide(record['sequence'], molecule)
+            try:
+                kmers = kmerize(sequence, peptide_ksize)
+                peptide_set.update(kmers)
+            except ValueError:
+                # Sequence length is smaller than k-mer size
+                continue
+    return peptide_set
+
+
 def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
                                     peptides_are_bloom_filter,
                                     n_tables=DEFAULT_N_TABLES,
