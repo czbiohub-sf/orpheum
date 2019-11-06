@@ -107,7 +107,10 @@ def make_peptide_bloom_filter(peptide_fasta,
 
 
 def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
-    """Create a bloom filter out of peptide sequences"""
+    """Create a python set out of peptide sequence k-mers
+
+    For comparing to the bloom filter in storage and performance
+    """
     peptide_set = set([])
 
     with screed.open(peptide_fasta) as records:
