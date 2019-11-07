@@ -7,6 +7,41 @@ from httmock import all_requests, HTTMock
 import pytest
 
 
+def make_pickled_test_data(ensembl_id, responses):
+    """
+
+    Parameters
+    ----------
+    ensembl_id : str
+        ENSEMBL identifier to write down
+    responses : dict
+        Mapping of response names to the data, e.g. "sequence_response" or
+        "lookup_response"
+
+    Returns
+    -------
+
+    """
+    import time
+    from datetime import datetime
+    import pickle
+
+    ts = time.time()
+    time_generated = datetime.fromtimestamp(ts).strftime(
+        '%Y-%m-%d %H:%M:%S')
+
+    d = {}
+    for key, value in responses.items():
+        d[key] = value
+    d['time_generated'] = time_generated
+    d['status_code'] = 200
+
+    folder = os.path.join(os.path.dirname(__file__), 'data')
+    filename = os.path.join(folder, f"{ensembl_id}.pkl")
+    with open(filename, 'wb') as f:
+        pickle.dump(d, f)
+
+
 @pytest.fixture
 def ensembl_protein_id():
     return "ENSP00000354687"
@@ -38,8 +73,7 @@ def ensembl_mock(url, request):
         with open(filename, 'rb') as testing_file:
             testing_data = pickle.load(testing_file)
     except FileNotFoundError:
-        raise ValueError(f"Testing file for transcript {ensembl_id} "
-                         "not found")
+        raise ValueError(f"Testing file for {ensembl_id} not found")
 
     print(f"Loaded test data for {ensembl_id}")
     print(f"Test data generated on {testing_data['time_generated']}")
@@ -55,6 +89,7 @@ def ensembl_mock(url, request):
                                   "mocking")
 
 
+@pytest.skip
 def test_lookup(ensembl_protein_id):
     from khtools.ensembl import lookup
 
@@ -65,6 +100,7 @@ def test_lookup(ensembl_protein_id):
         assert test == true
 
 
+@pytest.skip
 def test_lookup_expand_true(ensembl_transcript_id):
     from khtools.ensembl import lookup
 
@@ -108,6 +144,7 @@ def test_lookup_expand_true(ensembl_transcript_id):
         assert test == true
 
 
+@pytest.skip
 def test_get_orthologues(ensembl_gene_id):
     from khtools.ensembl import get_orthologues
 
