@@ -1,3 +1,4 @@
+import os
 import warnings
 
 from matplotlib.lines import Line2D
@@ -48,7 +49,6 @@ def nearest_neighbor_graph(data, metadata, n_neighbors=5,
         metadata,
         color_cols=color_cols,
         palettes=palettes)
-
     G = nx.Graph()
     nodes = [(cell_id, attr.to_dict())
              for cell_id, attr in metadata.iterrows()]
@@ -146,5 +146,10 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
         ax.set_title(title)
         figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
         png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'
+            draw_graph(graph, edge_color='black', label_col=label, pos=pos)
+        ax.set_title(title)
+        figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
+        png = os.path.join(figure_folder,
+                           f'{figure_prefix}_{figure_suffix}.png')
         savefig(fig, png, dpi=150)
     return graph, pos

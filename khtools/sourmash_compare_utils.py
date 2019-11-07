@@ -1,5 +1,3 @@
-
-
 import itertools
 
 from joblib import Parallel, delayed
