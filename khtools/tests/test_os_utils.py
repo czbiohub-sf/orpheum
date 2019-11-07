@@ -5,6 +5,7 @@ Tests for operating system utilities
 """
 
 import os
+import sys
 
 import pytest
 
@@ -38,6 +39,8 @@ def test_get_stdout_from_command():
     assert stdout == ['asdf']
 
 
+@pytest.mark.skipif(not sys.platform.startswith("darwin"),
+                    reason="computers are hard")
 def test_get_stdout_stderr_from_command():
     from khtools.os_utils import get_stdout_stderr_from_command
 
