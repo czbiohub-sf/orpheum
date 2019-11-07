@@ -4,7 +4,7 @@ import warnings
 # 3rd-party modules
 import holoviews as hv
 from holoviews import opts, dim
-from holoviews.operation.datashader import datashade, bundle_graph
+from holoviews.operation.datashader import bundle_graph
 import networkx as nx
 import pandas as pd
 
@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
-
 KSIZES = 9, 12, 15, 21
 LOG2SKETCHSIZES = 10, 12, 14, 16
 MOLECULES = 'dna', 'protein'
@@ -28,7 +27,8 @@ COLOR_COLS = ['species', 'cell_label', ]
 
 PALETTES = dict(species='Set2', cell_label='tab20')
 
-SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
+SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_' \
+                     'log2sketchsize-{log2sketchsize}'
 
 N_NEIGHBORS = 5
 
@@ -142,7 +142,7 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
                 png = f'{figure_folder}/{sketch_id}_plaidplot.png'
                 savefig(g, png, dpi=150)
             except FloatingPointError:
-                warnings.warn("\tCouldn't compute linkage -- no plaidplot " \
+                warnings.warn("\tCouldn't compute linkage -- no plaidplot "
                               "generated")
 
         graph, pos = build_graph_and_plot(similarities, metadata,
@@ -161,7 +161,6 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
         # hv.save(bundled, '.pdf', backend='matplotlib')
         graph_dict[(molecule, ksize, log2sketchsize)] = bundled
 
-
         if make_within_groupby_graphs:
             # make within-group (e.g. within-species) graphs
             for species, df in metadata.groupby(groupby):
@@ -173,7 +172,6 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
                     figure_prefix, graph_title)
 
     return graph_dict
-
 
 
 def draw_holoviews_graphs(graph_dict):
@@ -191,9 +189,9 @@ def draw_holoviews_graphs(graph_dict):
         hv.Dimension(('molecule', "molecule"), default=molecule),
 
         hv.Dimension(('ksize', "k-mer size"), default=ksize),
-             hv.Dimension(('log2_num_hashes', "$\log_2$ num hashes"),
-                          default=log2sketchsize),
-             ]
+        hv.Dimension(('log2_num_hashes', "$log_2$ num hashes"),
+                     default=log2sketchsize),
+    ]
 
     kwargs = dict(width=800, height=800, xaxis=None, yaxis=None)
     opts.defaults(opts.Nodes(**kwargs), opts.Graph(**kwargs))

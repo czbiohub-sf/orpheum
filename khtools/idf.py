@@ -28,7 +28,6 @@ def get_term_frequency(hash_abundance):
     return {k: v / total_counts for k, v in hash_abundance.items()}
 
 
-
 def get_document_frequency(siglist):
     document_frequency = Counter()
     for s in siglist:

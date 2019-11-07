@@ -1,7 +1,7 @@
 
 
-
 from .idf import filter_idf
+
 
 def jaccard_sigs(i, j, siglist):
     return siglist[i].jaccard(siglist[j])

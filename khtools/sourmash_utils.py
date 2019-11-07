@@ -244,7 +244,7 @@ def plaidplot_and_distplot(
     plaidplot_grid = plaidplot_square(
         data, metadata, metadata_col=metadata_col, **kwargs)
     fig_prefix = f'{tissue_channel}_{name}_k{ksize}_{molecule}_' \
-                  'ignore-abundance={ignore_abundance}'
+        'ignore-abundance={ignore_abundance}'
     png = f'../figures/{fig_prefix}_clustermap.png'
     plaidplot_grid.ax_col_dendrogram.set(title=fig_prefix)
     plaidplot_grid.savefig(png, dpi=300)
