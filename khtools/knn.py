@@ -146,7 +146,7 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
         ax.set_title(title)
         figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
         png = f'{figure_folder}/{figure_prefix}_{figure_suffix}.png'
-            draw_graph(graph, edge_color='black', label_col=label, pos=pos)
+        draw_graph(graph, edge_color='black', label_col=label, pos=pos)
         ax.set_title(title)
         figure_suffix = f'graph_nneighbors-{n_neighbors}_colorby-{label}'
         png = os.path.join(figure_folder,
