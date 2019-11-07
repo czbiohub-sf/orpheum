@@ -9,6 +9,7 @@ from requests.compat import urljoin
 
 from notebook.notebookapp import list_running_servers
 
+
 def get_notebook_name():
     """
     Return the full path of the jupyter notebook.

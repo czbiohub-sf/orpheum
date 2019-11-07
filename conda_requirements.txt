@@ -4,3 +4,17 @@ flake8
 click
 tqdm
 colorama
+numpy
+networkx
+seaborn
+pandas
+ipykernel
+notebook
+joblib
+s3fs
+scipy
+matplotlib
+scikit-learn
+sourmash
+fastcluster
+biopython
