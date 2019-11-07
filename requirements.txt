@@ -8,7 +8,7 @@ s3fs
 scipy
 requests
 seaborn
-pytest
+pytest==3.9.1
 matplotlib
 tqdm
 fastcluster
