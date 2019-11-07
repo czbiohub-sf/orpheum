@@ -4,7 +4,6 @@ extract_coding.py
 Partition reads into coding, noncoding, and low-complexity bins
 """
 import json
-import math
 import sys
 import warnings
 
@@ -48,7 +47,6 @@ SCORING_DF_COLUMNS = [
 ]
 
 
-
 def validate_jaccard(ctx, param, value):
     """Ensure Jaccard threshold is between 0 and 1"""
     if value is None:
@@ -61,6 +59,7 @@ def validate_jaccard(ctx, param, value):
     except (ValueError, AssertionError):
         raise click.BadParameter(f'--jaccard-threshold needs to be a number'
                                  f' between 0 and 1, but {value} was provided')
+
 
 def write_fasta(file_handle, description, sequence):
     file_handle.write(f">{description}\n{sequence}\n")
@@ -474,8 +473,8 @@ def maybe_write_json_summary(coding_scores, json_summary):
     if json_summary:
         classification_value_counts = \
             coding_scores.classification.value_counts()
-        classification_percentages = \
-            100 * classification_value_counts / classification_value_counts.sum()
+        classification_percentages = 100 * classification_value_counts / \
+            classification_value_counts.sum()
 
         metadata = {
             'jaccard_info':
@@ -675,7 +674,6 @@ def cli(peptides,
 
     maybe_write_csv(coding_scores, csv)
     maybe_write_json_summary(coding_scores, json_summary)
-
 
 
 if __name__ == '__main__':

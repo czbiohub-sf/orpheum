@@ -130,7 +130,7 @@ class HomologyTable:
             cross_species_metadata_subset_non_homologues,
             cross_species_metadata.query('is_homologue == True')
         ],
-                                                  ignore_index=True)
+            ignore_index=True)
 
         return cross_species_metadata_subset
 

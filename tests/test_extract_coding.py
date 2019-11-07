@@ -215,7 +215,6 @@ def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
     assert error_message in result.output
 
 
-
 def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
                                   peptide_ksize,
                                   true_protein_coding_fasta_string):
