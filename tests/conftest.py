@@ -80,9 +80,10 @@ def peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
 @pytest.fixture
 def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
                          peptide_ksize):
+    from khtools.bloom_filter import load_nodegraph
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
-        return Nodegraph.load(peptide_bloom_filter_path)
+        return load_nodegraph(peptide_bloom_filter_path)
     except (FileNotFoundError, OSError):
         from khtools.bloom_filter import make_peptide_bloom_filter
 
