@@ -89,7 +89,7 @@ def ensembl_mock(url, request):
                                   "mocking")
 
 
-@pytest.skip
+@pytest.mark.skip
 def test_lookup(ensembl_protein_id):
     from khtools.ensembl import lookup
 
@@ -100,7 +100,7 @@ def test_lookup(ensembl_protein_id):
         assert test == true
 
 
-@pytest.skip
+@pytest.mark.skip
 def test_lookup_expand_true(ensembl_transcript_id):
     from khtools.ensembl import lookup
 
@@ -144,7 +144,7 @@ def test_lookup_expand_true(ensembl_transcript_id):
         assert test == true
 
 
-@pytest.skip
+@pytest.mark.skip
 def test_get_orthologues(ensembl_gene_id):
     from khtools.ensembl import get_orthologues
 
