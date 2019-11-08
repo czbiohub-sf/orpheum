@@ -96,10 +96,9 @@ def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
     kmers1 = set(seq1[i:i + ksize] for i in range(len(seq1) - ksize + 1))
     kmers2 = set(seq2[i:i + ksize] for i in range(len(seq2) - ksize + 1))
     jaccard = jaccardize(kmers1, kmers2)
-    if debug:
-        print("len(kmers1):", len(kmers1))
-        print("len(kmers2):", len(kmers2))
-        print(f"jaccard: {jaccard}")
+    logger.debug("len(kmers1):", len(kmers1))
+    logger.debug("len(kmers2):", len(kmers2))
+    logger.debug(f"jaccard: {jaccard}")
     return jaccard
 
 
@@ -224,10 +223,9 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     logger.debug(pformat(seq_iterator))
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
-    logger.info(
-        "comparison for index {} done in {:.5f} seconds",
-        index,
-        time.time() - startt,)
+    notify(
+        "comparison for index {} done in {:.5f} seconds".format(
+            index, time.time() - startt))
     return comparision_df_list
 
 
