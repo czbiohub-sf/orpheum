@@ -512,7 +512,7 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option('--jaccard-threshold',
               default=None, type=click.FLOAT, callback=validate_jaccard,
               help="Minimum fraction of peptide k-mers from read in the "
-              "peptide database for this read to be called a " +
+              "peptide database for this read to be called a "
               f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
               f" protein and dayhoff encodings, and "
               f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
