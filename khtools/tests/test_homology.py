@@ -151,19 +151,19 @@ class TestHomologyTable:
             datatype)
         if datatype.endswith('peptide'):
             assert moltype == seqtype == 'protein'
-            assert pdt.assert_almost_equal(data, homology_table.protein_coding)
+            pdt.assert_almost_equal(data, homology_table.protein_coding)
         elif datatype.endswith('cdna'):
             assert moltype == "DNA"
             assert seqtype == 'cdna'
-            assert pdt.assert_almost_equal(data, homology_table.protein_coding)
+            pdt.assert_almost_equal(data, homology_table.protein_coding)
         elif datatype.endswith('cds'):
             assert moltype == "DNA"
             assert seqtype == 'cds'
-            assert pdt.assert_almost_equal(data, homology_table.protein_coding)
+            pdt.assert_almost_equal(data, homology_table.protein_coding)
         elif datatype == 'non_coding':
             assert moltype == "DNA"
             assert seqtype == 'cdna'
-            assert pdt.assert_almost_equal(data, homology_table.non_coding)
+            pdt.assert_almost_equal(data, homology_table.non_coding)
 
 
 def test_cli_tsv_all_pairs(species1, species2, homologues_tsv, homology_scores_allpairs):
