@@ -195,4 +195,7 @@ class HomologyTable:
 
         cross_species_metadata_fillna = cross_species_metadata.fillna(
             "No homology")
+        cross_species_metadata_fillna['is_homologue_boolean'] = \
+            cross_species_metadata_fillna.is_homologue.replace(
+                'No homology', False).astype(bool)
         return cross_species_metadata_fillna
