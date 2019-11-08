@@ -11,6 +11,7 @@ import click
 
 # Within-module imports
 from khtools.hello import hello
+from khtools.homology import cli as homology
 
 
 click.option = partial(click.option, show_default=True)
@@ -28,6 +29,7 @@ def cli():
 
 
 cli.add_command(hello, name='hello')
+cli.add_command(homology, name='homology')
 
 
 if __name__ == "__main__":
