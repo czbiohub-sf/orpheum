@@ -1,5 +1,6 @@
 import logging
 
+import click
 import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
@@ -199,3 +200,50 @@ class HomologyTable:
             cross_species_metadata_fillna.is_homologue.replace(
                 'No homology', False).astype(bool)
         return cross_species_metadata_fillna
+
+
+@click.argument("species1")
+@click.argument("species2")
+@click.argument("homologues")
+@click.option("--seqtype", default='proteon_coding_peptide',
+              help="Which sequences to use to compare orthology. One of: "
+                   "'protein_coding_peptide', 'protein_coding_cdna', or "
+                   "'protein_coding_cds', 'non_coding'")
+@click.option("--n-subset", '-n', default=200,
+              help="Number of orthologue pairs to subset. If 0, use all "
+                   "orthologue pairs")
+@click.option("--n-background", default=10,
+              help="Number of non-orthologous pairs to randomly choose as the "
+                   "background set")
+@click.option("--parquet", default=None,
+              help="If provided, save table to a space-efficient and fast-IO "
+                   "parquet format file of this name")
+@click.option("--no-csv", is_flag=True, default=False,
+              "Don't output csv to stdout")
+@click.option('--sep', default=',',
+              help="Separator to use for reading in the homology table")
+@click.option('--compression', default='gzip',
+              help="Compression to use for reading in the homology table")
+@click.option('--processes', '-p', default=2,
+              help="Number of processes to usefor paralleizing")
+def cli(species1, species2, homologues, n_subset, n_background, parquet,
+        no_csv, sep=',', compression='gzip', processes=2):
+
+    # Set to None if 'all'
+    n_subset = None if n_subset == 'all' else n_subset
+
+    homology_df = pd.read_csv(homologues, compression=compression, sep=sep)
+    homology_table = HomologyTable(homology_df, species1=species1,
+                                   species2=species2)
+
+    protein_coding_orthology = homology_table.compare_orthology(
+        'protein_coding_peptide',
+        n_subset=n_subset,
+        n_jobs=processes,
+        n_background=n_background)
+
+    if parquet:
+        protein_coding_orthology.to_parquet(parquet)
+    if not no_csv:
+        click.echo(protein_coding_orthology.to_csv(index=False))
+
