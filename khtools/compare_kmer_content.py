@@ -1,7 +1,8 @@
 from functools import partial
 import itertools
+import logging
 import multiprocessing
-from pprint import pprint
+from pprint import pprint, pformat
 import random
 import time
 
@@ -14,6 +15,11 @@ from sourmash.logging import notify
 from .sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
     botvinnikize
+
+# Create a logger
+logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
 
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
@@ -133,8 +139,7 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
         molecule_name='hydrophobic-polar',
         ksizes=ksizes)
 
-    df = pd.concat([protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df,
-                    hp_df], ignore_index=True)
+    df = pd.concat([protein_df, dayhoff_df, hp_df], ignore_index=True)
     return df
 
 
@@ -211,21 +216,18 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     random_seqlist2 = random.sample(seqlist2, n_background)
     this_index_seqlist1 = [seqlist1[index]] * n_background
     background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
-    if verbose:
-        print("background_pairs:")
-        pprint(background_pairs)
+    logger.debug("background_pairs:")
+    logger.debug(pformat(background_pairs))
 
     seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
-    if verbose:
-        print("seq_iterator:")
-        pprint(seq_iterator)
+    logger.debug("seq_iterator:")
+    logger.debug(pformat(seq_iterator))
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
-    notify(
+    logger.info(
         "comparison for index {} done in {:.5f} seconds",
         index,
-        time.time() - startt,
-        end='\r')
+        time.time() - startt,)
     return comparision_df_list
 
 
@@ -262,7 +264,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         n_background=n_background,
         ksizes=ksizes,
         moltype=moltype)
-    notify("Created similarity func")
+    logger.info("Created similarity func")
 
     # Initialize multiprocess.pool
     pool = multiprocessing.Pool(processes=n_jobs)
@@ -271,15 +273,15 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     chunksize, extra = divmod(len_seqlist1, n_jobs)
     if extra:
         chunksize += 1
-    notify("Calculated chunk size for multiprocessing")
+    logger.info("Calculated chunk size for multiprocessing")
 
     # This will not generate the results yet, since pool.imap returns a
     # generator
     result = pool.imap(func, range(len_seqlist1), chunksize=chunksize)
-    notify("Initialized multiprocessing pool.imap")
+    logger.info("Initialized multiprocessing pool.imap")
 
     peptide_kmer_comparisons = pd.concat(
         itertools.chain(*result), ignore_index=True)
 
-    notify(f"Total time: {time.time() - t0}")
+    logger.info(f"Total time: {time.time() - t0}")
     return peptide_kmer_comparisons
