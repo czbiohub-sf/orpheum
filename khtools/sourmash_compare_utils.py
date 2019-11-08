@@ -6,8 +6,6 @@ from scipy.spatial.distance import squareform
 
 from . import jaccard_utils
 
-GROUPBY = ('ksize', 'molecule', 'num_hashes')
-
 
 def _compare_serial(siglist, iterator):
     n = len(siglist)
@@ -30,15 +28,25 @@ def compare_all_pairs(siglist, n_jobs=None):
         values = _compare_serial(siglist, iterator)
     else:
         # This creates a condensed distance matrix
-        condensed = Parallel(n_jobs=n_jobs)(
-            delayed(jaccard_utils.jaccard_sigs)(i, j, siglist)
-            for i, j in iterator)
+        condensed = Parallel(
+            n_jobs=n_jobs)(
+            delayed(
+                jaccard_utils.jaccard_sigs)(
+                i,
+                j,
+                siglist) for i,
+            j in iterator)
         values = squareform(condensed)
 
     return values
 
 
-def get_similarity_difference(similarity, groupby=GROUPBY):
+def get_similarity_difference(
+    similarity,
+    groupby=(
+        'ksize',
+        'molecule',
+        'num_hashes')):
     """Calculate difference in similarity from "true" aka maximum sampling
     similarity
 
@@ -51,6 +59,9 @@ def get_similarity_difference(similarity, groupby=GROUPBY):
     """
     CELL_INDEX = ['cell1', 'cell2']
 
+    # flake8 can't detect that the variable is used by pandas dataframe
+    # querying so ignore with #noqa
+    max_num_hashes = similarity.num_hashes.max()  # noqa
     true_similarity = similarity.query('num_hashes == @max_num_hashes')
     true_similarity = true_similarity.set_index(CELL_INDEX).sort_index()
 

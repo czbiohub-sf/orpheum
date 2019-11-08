@@ -13,18 +13,17 @@ from .s3_utils import savefig
 from . import knn
 from . import sourmash_utils
 
+
 # don't warn me about too many figures open
 import matplotlib.pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': 0})
+
 
 KSIZES = 9, 12, 15, 21
 LOG2SKETCHSIZES = 10, 12, 14, 16
 MOLECULES = 'dna', 'protein'
 
-COLOR_COLS = [
-    'species',
-    'cell_label',
-]
+COLOR_COLS = ['species', 'cell_label', ]
 
 PALETTES = dict(species='Set2', cell_label='tab20')
 
@@ -38,8 +37,7 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
                          figure_folder, figure_prefix, title):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        graph = knn.nearest_neighbor_graph(data,
-                                           metadata,
+        graph = knn.nearest_neighbor_graph(data, metadata,
                                            n_neighbors=n_neighbors,
                                            color_cols=color_cols,
                                            palettes=palettes)
@@ -58,20 +56,13 @@ def build_graph_and_plot(data, metadata, n_neighbors, color_cols, palettes,
     return graph, pos
 
 
-def get_similarity_graphs(csv_template,
-                          metadata,
-                          figure_folder,
-                          groupby='species',
-                          ksizes=KSIZES,
-                          log2sketchsizes=LOG2SKETCHSIZES,
-                          molecules=MOLECULES,
+def get_similarity_graphs(csv_template, metadata, figure_folder,
+                          groupby='species', ksizes=KSIZES,
+                          log2sketchsizes=LOG2SKETCHSIZES, molecules=MOLECULES,
                           sketch_id_template=SKETCH_ID_TEMPLATE,
-                          n_neighbors=N_NEIGHBORS,
-                          plaidplot=False,
-                          palettes=PALETTES,
-                          color_cols=COLOR_COLS,
-                          verbose=False,
-                          make_within_groupby_graphs=False):
+                          n_neighbors=N_NEIGHBORS, plaidplot=False,
+                          palettes=PALETTES, color_cols=COLOR_COLS,
+                          verbose=False, make_within_groupby_graphs=False):
     """Read similarity csvs and create holoviews graphs
 
     Parameters
@@ -120,8 +111,7 @@ def get_similarity_graphs(csv_template,
     categories = metadata[color_cols]
 
     for molecule, ksize, log2sketchsize in iterable:
-        template_kwargs = dict(molecule=molecule,
-                               ksize=ksize,
+        template_kwargs = dict(molecule=molecule, ksize=ksize,
                                log2sketchsize=log2sketchsize)
         sketch_id = sketch_id_template.format(**template_kwargs)
         if verbose:
@@ -155,17 +145,16 @@ def get_similarity_graphs(csv_template,
                 warnings.warn("\tCouldn't compute linkage -- no plaidplot "
                               "generated")
 
-        graph, pos = build_graph_and_plot(similarities, metadata, n_neighbors,
-                                          color_cols, palettes, figure_folder,
+        graph, pos = build_graph_and_plot(similarities, metadata,
+                                          n_neighbors, color_cols, palettes,
+                                          figure_folder,
                                           sketch_id, title)
 
         # hv.extension('matplotlib')
 
         graph_hv = hv.Graph.from_networkx(graph, pos)
 
-        graph_hv = graph_hv.opts(node_size=10,
-                                 edge_line_width=1,
-                                 cmap='Set2',
+        graph_hv = graph_hv.opts(node_size=10, edge_line_width=1, cmap='Set2',
                                  node_color=dim(groupby),
                                  node_line_color='gray')
         bundled = bundle_graph(graph_hv)
@@ -178,9 +167,9 @@ def get_similarity_graphs(csv_template,
                 data = similarities.loc[df.index, df.index]
                 figure_prefix = f"{sketch_id}_{species}"
                 graph_title = f"{title} ({species})"
-                build_graph_and_plot(data, df, n_neighbors, color_cols,
-                                     palettes, figure_folder, figure_prefix,
-                                     graph_title)
+                build_graph_and_plot(
+                    data, df, n_neighbors, color_cols, palettes, figure_folder,
+                    figure_prefix, graph_title)
 
     return graph_dict
 
@@ -192,11 +181,13 @@ def draw_holoviews_graphs(graph_dict):
 
     hv.extension('bokeh')
     defaults = dict(width=400, height=400, padding=0.1)
-    hv.opts.defaults(opts.EdgePaths(**defaults), opts.Graph(**defaults),
-                     opts.Nodes(**defaults))
+    hv.opts.defaults(
+        opts.EdgePaths(**defaults), opts.Graph(**defaults),
+        opts.Nodes(**defaults))
 
     kdims = [
         hv.Dimension(('molecule', "molecule"), default=molecule),
+
         hv.Dimension(('ksize', "k-mer size"), default=ksize),
         hv.Dimension(('log2_num_hashes', "$log_2$ num hashes"),
                      default=log2sketchsize),
@@ -205,14 +196,9 @@ def draw_holoviews_graphs(graph_dict):
     kwargs = dict(width=800, height=800, xaxis=None, yaxis=None)
     opts.defaults(opts.Nodes(**kwargs), opts.Graph(**kwargs))
 
-    kwargs = dict(node_size=10,
-                  edge_line_width=1,
-                  cmap='Set2',
+    kwargs = dict(node_size=10, edge_line_width=1, cmap='Set2',
                   node_color=dim("species"),
-                  node_line_color='gray',
-                  width=600,
-                  height=600,
-                  xaxis=None,
+                  node_line_color='gray', width=600, height=600, xaxis=None,
                   yaxis=None)
 
     holomap = hv.HoloMap(graph_dict, kdims=kdims)

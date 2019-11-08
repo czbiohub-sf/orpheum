@@ -25,6 +25,8 @@ def cli():
     """
     Kmer hashing tools contains data cleaning and visualization code for
     analyzing sequencing datasets at the k-mer level
+    Kmer hashing tools contains data cleaning and visualization code for
+    analyzing kmer-hashing similarity matrices
     """
     pass
 

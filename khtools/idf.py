@@ -1,3 +1,4 @@
+
 from collections import Counter
 import math
 
@@ -40,7 +41,7 @@ def get_inverse_document_frequency(siglist):
     N = len(siglist)
     document_frequency = get_document_frequency(siglist)
     inverse_document_frequency = {
-        k: math.log(N / v)
-        for k, v in document_frequency.items()
-    }
+        k: math.log(
+            N / v) for k,
+        v in document_frequency.items()}
     return inverse_document_frequency

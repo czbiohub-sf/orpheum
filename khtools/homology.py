@@ -7,23 +7,22 @@ from tqdm import tqdm
 from .compare_kmer_content import compare_all_seqs
 from .ensembl import get_sequence, get_rna_sequence_from_protein_id
 
+
 # Create a logger
 logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
-QUANTITATIVE_KEYWORDS = {
-    'Gene-order conservation score', 'alignment coverage', 'dN with',
-    'dS with', '%id'
-}
-ORTHOLOGY_ORDER = [
-    'No homology', 'ortholog_one2one', 'ortholog_one2many',
-    'ortholog_many2many'
-]
+
+QUANTITATIVE_KEYWORDS = {'Gene-order conservation score', 'alignment coverage',
+                         'dN with', 'dS with', '%id'}
+ORTHOLOGY_ORDER = ['No homology', 'ortholog_one2one', 'ortholog_one2many',
+                   'ortholog_many2many']
 ORTHOLOGY_PALETTE = dict(zip(ORTHOLOGY_ORDER, ['grey'] + sns.color_palette()))
 
 
 class HomologyTable:
+
     def __init__(self, data, species1, species2):
         """
 
@@ -41,26 +40,19 @@ class HomologyTable:
         self.species2 = species2
 
         # Extract column for homology type (e.g. one2one, one2many, many2many)
-        self.homology_type_col = [
-            x for x in self.data.columns if x.endswith("homology type")
-        ][0]
+        self.homology_type_col = [x for x in self.data.columns
+                                  if x.endswith("homology type")][0]
 
         self.data['is_homologue'] = self.data[self.homology_type_col].notnull()
 
         self.species1_id_col = 'Query protein or transcript ID'
-        self.species2_id_col = [
-            x for x in self.data.columns
-            if x.endswith("protein or transcript stable ID")
-        ][0]
-        self.quantitative_features = [
-            x for x in self.data.columns
-            if any(keyword in x for keyword in QUANTITATIVE_KEYWORDS)
-        ]
+        self.species2_id_col = [x for x in self.data.columns if x.endswith(
+            "protein or transcript stable ID")][0]
+        self.quantitative_features = [x for x in self.data.columns if any(
+            keyword in x for keyword in QUANTITATIVE_KEYWORDS)]
 
-        gene_order_col = [
-            col for col in self.quantitative_features
-            if 'Gene-order conservation score' in col
-        ][0]
+        gene_order_col = [col for col in self.quantitative_features
+                          if 'Gene-order conservation score' in col][0]
         self._protein_coding_rows = self.data[gene_order_col].notnull()
         self.protein_coding = self.data.loc[self._protein_coding_rows]
         self.non_coding = self.data.loc[~self._protein_coding_rows]
@@ -70,21 +62,16 @@ class HomologyTable:
 
         # ignore_errors=True skips deprecated IDs
         if moltype == 'protein' and seqtype != 'protein':
-            seqs = [
-                get_rna_sequence_from_protein_id(x,
-                                                 type=seqtype,
-                                                 ignore_errors=True)
-                for x in tqdm(df[id_column])
-            ]
+            seqs = [get_rna_sequence_from_protein_id(x, type=seqtype,
+                                                     ignore_errors=True)
+                    for x in tqdm(df[id_column])]
         else:
-            seqs = [
-                get_sequence(x, ignore_errors=True)
-                for x in tqdm(df[id_column])
-            ]
+            seqs = [get_sequence(x, ignore_errors=True)
+                    for x in tqdm(df[id_column])]
         # Sanitize output based on deprecated ENSEMBL IDs that don't have
         # sequences
-        id_seqs = [(ID, seq) for ID, seq in zip(df[id_column], seqs)
-                   if seq is not None]
+        id_seqs = [(ID, seq)
+                   for ID, seq in zip(df[id_column], seqs) if seq is not None]
         return id_seqs
 
     def _get_cross_species(self, random_subset, kmer_comparisons):
@@ -96,8 +83,10 @@ class HomologyTable:
 
         id_to_species = pd.concat([id_to_species1, id_to_species2]).to_dict()
 
-        kmer_comparisons['species1'] = kmer_comparisons.id1.map(id_to_species)
-        kmer_comparisons['species2'] = kmer_comparisons.id2.map(id_to_species)
+        kmer_comparisons[
+            'species1'] = kmer_comparisons.id1.map(id_to_species)
+        kmer_comparisons[
+            'species2'] = kmer_comparisons.id2.map(id_to_species)
         kmer_comparisons['species_species'] = kmer_comparisons.species1 + \
             "_" + kmer_comparisons.species2
         cross_species = kmer_comparisons.query('species1 != species2')
@@ -126,20 +115,15 @@ class HomologyTable:
                     10, random_state=random_state))
         # Add the randomly sampled non homologous data back to the data that is
         # homologous
-        cross_species_metadata_subset = pd.concat([
-            cross_species_metadata_subset_non_homologues,
-            cross_species_metadata.query('is_homologue == True')
-        ],
+        cross_species_metadata_subset = pd.concat(
+            [cross_species_metadata_subset_non_homologues,
+             cross_species_metadata.query('is_homologue == True')],
             ignore_index=True)
 
         return cross_species_metadata_subset
 
-    def compare_orthology(self,
-                          datatype,
-                          n_subset=200,
-                          random_state=0,
-                          n_jobs=32,
-                          n_background=100,
+    def compare_orthology(self, datatype, n_subset=200, random_state=0,
+                          n_jobs=32, n_background=100,
                           ksizes=list(range(2, 41))):
         """
 
@@ -191,26 +175,22 @@ class HomologyTable:
         logger.info("Subsetting data")
         random_subset = data.sample(n_subset, random_state=random_state)
         logger.info("Getting sequences from IDs")
-        species1_id_seqs = self.get_sequences_from_ids(random_subset,
-                                                       self.species1_id_col,
-                                                       moltype, seqtype)
-        species2_id_seqs = self.get_sequences_from_ids(random_subset,
-                                                       self.species2_id_col,
-                                                       moltype, seqtype)
+        species1_id_seqs = self.get_sequences_from_ids(
+            random_subset, self.species1_id_col, moltype, seqtype)
+        species2_id_seqs = self.get_sequences_from_ids(
+            random_subset, self.species2_id_col, moltype, seqtype)
 
         logger.info("K-merizing and calculating jaccard comparisons")
-        kmer_comparisons = compare_all_seqs(species1_id_seqs,
-                                            species2_id_seqs,
-                                            n_jobs,
-                                            ksizes,
+        kmer_comparisons = compare_all_seqs(species1_id_seqs, species2_id_seqs,
+                                            n_jobs, ksizes,
                                             moltype=moltype,
                                             n_background=n_background)
 
         logger.info("Cleaning up k-mer comparisons for cross-species data")
         cross_species = self._get_cross_species(random_subset,
                                                 kmer_comparisons)
-        cross_species_metadata = self._add_orthology_metadata(
-            cross_species, random_subset)
+        cross_species_metadata = self._add_orthology_metadata(cross_species,
+                                                              random_subset)
 
         cross_species_metadata_fillna = cross_species_metadata.fillna(
             "No homology")

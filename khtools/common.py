@@ -4,6 +4,7 @@ import pandas as pd
 
 from . import jupyter_utils
 
+
 FIGURE_FOLDER = os.path.join('..', 'figures')
 
 

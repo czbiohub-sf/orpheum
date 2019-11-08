@@ -4,6 +4,7 @@ import sys
 
 import requests
 
+
 # Create a logger
 logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__file__)
@@ -17,10 +18,8 @@ def maybe_get_cds(transcript_id):
         return None
 
 
-def get_rna_sequence_from_protein_id(protein_id,
-                                     ignore_errors=False,
-                                     verbose=False,
-                                     type='cdna'):
+def get_rna_sequence_from_protein_id(protein_id, ignore_errors=False,
+                                     verbose=False, type='cdna'):
     server = "https://rest.ensembl.org"
     ext = f"/lookup/id/{protein_id}?content-type=application/json"
 
@@ -46,9 +45,11 @@ def get_rna_sequence_from_protein_id(protein_id,
     return sequence
 
 
-def get_sequence(ensembl_id, ignore_errors=True, verbose=False):
+def get_sequence(ensembl_id, type=None, ignore_errors=True, verbose=False):
     server = "https://rest.ensembl.org"
     ext = f"/sequence/id/{ensembl_id}"
+    if type is not None:
+        ext += f'?type={type}'
 
     r = requests.get(server + ext, headers={"Content-Type": "text/plain"})
 
@@ -70,7 +71,7 @@ def get_sequence(ensembl_id, ignore_errors=True, verbose=False):
 def get_orthologues(ensembl_id, target_species, verbose=False):
     server = "https://rest.ensembl.org"
     ext = f"/homology/id/{ensembl_id}?target_species={target_species}" \
-          f";type=orthologues"
+        ";type=orthologues"
 
     r = requests.get(server + ext,
                      headers={"Content-Type": "application/json"})
@@ -100,7 +101,6 @@ def lookup(ensembl_id, expand=False, verbose=False):
         sys.exit()
 
     decoded = r.json()
-    # print(repr(decoded))
     if verbose:
         pprint(decoded)
     return decoded

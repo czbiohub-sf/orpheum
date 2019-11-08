@@ -8,9 +8,10 @@ import pandas as pd
 from scipy.spatial.distance import pdist
 import seaborn as sns
 
+
 from .extract_metadata import extract_cell_metadata
 
-keys_for_length = ('mins', )
+keys_for_length = ('mins',)
 
 keys_for_values = ('ksize', 'molecule')
 
@@ -82,9 +83,8 @@ def single_category_colors(categories, palette):
 
     unique = get_unique_ordered_categories(no_na)
     n_unique = len(unique)
-    colors = [
-        rgb2hex(x) for x in sns.color_palette(palette, n_colors=n_unique)
-    ]
+    colors = [rgb2hex(x)
+              for x in sns.color_palette(palette, n_colors=n_unique)]
     category_to_color = dict(zip(unique, colors))
 
     data = [category_to_color[c] for c in no_na]
@@ -109,9 +109,9 @@ def category_colors(categories, palette):
         if palette is None:
             palette = dict(zip(categories.columns, PALETTE_NAMES))
         data = [
-            single_category_colors(categories[col], palette[col])
-            for col in categories
-        ]
+            single_category_colors(
+                categories[col],
+                palette[col]) for col in categories]
         item_to_color = pd.concat(data, axis=1)
         item_to_color.columns = categories.columns
     elif isinstance(categories, pd.Series):
@@ -152,48 +152,50 @@ def calculate_linkage(data, metric, method, between='cols'):
     return optimal_Z
 
 
-def plaidplot(data,
-              row_categories=None,
-              col_categories=None,
-              row_palette=None,
-              col_palette=None,
-              metric='euclidean',
-              method='ward',
-              xticklabels=[],
-              yticklabels=[],
-              cmap='GnBu',
-              **kwargs):
+def plaidplot(
+        data,
+        row_categories=None,
+        col_categories=None,
+        row_palette=None,
+        col_palette=None,
+        metric='euclidean',
+        method='ward',
+        xticklabels=[],
+        yticklabels=[],
+        cmap='GnBu',
+        **kwargs):
 
     col_linkage = calculate_linkage(data, metric, method, between='cols')
     row_linkage = calculate_linkage(data, metric, method, between='rows')
 
-    row_colors = category_colors(row_categories, row_palette) \
-        if 'row_colors' not in kwargs else kwargs.pop('row_colors')
-    col_colors = category_colors(col_categories, col_palette) \
-        if 'col_colors' not in kwargs else kwargs.pop('col_colors')
+    row_colors = category_colors(
+        row_categories,
+        row_palette) if 'row_colors' not in kwargs \
+        else kwargs.pop('row_colors')
+    col_colors = category_colors(
+        col_categories,
+        col_palette) if 'col_colors' not in kwargs \
+        else kwargs.pop('col_colors')
 
     if 'vmax' not in kwargs:
         kwargs['vmax'] = data.replace(1, np.nan).max().max()
 
-    g = sns.clustermap(data,
-                       col_linkage=col_linkage,
-                       row_linkage=row_linkage,
-                       row_colors=row_colors,
-                       col_colors=col_colors,
+    g = sns.clustermap(data, col_linkage=col_linkage, row_linkage=row_linkage,
+                       row_colors=row_colors, col_colors=col_colors,
                        cmap=cmap,
-                       xticklabels=xticklabels,
-                       yticklabels=yticklabels,
+                       xticklabels=xticklabels, yticklabels=yticklabels,
                        **kwargs)
     return g
 
 
-def plaidplot_square(data,
-                     metadata,
-                     metadata_col='cell_ontology_class',
-                     palette='tab20',
-                     **kwargs):
+def plaidplot_square(
+        data,
+        metadata,
+        metadata_col='cell_ontology_class',
+        palette='tab20',
+        **kwargs):
     categories = metadata[metadata_col]
-    #     palette = category_colors(categories, palette)
+#     palette = category_colors(categories, palette)
 
     vmax = data.replace(1, np.nan).max().max()
 
@@ -201,21 +203,21 @@ def plaidplot_square(data,
                      col_palette=palette,
                      row_palette=palette,
                      col_categories=categories,
-                     row_categories=categories,
-                     vmax=vmax,
-                     **kwargs)
+                     row_categories=categories, vmax=vmax, **kwargs)
 
 
-def facet_distplot(df,
-                   x='similarity',
-                   hue='cell_ontology_class',
-                   palette='tab20'):
+def facet_distplot(
+        df,
+        x='similarity',
+        hue='cell_ontology_class',
+        palette='tab20'):
     hue_order = get_unique_ordered_categories(df[hue])
-    g = sns.FacetGrid(df,
-                      hue=hue,
-                      hue_order=hue_order,
-                      palette=palette,
-                      height=3)
+    g = sns.FacetGrid(
+        df,
+        hue=hue,
+        hue_order=hue_order,
+        palette=palette,
+        height=3)
 
     vmax = df[x].replace(1, np.nan).max().max()
     # add a bit of left and right padding so it looks nice
@@ -227,23 +229,22 @@ def facet_distplot(df,
     return g
 
 
-def plaidplot_and_distplot(data,
-                           metadata,
-                           name,
-                           ksize,
-                           ignore_abundance,
-                           molecule,
-                           metadata_col=METADATA_COL,
-                           cell_id=BLADDER_CELL_ID,
-                           tissue_channel=TISSUE_CHANNEL,
-                           palette='tab20',
-                           **kwargs):
-    plaidplot_grid = plaidplot_square(data,
-                                      metadata,
-                                      metadata_col=metadata_col,
-                                      **kwargs)
+def plaidplot_and_distplot(
+        data,
+        metadata,
+        name,
+        ksize,
+        ignore_abundance,
+        molecule,
+        metadata_col=METADATA_COL,
+        cell_id=BLADDER_CELL_ID,
+        tissue_channel=TISSUE_CHANNEL,
+        palette='tab20',
+        **kwargs):
+    plaidplot_grid = plaidplot_square(
+        data, metadata, metadata_col=metadata_col, **kwargs)
     fig_prefix = f'{tissue_channel}_{name}_k{ksize}_{molecule}_' \
-                 f'ignore-abundance={ignore_abundance}'
+        'ignore-abundance={ignore_abundance}'
     png = f'../figures/{fig_prefix}_clustermap.png'
     plaidplot_grid.ax_col_dendrogram.set(title=fig_prefix)
     plaidplot_grid.savefig(png, dpi=300)
@@ -252,8 +253,13 @@ def plaidplot_and_distplot(data,
         if 'cell_ontology_class' in kwargs['row_palette']:
             palette = kwargs['row_palette']['cell_ontology_class']
 
-    df = get_single_cell(cell_id, data, metadata, ksize, name,
-                         ignore_abundance)
+    df = get_single_cell(
+        cell_id,
+        data,
+        metadata,
+        ksize,
+        name,
+        ignore_abundance)
 
     distplot_grid = facet_distplot(df, palette=palette, hue=metadata_col)
     pdf = f'../figures/{fig_prefix}_cell={cell_id}_distplot.pdf'
@@ -281,34 +287,32 @@ def _assemble_metadata(compare, cell_ids, metadata_cols):
 
         # input data has to be a list of lists
         data = list(compare.columns[~colon_separated].str.split('|').values)
-        metadata_not_colon_separated = pd.DataFrame(data,
-                                                    columns=metadata_cols)
-        metadata_not_colon_separated = \
-            metadata_not_colon_separated.dropna(subset=['cell_id'])
+        metadata_not_colon_separated = pd.DataFrame(
+            data, columns=metadata_cols)
+        metadata_not_colon_separated = metadata_not_colon_separated.dropna(
+            subset=['cell_id'])
         metadata_not_colon_separated = metadata_not_colon_separated.set_index(
             'cell_id')
     else:
         metadata_not_colon_separated = pd.DataFrame()
 
-    metadata = pd.concat(
-        [metadata_not_colon_separated, metadata_colon_separated],
-        sort=False,
-        ignore_index=False)
+    metadata = pd.concat([metadata_not_colon_separated,
+                          metadata_colon_separated],
+                         sort=False,
+                         ignore_index=False)
     metadata = metadata.drop(columns=['cell_id'], errors='ignore')
     metadata = metadata.reindex(index=cell_ids)
-    metadata['method'] = metadata.index.map(lambda x: '10x'
-                                            if '10X' in x else 'FACS')
+    metadata['method'] = metadata.index.map(
+        lambda x: '10x' if '10X' in x else 'FACS')
     # Replace underscores with spaces for cell ontology names for consistency
     metadata['cell_ontology_class'] = \
         metadata['cell_ontology_class'].str.replace("_", " ")
     return metadata
 
 
-def read_compare(
-        csv,
-        pattern='(?P<column>\\w+):(?P<value>[\\w-]+)',
-        metadata_cols=['cell_ontology_class', 'tissue', 'mouse_id',
-                       'cell_id']):
+def read_compare(csv, pattern='(?P<column>\\w+):(?P<value>[\\w-]+)',
+                 metadata_cols=['cell_ontology_class', 'tissue',
+                                'mouse_id', 'cell_id']):
 
     compare = pd.read_csv(csv)
 
@@ -328,11 +332,9 @@ def read_compare(
 
 def filter_siglist(siglist, ksize, moltype):
     if moltype == 'protein':
-
         def molfilter(x):
             return x.minhash.is_protein
     else:
-
         def molfilter(x):
             return not x.minhash.is_protein
 

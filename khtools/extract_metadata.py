@@ -8,13 +8,13 @@ def combine_cell_ontology_free_annotation(row):
         return row['cell_ontology_class']
 
 
-def extract_cell_metadata(name_column,
-                          pattern=r'(?P<column>\w+):(?P<value>[\w-]+)'):
+def extract_cell_metadata(
+        name_column,
+        pattern=r'(?P<column>\w+):(?P<value>[\w-]+)'):
     expanded = name_column.str.extractall(pattern)
     expanded_index = expanded.reset_index()
-    annotations = expanded_index.pivot(columns='column',
-                                       values='value',
-                                       index='level_0')
+    annotations = expanded_index.pivot(
+        columns='column', values='value', index='level_0')
     annotations['cell_ontology_free_annotation'] = annotations.apply(
         combine_cell_ontology_free_annotation, axis=1)
     return annotations
