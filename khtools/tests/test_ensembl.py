@@ -27,8 +27,7 @@ def make_pickled_test_data(ensembl_id, responses):
     import pickle
 
     ts = time.time()
-    time_generated = datetime.fromtimestamp(ts).strftime(
-        '%Y-%m-%d %H:%M:%S')
+    time_generated = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
     d = {}
     for key, value in responses.items():

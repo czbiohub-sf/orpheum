@@ -61,6 +61,7 @@ def test_purine_pyrimidize(nucleotide_string):
     true = 'RRYYRYR'
     assert test == true
 
+
 # -------------------- Test peptide encodings ---------------------------- #
 
 

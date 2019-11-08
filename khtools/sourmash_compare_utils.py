@@ -28,25 +28,16 @@ def compare_all_pairs(siglist, n_jobs=None):
         values = _compare_serial(siglist, iterator)
     else:
         # This creates a condensed distance matrix
-        condensed = Parallel(
-            n_jobs=n_jobs)(
-            delayed(
-                jaccard_utils.jaccard_sigs)(
-                i,
-                j,
-                siglist) for i,
-            j in iterator)
+        condensed = Parallel(n_jobs=n_jobs)(
+            delayed(jaccard_utils.jaccard_sigs)(i, j, siglist)
+            for i, j in iterator)
         values = squareform(condensed)
 
     return values
 
 
-def get_similarity_difference(
-    similarity,
-    groupby=(
-        'ksize',
-        'molecule',
-        'num_hashes')):
+def get_similarity_difference(similarity,
+                              groupby=('ksize', 'molecule', 'num_hashes')):
     """Calculate difference in similarity from "true" aka maximum sampling
     similarity
 

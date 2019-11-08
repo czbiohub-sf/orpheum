@@ -15,8 +15,11 @@ def write_s3(df, filename, fmt='csv', **kwargs):
 
 
 def read_aws_s3_ls(filename, **kwargs):
-    return pd.read_table(filename, delim_whitespace=True, header=None,
-                         names=['date', 'time', 'bytes', 'basename'], **kwargs)
+    return pd.read_table(filename,
+                         delim_whitespace=True,
+                         header=None,
+                         names=['date', 'time', 'bytes', 'basename'],
+                         **kwargs)
 
 
 def savefig(fig, filename, **kwargs):
