@@ -116,33 +116,11 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     protein_df = kmer_comparison_table(id1, seq1, id2, seq2,
                                        molecule_name='protein', ksizes=ksizes)
 
-    botvinnik1 = botvinnikize(seq1)
-    botvinnik2 = botvinnikize(seq2)
-
-    botvinnik_df = kmer_comparison_table(
-        id1,
-        botvinnik1,
-        id2,
-        botvinnik2,
-        molecule_name='botvinnik',
-        ksizes=ksizes)
-
     dayhoff1 = dayhoffize(seq1)
     dayhoff2 = dayhoffize(seq2)
 
     dayhoff_df = kmer_comparison_table(id1, dayhoff1, id2, dayhoff2,
                                        molecule_name='dayhoff', ksizes=ksizes)
-
-    dayhoff_v2_1 = dayhoff_v2_ize(seq1)
-    dayhoff_v2_2 = dayhoff_v2_ize(seq2)
-
-    dayhoff_v2_df = kmer_comparison_table(
-        id1,
-        dayhoff_v2_1,
-        id2,
-        dayhoff_v2_2,
-        molecule_name='dayhoff_v2',
-        ksizes=ksizes)
 
     hp1 = hpize(seq1)
     hp2 = hpize(seq2)
