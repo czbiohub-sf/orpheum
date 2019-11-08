@@ -36,6 +36,10 @@ class HomologyTable:
         species2 : str
             Common name for species2, e.g. "fly"
         """
+        if len(data.columns) < 5:
+            raise ValueError("Only a few columns found.. was the correct "
+                             "delimiter (e.g. ',' for csv and '\\t' for "
+                             "tsv) used for the table? ")
         self.data = data
         self.species1 = species1
         self.species2 = species2
@@ -123,6 +127,41 @@ class HomologyTable:
 
         return cross_species_metadata_subset
 
+    def clean_up_comparisons(self, kmer_comparisons, random_subset):
+        cross_species = self._get_cross_species(random_subset,
+                                                kmer_comparisons)
+        cross_species_metadata = self._add_orthology_metadata(cross_species,
+                                                              random_subset)
+        cross_species_metadata_fillna = cross_species_metadata.fillna(
+            "No homology")
+        cross_species_metadata_fillna['is_homologue_boolean'] = \
+            cross_species_metadata_fillna.is_homologue.replace(
+                'No homology', False).astype(bool)
+        return cross_species_metadata_fillna
+
+    def datatype_to_moltype_seqtype(self, datatype):
+        if datatype == 'protein_coding_peptide':
+            data = self.protein_coding
+            moltype = 'protein'
+            seqtype = 'protein'
+        elif datatype == 'protein_coding_cdna':
+            data = self.protein_coding
+            moltype = 'DNA'
+            seqtype = 'cdna'
+        elif datatype == 'protein_coding_cds':
+            data = self.protein_coding
+            moltype = 'DNA'
+            seqtype = 'cds'
+        elif datatype == 'non_coding':
+            data = self.non_coding
+            moltype = 'DNA'
+            seqtype = 'cdna'
+        else:
+            raise ValueError("Only 'protein_coding_peptide',"
+                             " and 'protein_coding_cdna', 'protein_coding_"
+                             "cds', and 'non_coding' datatypes are accepted")
+        return data, moltype, seqtype
+
     def compare_orthology(self, datatype, n_subset=200, random_state=0,
                           n_jobs=32, n_background=100,
                           ksizes=list(range(2, 41))):
@@ -149,26 +188,7 @@ class HomologyTable:
 
         """
 
-        if datatype == 'protein_coding_peptide':
-            data = self.protein_coding
-            moltype = 'protein'
-            seqtype = 'protein'
-        elif datatype == 'protein_coding_cdna':
-            data = self.protein_coding
-            moltype = 'DNA'
-            seqtype = 'cdna'
-        elif datatype == 'protein_coding_cds':
-            data = self.protein_coding
-            moltype = 'DNA'
-            seqtype = 'cds'
-        elif datatype == 'non_coding':
-            data = self.non_coding
-            moltype = 'DNA'
-            seqtype = 'cdna'
-        else:
-            raise ValueError("Only 'protein_coding_peptide',"
-                             " and 'protein_coding_cdna', 'protein_coding_"
-                             "cds', and 'non_coding' datatypes are accepted")
+        data, moltype, seqtype = self.datatype_to_moltype_seqtype(datatype)
 
         logger.info(f"datatype: {datatype}, moltype: {moltype}, "
                     f"seqtype: {seqtype}")
@@ -193,16 +213,8 @@ class HomologyTable:
                                             n_background=n_background)
 
         logger.info("Cleaning up k-mer comparisons for cross-species data")
-        cross_species = self._get_cross_species(random_subset,
-                                                kmer_comparisons)
-        cross_species_metadata = self._add_orthology_metadata(cross_species,
-                                                              random_subset)
-
-        cross_species_metadata_fillna = cross_species_metadata.fillna(
-            "No homology")
-        cross_species_metadata_fillna['is_homologue_boolean'] = \
-            cross_species_metadata_fillna.is_homologue.replace(
-                'No homology', False).astype(bool)
+        cross_species_metadata_fillna = self.clean_up_comparisons(
+            kmer_comparisons, random_subset)
         return cross_species_metadata_fillna
 
 
