@@ -89,15 +89,9 @@ def test_compare_peptide_seqs(peptide_seq1, peptide_seq2, ksizes):
 seq1,seq2,2,1.0,protein
 seq1,seq2,3,0.8888888888888888,protein
 seq1,seq2,4,0.75,protein
-seq1,seq2,2,1.0,botvinnik
-seq1,seq2,3,0.8888888888888888,botvinnik
-seq1,seq2,4,0.75,botvinnik
 seq1,seq2,2,1.0,dayhoff
 seq1,seq2,3,0.8888888888888888,dayhoff
 seq1,seq2,4,0.75,dayhoff
-seq1,seq2,2,1.0,dayhoff_v2
-seq1,seq2,3,0.8888888888888888,dayhoff_v2
-seq1,seq2,4,0.75,dayhoff_v2
 seq1,seq2,2,1.0,hydrophobic-polar
 seq1,seq2,3,1.0,hydrophobic-polar
 seq1,seq2,4,1.0,hydrophobic-polar
