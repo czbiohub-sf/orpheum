@@ -5,8 +5,8 @@ import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 
-from .compare_kmer_content import compare_all_seqs
-from .ensembl import get_sequence, get_rna_sequence_from_protein_id
+from khtools.compare_kmer_content import compare_all_seqs
+from khtools.ensembl import get_sequence, get_rna_sequence_from_protein_id
 
 
 # Create a logger
@@ -174,8 +174,12 @@ class HomologyTable:
                     f"seqtype: {seqtype}")
 
         logger.info("Subsetting data")
+        # If no subset, use all data
         if n_subset is not None and n_subset > 0:
             random_subset = data.sample(n_subset, random_state=random_state)
+        else:
+            random_subset = data
+
         logger.info("Getting sequences from IDs")
         species1_id_seqs = self.get_sequences_from_ids(
             random_subset, self.species1_id_col, moltype, seqtype)
@@ -202,32 +206,33 @@ class HomologyTable:
         return cross_species_metadata_fillna
 
 
+@click.command()
 @click.argument("species1")
 @click.argument("species2")
 @click.argument("homologues")
-@click.option("--seqtype", default='proteon_coding_peptide',
+@click.option("--seqtype", default='protein_coding_peptide',
               help="Which sequences to use to compare orthology. One of: "
                    "'protein_coding_peptide', 'protein_coding_cdna', or "
                    "'protein_coding_cds', 'non_coding'")
-@click.option("--n-subset", '-n', default=200,
+@click.option("--n-subset", '-n', default=0, type=click.INT,
               help="Number of orthologue pairs to subset. If 0, use all "
                    "orthologue pairs")
-@click.option("--n-background", default=10,
+@click.option("--n-background", default=10, type=click.INT,
               help="Number of non-orthologous pairs to randomly choose as the "
                    "background set")
 @click.option("--parquet", default=None,
               help="If provided, save table to a space-efficient and fast-IO "
                    "parquet format file of this name")
 @click.option("--no-csv", is_flag=True, default=False,
-              "Don't output csv to stdout")
-@click.option('--sep', default=',',
+              help="Don't output csv to stdout")
+@click.option('--sep', default='\t',
               help="Separator to use for reading in the homology table")
-@click.option('--compression', default='gzip',
+@click.option('--compression', default=None,
               help="Compression to use for reading in the homology table")
-@click.option('--processes', '-p', default=2,
-              help="Number of processes to usefor paralleizing")
-def cli(species1, species2, homologues, n_subset, n_background, parquet,
-        no_csv, sep=',', compression='gzip', processes=2):
+@click.option('--processes', '-p', default=2, type=click.INT,
+              help="Number of processes to use for paralleizing")
+def cli(species1, species2, homologues, seqtype, n_subset, n_background,
+        parquet, no_csv, sep='\t', compression='gzip', processes=2):
 
     # Set to None if 'all'
     n_subset = None if n_subset == 'all' else n_subset
@@ -237,7 +242,7 @@ def cli(species1, species2, homologues, n_subset, n_background, parquet,
                                    species2=species2)
 
     protein_coding_orthology = homology_table.compare_orthology(
-        'protein_coding_peptide',
+        seqtype,
         n_subset=n_subset,
         n_jobs=processes,
         n_background=n_background)
@@ -247,3 +252,6 @@ def cli(species1, species2, homologues, n_subset, n_background, parquet,
     if not no_csv:
         click.echo(protein_coding_orthology.to_csv(index=False))
 
+
+if __name__ == '__main__':
+    cli()
