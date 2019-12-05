@@ -61,6 +61,7 @@ def test_purine_pyrimidize(nucleotide_string):
     true = 'RRYYRYR'
     assert test == true
 
+
 # -------------------- Test peptide encodings ---------------------------- #
 
 
@@ -93,4 +94,17 @@ def test_botvinnikize(peptide_string):
 
     test = botvinnikize(peptide_string)
     true = 'dadkacbfghf'
+    assert test == true
+
+
+def test_encode_peptide(peptide_string, molecule):
+    from khtools.sequence_encodings import encode_peptide
+
+    test = encode_peptide(peptide_string, molecule)
+    if molecule == 'dayhoff':
+        true = 'bbbdbfecdac'
+    elif molecule == 'hydrophobic-polar':
+        true = 'phpphhhpppp'
+    elif molecule == 'protein':
+        true = peptide_string
     assert test == true

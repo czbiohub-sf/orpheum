@@ -4,7 +4,6 @@ import re
 import ipykernel
 import requests
 
-
 from requests.compat import urljoin
 
 from notebook.notebookapp import list_running_servers

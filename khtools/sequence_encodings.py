@@ -1,5 +1,5 @@
 DNA_ALPHABET = "A", "C", "G", "T"
-AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C",\
+AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", \
                             "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
 DAYHOFF_MAPPING = {
     "C": "a",
@@ -81,16 +81,16 @@ HP_MAPPING = {
     "Y": "h",
 
     # Hydrophilic - polar
-    "N": 'p',
     "C": 'p',
-    "S": "p",
-    "T": "p",
-    "D": "p",
+    "D": 'p',
     "E": "p",
-    "R": "p",
     "H": "p",
     "K": "p",
-    "Q": "p"
+    "N": "p",
+    "Q": "p",
+    "R": "p",
+    "S": "p",
+    "T": "p"
 }
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
@@ -131,24 +131,10 @@ BOTVINNIK_MAPPING = {
     "H": "k",
     "P": "m"
 }
-PURINE_PYRIMIDINE_MAPPING = {
-    "A": "R",
-    "C": "Y",
-    "G": "R",
-    "T": "Y"
-}
-AMINO_KETO_MAPPING = {
-    "A": "M",
-    "C": "M",
-    "G": "K",
-    "T": "K"
-}
-WEAK_STRONG_MAPPING = {
-    "A": "W",
-    "C": "S",
-    "G": "S",
-    "T": "W"
-}
+
+PURINE_PYRIMIDINE_MAPPING = {"A": "R", "C": "Y", "G": "R", "T": "Y"}
+AMINO_KETO_MAPPING = {"A": "M", "C": "M", "G": "K", "T": "K"}
+WEAK_STRONG_MAPPING = {"A": "W", "C": "S", "G": "S", "T": "W"}
 AMINO_KETO_TRANSLATION = str.maketrans(AMINO_KETO_MAPPING)
 WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
 PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
@@ -158,7 +144,10 @@ HP_TRANSLATION = str.maketrans(HP_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 
+VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', 'dayhoff', \
+                          'hydrophobic-polar', 'hp'
 # Nucleic acid mappings
+
 
 def amino_keto_ize(seq):
     return seq.translate(AMINO_KETO_TRANSLATION)
@@ -187,3 +176,16 @@ def hpize(seq):
 
 def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
+
+
+def encode_peptide(peptide_sequence, molecule):
+    if molecule == 'dayhoff':
+        return dayhoffize(peptide_sequence)
+    elif molecule == 'hydrophobic-polar' or molecule == 'hp':
+        return hpize(peptide_sequence)
+    elif molecule in VALID_PEPTIDE_MOLECULES:
+        return peptide_sequence
+    else:
+        raise ValueError(f"{molecule} is not a valid amino acid encoding, "
+                         "only "
+                         "{', '.join(VALID_PEPTIDE_MOLECULES} can be used")
