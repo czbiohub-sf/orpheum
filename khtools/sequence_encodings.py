@@ -106,21 +106,13 @@ HP_MAPPING = {
     "T": "p"
 }
 
-# GBMR4_MAPPING, SDM12, HSDM17 from the following paper:
+# GBMR4, SDM12, HSDM17 from the following paper:
 # Peterson, E. L., Kondev, J., Theriot, J. A., & Phillips, R. (2009).
 # Reduced amino acid alphabets exhibit an improved sensitivity and
 # selectivity in fold assignment. Bioinformatics, 25(11), 1356–1362.
 # http://doi.org/10.1093/bioinformatics/btp164
-# ---
-# GBMR4 stands for generalized bond matrix representation, 4-letter alphabet.
-# GBMR4 is based on protein  structure predictions,  and is originally from
-# this paper:
-# Rackovsky, S. (1990). Quantitative organization of the known protein x-ray
-# structures. I. Methods and short-length-scale results. Proteins: Structure,
-# Function, and Bioinformatics, 7(4), 378–402.
-# http://doi.org/10.1002/prot.340070409
-GBMR4_MAPPING = {
-    # Small/polar
+GBMR4 = {
+    # Small/polar?
     'A': 'a',
     'D': 'a',
     'K': 'a',
@@ -179,14 +171,7 @@ SDM12_MAPPING = {
     "P": "l"
 }
 
-# HSDM17 stands for Homologous Structure Derived Matrix, 17-letter alphabet.
-# It is derived from protein structure prediction across divergent species.
-# This is originally from this paper:
-# Prlić, A., Domingues, F. S., & Sippl, M. J. (2000).
-# Structure-derived substitution matrices for alignment of distantly related
-# sequences. Protein Engineering, Design and Selection, 13(8), 545–550.
-# http://doi.org/10.1093/protein/13.8.545
-HSDM17_MAPPING = {
+HSMD17 = {
     "A": "a",
     "D": "b",
     'K': 'c', 'E': 'c',
@@ -204,31 +189,7 @@ HSDM17_MAPPING = {
     "M": "l",
     "C": "m",
     "G": "n",
-    "P": "o",
-    "W": "p",
-    "H": "q"
-}
-
-# aa9 stands for "amino acid, 9-letter alphabet" from following paper:
-# Hu, X., & Friedberg, I. (2019).
-# SwiftOrtho: A fast, memory-efficient, multiple genome orthology classifier.
-# GigaScience, 8(10), 309–12. http://doi.org/10.1093/gigascience/giz118
-AA9_MAPPING = {
-    'A': 'a', 'S': 'a', 'T': 'a',
-
-    'C': 'b', 'F': 'b', 'I': 'b', 'L': 'b', 'M': 'b', 'V': 'b', 'Y': 'b',
-    'D': 'c', 'N': 'c',
-    'E': 'd', 'Q': 'd',
-
-    "G": 'e',
-
-    'H': 'f',
-
-    'K': 'g', 'R': 'g',
-
-    "P": 'h',
-
-    "W": 'i'
+    "P": "o"
 }
 
 # This is Olga Botvinnik's attempt at making a mapping as well
