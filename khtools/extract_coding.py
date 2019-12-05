@@ -275,11 +275,11 @@ def score_single_read(sequence,
     translations = {
         frame: translation
         for frame, translation in translations.items()
-        if len(translation) > peptide_ksize
+        if len(translation) >= peptide_ksize + 10
     }
     if len(translations) == 0:
         return np.nan, np.nan, "All translations shorter than peptide k-mer " \
-                               "size + 1"
+                               "size + 10"
 
     for frame, translation in translations.items():
         # Convert back to string
