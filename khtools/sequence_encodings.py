@@ -92,6 +92,87 @@ HP_MAPPING = {
     "S": "p",
     "T": "p"
 }
+
+# GBMR4, SDM12, HSDM17 from the following paper:
+# Peterson, E. L., Kondev, J., Theriot, J. A., & Phillips, R. (2009).
+# Reduced amino acid alphabets exhibit an improved sensitivity and
+# selectivity in fold assignment. Bioinformatics, 25(11), 1356–1362.
+# http://doi.org/10.1093/bioinformatics/btp164
+GBMR4 = {
+    # Small/polar?
+    'A': 'a',
+    'D': 'a',
+    'K': 'a',
+    'E': 'a',
+    'R': 'a',
+    'N': 'a',
+    'T': 'a',
+    'S': 'a',
+    'Q': 'a',
+
+    # Hydrophobic/large?
+    'Y': 'b',
+    'F': 'b',
+    'L': 'b',
+    'I': 'b',
+    'V': 'b',
+    'M': 'b',
+    'C': 'b',
+    'W': 'b',
+    'H': 'b',
+
+    "G": "c",
+
+    "P": "d"
+}
+
+
+SDM12_MAPPING = {
+    "A": "a",
+    "D": "b",
+
+    'K': 'c', 'E': 'c', 'R': 'c',
+
+    "N": "d",
+
+    'T': 'e', 'S': 'e', 'Q': 'e',
+
+    'Y': 'f', 'F': 'f',
+
+    'L': 'g', 'I': 'g', 'V': 'g', 'M': 'g',
+
+    "C": "h",
+
+    "W": "i",
+
+    "H": "j",
+
+    "G": "k",
+
+    "P": "l"
+}
+
+HSMD17 = {
+    "A": "a",
+    "D": "b",
+    'K': 'c', 'E': 'c',
+
+    "R": "d",
+    "N": "e",
+    "T": "f",
+    "S": "g",
+    "Q": "h",
+    "Y": 'i',
+    'F': 'j',
+
+    'L': 'k', 'I': 'k', 'V': 'k',
+
+    "M": "l",
+    "C": "m",
+    "G": "n",
+    "P": "o"
+}
+
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
     "A": "a",
