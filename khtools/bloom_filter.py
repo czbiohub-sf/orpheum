@@ -20,11 +20,39 @@ DEFAULT_DAYHOFF_KSIZE = 11
 DEFAULT_HP_KSIZE = 21
 
 
-def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
+def per_read_false_positive_coding_rate(read_nucleotide_length,
+                                        peptide_ksize,
+                                        alphabet_size=20,
+                                        n_total_kmers=1e7,
                                         n_hash_functions=DEFAULT_N_TABLES,
-                                        tablesize=DEFAULT_MAX_TABLESIZE):
+                                        tablesize=DEFAULT_MAX_TABLESIZE,
+                                        verbose=False):
+    """Predict a false positive rate of
+
+    Parameters
+    ----------
+    read_nucleotide_length
+    peptide_ksize
+    alphabet_size
+    n_expected_kmers
+    n_hash_functions
+    tablesize
+
+    Returns
+    -------
+
+    """
+    read_peptide_length = int(math.floor(read_nucleotide_length / 3))
+    if read_peptide_length < peptide_ksize:
+        raise ValueError(f"read_nucleotide_length: {read_nucleotide_length}, "
+                         f"read_peptide_length: {read_peptide_length}, "
+                         f"peptide_ksize: {peptide_ksize}."
+                         "Read length/3 must be greater than peptide ksize!")
+    n_kmers_in_read = int(math.floor(read_peptide_length - peptide_ksize + 1))
+
     exponent = - n_hash_functions * n_total_kmers / tablesize
-    print(f"exponent: {exponent}")
+    if verbose:
+        print(f"exponent: {exponent}")
 
     # Probability that a single k-mer is randomly in the data
     # per_kmer_fpr = math.pow(1 - math.exp(exponent), n_hash_functions)
@@ -32,10 +60,15 @@ def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
     # Use built-in `exp1m` = exp - 1
     # - (exp - 1) = 1 - exp
     per_kmer_fpr = math.pow(- math.expm1(exponent), n_hash_functions)
-    print(f"per kmer false positive rate: {per_kmer_fpr}")
+    if verbose:
+        print(f"per kmer false positive rate: {per_kmer_fpr}")
 
     # Probability that the number of k-mers in the read are all false positives
-    per_read_fpr = math.pow(per_kmer_fpr, n_kmers_in_read)
+    per_reading_frame_fpr = math.pow(per_kmer_fpr, n_kmers_in_read)
+
+    # Bonferonni correction - multiply by the theoretical number of reading
+    # frames (6, 3 forward and 3 backward)
+    per_read_fpr = 6 * per_reading_frame_fpr
     return per_read_fpr
 
 
