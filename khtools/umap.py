@@ -14,7 +14,7 @@ def plot_umap(transformed, *args, **kwargs):
     return ax
 
 
-def do_umap(similarities, random_state=0, y=None):
+def do_umap(similarities, random_state=0, y=None, *args, **kwargs):
     umapper = UMAP(metric='precomputed', random_state=random_state,
                    *args, **kwargs)
     transformed = umapper.fit_transform(1-similarities, y=y)
