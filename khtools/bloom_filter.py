@@ -50,13 +50,19 @@ def per_read_false_positive_coding_rate(read_nucleotide_length,
                          "Read length/3 must be greater than peptide ksize!")
     n_kmers_in_read = int(math.floor(read_peptide_length - peptide_ksize + 1))
 
-    exponent = - n_hash_functions * n_total_kmers / tablesize
+    n_theoretical_kmers = alphabet_size ** peptide_ksize
+    if n_theoretical_kmers < n_total_kmers:
+        # Since the number of theoretical k-mers is smaller than the known
+        # number of k-mers in the human proteome, then
+        tablesize = n_theoretical_kmers
+    else:
+        n_total_kmers = n_total_kmers
+
+    exponent = - n_hash_functions * n_total_kmers / (n_hash_functions * tablesize)
     if verbose:
         print(f"exponent: {exponent}")
 
     # Probability that a single k-mer is randomly in the data
-    # per_kmer_fpr = math.pow(1 - math.exp(exponent), n_hash_functions)
-
     # Use built-in `exp1m` = exp - 1
     # - (exp - 1) = 1 - exp
     per_kmer_fpr = math.pow(- math.expm1(exponent), n_hash_functions)
