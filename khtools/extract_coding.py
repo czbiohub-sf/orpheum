@@ -269,7 +269,7 @@ def score_single_read(sequence,
         Additional message to write in the output csv describing the reason
         why this sequence is or isn't protein-coding
     """
-    # Convert to BioPython sequence object for 6 frame translation
+    # Convert to BioPython sequence object for translation
     seq = Seq(sequence)
 
     # In case this is used from the Python API and the default threshold isn't
@@ -277,7 +277,7 @@ def score_single_read(sequence,
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
 
     if long_reads:
-        translations = get_all_translations(sequence)
+        translations = get_all_translations(seq)
     else:
         translations = six_frame_translation_no_stops(seq)
     # For all translations, use the one with the maximum number of k-mers
