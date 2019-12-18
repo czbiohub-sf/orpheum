@@ -89,18 +89,18 @@ def test_compare_peptide_seqs(peptide_seq1, peptide_seq2, ksizes):
     test = compare_peptide_seqs(id_seq1, id_seq2, ksizes)
 
     s = """id1,id2,ksize,jaccard,molecule
-seq1,seq2,2,1.0,protein
-seq1,seq2,3,0.8888888888888888,protein
-seq1,seq2,4,0.75,protein
-seq1,seq2,2,1.0,dayhoff
-seq1,seq2,3,0.8888888888888888,dayhoff
-seq1,seq2,4,0.75,dayhoff
-seq1,seq2,2,1.0,hp
-seq1,seq2,3,1.0,hp
-seq1,seq2,4,1.0,hp
-seq1,seq2,2,1.0,botvinnik
-seq1,seq2,3,0.8888888888888888,botvinnik
-seq1,seq2,4,0.75,botvinnik
+seq1,seq2,2,1.0,aa20
+seq1,seq2,3,0.8888888888888888,aa20
+seq1,seq2,4,0.75,aa20
+seq1,seq2,2,1.0,dayhoff6
+seq1,seq2,3,0.8888888888888888,dayhoff6
+seq1,seq2,4,0.75,dayhoff6
+seq1,seq2,2,1.0,hp2
+seq1,seq2,3,1.0,hp2
+seq1,seq2,4,1.0,hp2
+seq1,seq2,2,1.0,botvinnik8
+seq1,seq2,3,0.8888888888888888,botvinnik8
+seq1,seq2,4,0.75,botvinnik8
 seq1,seq2,2,1.0,aa9
 seq1,seq2,3,0.8888888888888888,aa9
 seq1,seq2,4,0.75,aa9
