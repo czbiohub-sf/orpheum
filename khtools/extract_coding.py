@@ -108,9 +108,9 @@ def six_frame_translation_no_stops(seq, debug=False):
 
 def get_all_translations(seq):
     matches = re.finditer("ATG", str(seq.upper()))
-    translations = []
-    for match in matches:
-        translations.append(seq[match.start():].translate(to_stop=True))
+    translations = {}
+    for index, match in enumerate(matches):
+        translations[index] = seq[match.start():].translate(to_stop=True)
     return translations
 
 
