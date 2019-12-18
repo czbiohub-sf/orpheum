@@ -93,12 +93,12 @@ HP_MAPPING = {
     "T": "p"
 }
 
-# GBMR4, SDM12, HSDM17 from the following paper:
+# GBMR4_MAPPING, SDM12, HSDM17 from the following paper:
 # Peterson, E. L., Kondev, J., Theriot, J. A., & Phillips, R. (2009).
 # Reduced amino acid alphabets exhibit an improved sensitivity and
 # selectivity in fold assignment. Bioinformatics, 25(11), 1356–1362.
 # http://doi.org/10.1093/bioinformatics/btp164
-GBMR4 = {
+GBMR4_MAPPING = {
     # Small/polar?
     'A': 'a',
     'D': 'a',
@@ -152,7 +152,7 @@ SDM12_MAPPING = {
     "P": "l"
 }
 
-HSMD17 = {
+HSMD17_MAPPING = {
     "A": "a",
     "D": "b",
     'K': 'c', 'E': 'c',
@@ -173,6 +173,28 @@ HSMD17 = {
     "P": "o"
 }
 
+# aa9 from following paper:
+# Hu, X., & Friedberg, I. (2019).
+# SwiftOrtho: A fast, memory-efficient, multiple genome orthology classifier.
+# GigaScience, 8(10), 309–12. http://doi.org/10.1093/gigascience/giz118
+AA9_MAPPING = {
+    'A': 'a', 'S': 'a', 'T': 'a',
+
+    'C': 'b', 'F': 'b', 'I': 'b', 'L': 'b', 'M': 'b', 'V': 'b', 'Y': 'b',
+    'D': 'c', 'N': 'c',
+    'E': 'd', 'Q': 'd',
+
+    "G": 'e',
+
+    'H': 'f',
+
+    'K': 'g', 'R': 'g',
+
+    "P": 'h',
+
+    "W": 'i'
+}
+
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
     "A": "a",
@@ -189,6 +211,7 @@ BOTVINNIK_MAPPING = {
 
     # Polar or charged
     # Phosphorylate-able
+
     "S": "d",
     "T": "d",
 
@@ -222,14 +245,27 @@ PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
 DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
 DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_v2_MAPPING)
 HP_TRANSLATION = str.maketrans(HP_MAPPING)
+AA9_TRANSLATION = str.maketrans(AA9_MAPPING)
+GBMR4_TRANSLATION = str.maketrans(GBMR4_MAPPING)
+SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
+HSDM17_TRANSLATION = str.maketrans(HSMD17_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
+PEPTIDE_ENCODINGS = {"hp": HP_TRANSLATION,
+                     "hydrophobic-polar": HP_TRANSLATION,
+                     "dayhoff": DAYHOFF_TRANSLATION,
+                     'dayhoff_v2': DAYHOFF_V2_TRANSLATION,
+                     'botvinnik': BOTVINNIK_TRANSLATION,
+                     "aa9": AA9_TRANSLATION, 'gbmr4': GBMR4_TRANSLATION,
+                     'sdm12': SDM12_TRANSLATION,
+                     'hsdm17': HSDM17_TRANSLATION}
 
 VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', 'dayhoff', \
-                          'hydrophobic-polar', 'hp'
+                          'botvinnik', \
+                          'hydrophobic-polar', 'hp', 'aa9', 'gbmr4', \
+                          'sdm12', 'hsdm17'
+
 # Nucleic acid mappings
-
-
 def amino_keto_ize(seq):
     return seq.translate(AMINO_KETO_TRANSLATION)
 
@@ -259,14 +295,18 @@ def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
 
 
+def reencode(peptide_sequence, molecule):
+    translator = PEPTIDE_ENCODINGS[molecule]
+    return peptide_sequence.translate(translator)
+
+
 def encode_peptide(peptide_sequence, molecule):
-    if molecule == 'dayhoff':
-        return dayhoffize(peptide_sequence)
-    elif molecule == 'hydrophobic-polar' or molecule == 'hp':
-        return hpize(peptide_sequence)
+    if molecule in PEPTIDE_ENCODINGS.keys():
+        return reencode(peptide_sequence, molecule)
     elif molecule in VALID_PEPTIDE_MOLECULES:
+        # If it's the original protein sequence, return that
         return peptide_sequence
     else:
         raise ValueError(f"{molecule} is not a valid amino acid encoding, "
                          "only "
-                         "{', '.join(VALID_PEPTIDE_MOLECULES} can be used")
+                         "{', '.join(PEPTIDE_ENCODINGS.keys()} can be used")
