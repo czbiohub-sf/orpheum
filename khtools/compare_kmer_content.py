@@ -16,7 +16,7 @@ from sourmash.logging import notify
 from .sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, encode_peptide, VALID_PEPTIDE_MOLECULES
 
-MOLECULES_TO_COMPARE = 'protein', 'dayhoff', 'hp', 'botvinnik', 'aa9', \
+MOLECULES_TO_COMPARE = 'aa20', 'dayhoff6', 'hp2', 'botvinnik8', 'aa9', \
                        'gbmr4', 'sdm12', 'hsdm17'
 
 divergence_estimates = pd.Series({"Amniota": 312,
