@@ -14,7 +14,7 @@ from sourmash.logging import notify
 from .sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, encode_peptide
 
-MOLECULES_TO_COMPARE = 'aa20', 'dayhoff6', 'hp2', 'botvinnik8', 'aa9', \
+MOLECULES_TO_COMPARE = 'protein', 'dayhoff', 'hp', 'botvinnik', 'aa9', \
                        'gbmr4', 'sdm12', 'hsdm17'
 
 divergence_estimates = pd.Series({"Amniota": 312,
@@ -122,8 +122,8 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
         reencoded2 = encode_peptide(seq2, molecule)
 
         df = kmer_comparison_table(id1, reencoded1, id2, reencoded2,
-                                   molecule_name=molecule,
-                                   ksizes=ksizes)
+                                           molecule_name=molecule,
+                                           ksizes=ksizes)
         dfs.append(df)
 
     df = pd.concat(dfs, ignore_index=True)
