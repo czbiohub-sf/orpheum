@@ -4,6 +4,7 @@ extract_coding.py
 Partition reads into coding, noncoding, and low-complexity bins
 """
 import json
+import re
 import sys
 import warnings
 
@@ -204,7 +205,7 @@ def score_single_read(sequence,
                       noncoding_file_handle=None,
                       coding_nucleotide_file_handle=None,
                       low_complexity_peptide_file_handle=None,
-                      long_reads):
+                      long_reads=False):
     """Predict whether a nucleotide sequence could be protein-coding
 
     Parameters
@@ -253,7 +254,7 @@ def score_single_read(sequence,
     low_complexity_peptide_file_handle : None or file
         If not None, write low complexity peptide sequences to this file handle
     long_reads: boolean
-        If False, does six frame translation for short reads, otherwise
+        Defaults to False,does six frame translation for short reads, otherwise
         translates whole sequences containing ATG to stop codons for long reads
 
     Returns
@@ -354,7 +355,7 @@ def score_reads(reads,
                 noncoding_nucleotide_fasta=None,
                 low_complexity_nucleotide_fasta=None,
                 low_complexity_peptide_fasta=None,
-                long_reads):
+                long_reads=False):
     """Assign a coding score to each read. Where the magic happens."""
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
     peptide_ksize = peptide_bloom_filter.ksize()
