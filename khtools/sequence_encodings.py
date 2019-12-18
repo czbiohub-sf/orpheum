@@ -106,12 +106,12 @@ HP_MAPPING = {
     "T": "p"
 }
 
-# GBMR4, SDM12, HSDM17 from the following paper:
+# GBMR4_MAPPING, SDM12, HSDM17 from the following paper:
 # Peterson, E. L., Kondev, J., Theriot, J. A., & Phillips, R. (2009).
 # Reduced amino acid alphabets exhibit an improved sensitivity and
 # selectivity in fold assignment. Bioinformatics, 25(11), 1356–1362.
 # http://doi.org/10.1093/bioinformatics/btp164
-GBMR4 = {
+GBMR4_MAPPING = {
     # Small/polar?
     'A': 'a',
     'D': 'a',
@@ -171,7 +171,7 @@ SDM12_MAPPING = {
     "P": "l"
 }
 
-HSMD17 = {
+HSMD17_MAPPING = {
     "A": "a",
     "D": "b",
     'K': 'c', 'E': 'c',
@@ -192,7 +192,28 @@ HSMD17 = {
     "P": "o"
 }
 
-# This is Olga Botvinnik's attempt at making a mapping as well
+# aa9 from following paper:
+# Hu, X., & Friedberg, I. (2019).
+# SwiftOrtho: A fast, memory-efficient, multiple genome orthology classifier.
+# GigaScience, 8(10), 309–12. http://doi.org/10.1093/gigascience/giz118
+AA9_MAPPING = {
+    'A': 'a', 'S': 'a', 'T': 'a',
+
+    'C': 'b', 'F': 'b', 'I': 'b', 'L': 'b', 'M': 'b', 'V': 'b', 'Y': 'b',
+    'D': 'c', 'N': 'c',
+    'E': 'd', 'Q': 'd',
+
+    "G": 'e',
+
+    'H': 'f',
+
+    'K': 'g', 'R': 'g',
+
+    "P": 'h',
+
+    "W": 'i'
+}
+
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
     "A": "a",
@@ -256,37 +277,22 @@ HP_TRANSLATION = str.maketrans(HP_MAPPING)
 AA9_TRANSLATION = str.maketrans(AA9_MAPPING)
 GBMR4_TRANSLATION = str.maketrans(GBMR4_MAPPING)
 SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
-HSDM17_TRANSLATION = str.maketrans(HSDM17_MAPPING)
+HSDM17_TRANSLATION = str.maketrans(HSMD17_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
-PEPTIDE_ENCODINGS = {'hp': HP_TRANSLATION,
-                     'hp2': HP_TRANSLATION,
-                     'hydrophobic-polar': HP_TRANSLATION,
-                     'dayhoff': DAYHOFF_TRANSLATION,
-                     'dayhoff6': DAYHOFF_TRANSLATION,
+PEPTIDE_ENCODINGS = {"hp": HP_TRANSLATION,
+                     "hydrophobic-polar": HP_TRANSLATION,
+                     "dayhoff": DAYHOFF_TRANSLATION,
                      'dayhoff_v2': DAYHOFF_V2_TRANSLATION,
                      'botvinnik': BOTVINNIK_TRANSLATION,
-                     'botvinnik8': BOTVINNIK_TRANSLATION,
-                     'aa9': AA9_TRANSLATION,
-                     'gbmr4': GBMR4_TRANSLATION,
+                     "aa9": AA9_TRANSLATION, 'gbmr4': GBMR4_TRANSLATION,
                      'sdm12': SDM12_TRANSLATION,
                      'hsdm17': HSDM17_TRANSLATION}
 
-
-PROTEIN_LIKE = 'protein', 'peptide', 'protein20', 'peptide20', 'aa20'
-DAYHOFF_LIKE = 'dayhoff', 'dayhoff6'
-HP_LIKE = 'hydrophobic-polar', 'hydrophobic-polar2', 'hp', 'hp2',
-
-VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'peptide20', \
-                          'aa20', \
-                          'dayhoff', 'dayhoff6' \
-                          'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp', 'hp2', \
-                          'aa9', \
-                          'gbmr4', \
+VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', 'dayhoff', \
+                          'botvinnik', \
+                          'hydrophobic-polar', 'hp', 'aa9', 'gbmr4', \
                           'sdm12', 'hsdm17'
-
 
 # Nucleic acid mappings
 def amino_keto_ize(seq):
