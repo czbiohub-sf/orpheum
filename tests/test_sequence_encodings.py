@@ -138,6 +138,6 @@ def test_encode_peptide(peptide_string, reduced_alphabet):
         true =  'aaababbaaba'
     elif reduced_alphabet == 'sdm12':
         true = 'eaejafgcchc'
-    elif reduced_alphabet == 'hsmd17':
+    elif reduced_alphabet == 'hsdm17':
         true = 'gagqajkcdmc'
     assert test == true
