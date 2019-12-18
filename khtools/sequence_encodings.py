@@ -171,7 +171,7 @@ SDM12_MAPPING = {
     "P": "l"
 }
 
-HSMD17_MAPPING = {
+HSDM17_MAPPING = {
     "A": "a",
     "D": "b",
     'K': 'c', 'E': 'c',
@@ -189,7 +189,9 @@ HSMD17_MAPPING = {
     "M": "l",
     "C": "m",
     "G": "n",
-    "P": "o"
+    "P": "o",
+    "W": "p",
+    "H": "q"
 }
 
 # aa9 from following paper:
@@ -263,13 +265,13 @@ WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
 PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
 
 PEPTIDE_MAPPINGS = {"hp": HP_MAPPING,
-                    "hydrophobic-polar": HP_MAPPING,
-                    "dayhoff": DAYHOFF_MAPPING,
-                    'dayhoff_v2': DAYHOFF_V2_MAPPING,
-                    'botvinnik': BOTVINNIK_MAPPING,
-                    "aa9": AA9_MAPPING, 'gbmr4': GBMR4_MAPPING,
-                    'sdm12': SDM12_MAPPING,
-                    'hsdm17': HSDM17_MAPPING}
+                     "hydrophobic-polar": HP_MAPPING,
+                     "dayhoff": DAYHOFF_MAPPING,
+                     'dayhoff_v2': DAYHOFF_V2_MAPPING,
+                     'botvinnik': BOTVINNIK_MAPPING,
+                     "aa9": AA9_MAPPING, 'gbmr4': GBMR4_MAPPING,
+                     'sdm12': SDM12_MAPPING,
+                     'hsdm17': HSDM17_MAPPING}
 
 DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
 DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_V2_MAPPING)
@@ -277,7 +279,7 @@ HP_TRANSLATION = str.maketrans(HP_MAPPING)
 AA9_TRANSLATION = str.maketrans(AA9_MAPPING)
 GBMR4_TRANSLATION = str.maketrans(GBMR4_MAPPING)
 SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
-HSDM17_TRANSLATION = str.maketrans(HSMD17_MAPPING)
+HSDM17_TRANSLATION = str.maketrans(HSDM17_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 PEPTIDE_ENCODINGS = {"hp": HP_TRANSLATION,
