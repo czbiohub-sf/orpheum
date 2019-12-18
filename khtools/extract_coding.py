@@ -105,6 +105,14 @@ def six_frame_translation_no_stops(seq, debug=False):
     return forward_translations
 
 
+def get_all_translations(seq):
+    matches = re.finditer("ATG", str(seq.upper()))
+    translations = []
+    for match in matches:
+        translations.append(seq[match.start():].translate(to_stop=True))
+    return translations
+
+
 def score_single_translation(translation,
                              peptide_bloom_filter,
                              peptide_ksize,
@@ -195,7 +203,8 @@ def score_single_read(sequence,
                       description=None,
                       noncoding_file_handle=None,
                       coding_nucleotide_file_handle=None,
-                      low_complexity_peptide_file_handle=None):
+                      low_complexity_peptide_file_handle=None,
+                      long_reads):
     """Predict whether a nucleotide sequence could be protein-coding
 
     Parameters
@@ -243,6 +252,9 @@ def score_single_read(sequence,
         If not None, write coding nucleotides reads to this file handle
     low_complexity_peptide_file_handle : None or file
         If not None, write low complexity peptide sequences to this file handle
+    long_reads: boolean
+        If False, does six frame translation for short reads, otherwise
+        translates whole sequences containing ATG to stop codons for long reads
 
     Returns
     -------
@@ -256,15 +268,17 @@ def score_single_read(sequence,
         Additional message to write in the output csv describing the reason
         why this sequence is or isn't protein-coding
     """
-    # Convert to BioPython sequence object for translation
+    # Convert to BioPython sequence object for 6 frame translation
     seq = Seq(sequence)
 
     # In case this is used from the Python API and the default threshold isn't
     # specified
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
 
-    # Convert to BioPython sequence object for translation
-    translations = six_frame_translation_no_stops(seq)
+    if long_reads:
+        translations = get_all_translations(sequence)
+    else:
+        translations = six_frame_translation_no_stops(seq)
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
     max_n_kmers = 0
@@ -339,7 +353,8 @@ def score_reads(reads,
                 coding_nucleotide_fasta=None,
                 noncoding_nucleotide_fasta=None,
                 low_complexity_nucleotide_fasta=None,
-                low_complexity_peptide_fasta=None):
+                low_complexity_peptide_fasta=None,
+                long_reads):
     """Assign a coding score to each read. Where the magic happens."""
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
     peptide_ksize = peptide_bloom_filter.ksize()
@@ -361,7 +376,7 @@ def score_reads(reads,
             jaccard, n_kmers, special_case = maybe_score_single_read(
                 description, fastas, file_handles, jaccard_threshold, molecule,
                 nucleotide_ksize, peptide_bloom_filter, peptide_ksize,
-                sequence, verbose)
+                sequence, verbose, long_reads)
 
             line = get_coding_score_line(description, jaccard,
                                          jaccard_threshold, n_kmers,
@@ -387,7 +402,7 @@ def get_jaccard_threshold(jaccard_threshold, molecule):
 def maybe_score_single_read(description, fastas, file_handles,
                             jaccard_threshold, molecule, nucleotide_ksize,
                             peptide_bloom_filter, peptide_ksize, sequence,
-                            verbose):
+                            verbose, long_reads):
     """Check if read is low complexity/too short, otherwise score it"""
     # Check if nucleotide sequence is low complexity
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
@@ -407,7 +422,8 @@ def maybe_score_single_read(description, fastas, file_handles,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
             coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
             low_complexity_peptide_file_handle=file_handles[
-                'low_complexity_peptide'])
+                'low_complexity_peptide'],
+            long_reads=long_reads)
 
         if verbose > 1:
             click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
@@ -643,9 +659,6 @@ def cli(peptides,
     """
     # \b above prevents re-wrapping of paragraphs
 
-    if long_reads:
-        raise NotImplementedError("Not implemented! ... yet :)")
-
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
         peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
         n_tables=n_tables, tablesize=tablesize)
@@ -666,7 +679,8 @@ def cli(peptides,
             coding_nucleotide_fasta=coding_nucleotide_fasta,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
-            low_complexity_peptide_fasta=low_complexity_peptide_fasta)
+            low_complexity_peptide_fasta=low_complexity_peptide_fasta,
+            long_reads=long_reads)
         df['filename'] = reads_file
         dfs.append(df)
 
