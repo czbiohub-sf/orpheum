@@ -137,8 +137,8 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
         reencoded2 = encode_peptide(seq2, molecule)
 
         df = kmer_comparison_table(id1, reencoded1, id2, reencoded2,
-                                           molecule_name=molecule,
-                                           ksizes=ksizes)
+                                   molecule_name=molecule,
+                                   ksizes=ksizes)
         dfs.append(df)
 
     df = pd.concat(dfs, ignore_index=True)

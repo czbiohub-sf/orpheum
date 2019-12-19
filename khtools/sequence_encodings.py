@@ -246,13 +246,13 @@ WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
 PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
 
 PEPTIDE_MAPPINGS = {"hp": HP_MAPPING,
-                     "hydrophobic-polar": HP_MAPPING,
-                     "dayhoff": DAYHOFF_MAPPING,
-                     'dayhoff_v2': DAYHOFF_V2_MAPPING,
-                     'botvinnik': BOTVINNIK_MAPPING,
-                     "aa9": AA9_MAPPING, 'gbmr4': GBMR4_MAPPING,
-                     'sdm12': SDM12_MAPPING,
-                     'hsdm17': HSDM17_MAPPING}
+                    "hydrophobic-polar": HP_MAPPING,
+                    "dayhoff": DAYHOFF_MAPPING,
+                    'dayhoff_v2': DAYHOFF_V2_MAPPING,
+                    'botvinnik': BOTVINNIK_MAPPING,
+                    "aa9": AA9_MAPPING, 'gbmr4': GBMR4_MAPPING,
+                    'sdm12': SDM12_MAPPING,
+                    'hsdm17': HSDM17_MAPPING}
 
 DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
 DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_V2_MAPPING)
