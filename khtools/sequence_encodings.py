@@ -303,6 +303,7 @@ VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
                           'aa9', 'gbmr4', \
                           'sdm12', 'hsdm17'
 
+
 # Nucleic acid mappings
 def amino_keto_ize(seq):
     return seq.translate(AMINO_KETO_TRANSLATION)
