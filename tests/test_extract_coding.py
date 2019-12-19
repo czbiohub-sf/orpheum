@@ -212,17 +212,17 @@ def test_score_shortreads(
 
 
 def test_score_long_pc_reads(
-        capsys, tmpdir, longpcreads, peptide_bloom_filter, molecule,
+        capsys, tmpdir, longpcreads, coding_peptide_bloom_filter, molecule,
         true_scores, true_scores_path,
         true_protein_coding_fasta_path):
     from khtools.extract_coding import score_reads
 
     test = score_reads(longpcreads,
-                       peptide_bloom_filter,
+                       coding_peptide_bloom_filter,
                        molecule=molecule,
                        long_reads=True)
     print("pc options {} {}".format(
-        peptide_bloom_filter,
+        coding_peptide_bloom_filter,
         molecule))
     print(test.to_string())
     # Check that scoring was the same
