@@ -298,15 +298,15 @@ SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
 HSDM17_TRANSLATION = str.maketrans(HSDM17_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
-PEPTIDE_ENCODINGS = {"hp": HP_TRANSLATION,
-                     "hp2": HP_TRANSLATION,
-                     "hydrophobic-polar": HP_TRANSLATION,
-                     "dayhoff": DAYHOFF_TRANSLATION,
-                     "dayhoff6": DAYHOFF_TRANSLATION,
+PEPTIDE_ENCODINGS = {'hp': HP_TRANSLATION,
+                     'hp2': HP_TRANSLATION,
+                     'hydrophobic-polar': HP_TRANSLATION,
+                     'dayhoff': DAYHOFF_TRANSLATION,
+                     'dayhoff6': DAYHOFF_TRANSLATION,
                      'dayhoff_v2': DAYHOFF_V2_TRANSLATION,
                      'botvinnik': BOTVINNIK_TRANSLATION,
                      'botvinnik8': BOTVINNIK_TRANSLATION,
-                     "aa9": AA9_TRANSLATION,
+                     'aa9': AA9_TRANSLATION,
                      'gbmr4': GBMR4_TRANSLATION,
                      'sdm12': SDM12_TRANSLATION,
                      'hsdm17': HSDM17_TRANSLATION}
