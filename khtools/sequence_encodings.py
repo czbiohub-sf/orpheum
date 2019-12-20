@@ -1,6 +1,11 @@
 DNA_ALPHABET = "A", "C", "G", "T"
 AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", \
                             "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
+
+# The Dayhoff encoding is a 6-letter encoding from Margaret Oakley Dayhoff,
+# the first bioinformatician. It was first proposed in this book:
+# Dayhoff, M. O., & Eck, R. V. (1968). Atlas of Protein Sequence and
+# Structure, 1967-68.
 DAYHOFF_MAPPING = {
     "C": "a",
 
@@ -33,6 +38,9 @@ DAYHOFF_MAPPING = {
     "W": "f",
     "Y": "f"
 }
+
+# A variation of Dayhoff mapping with phosphorylatable amino acids
+# (serine and threonine) as a separate group
 DAYHOFF_V2_MAPPING = {
     "C": "a",
 
