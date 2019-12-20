@@ -105,7 +105,7 @@ def test_botvinnikize(peptide_string):
     assert test == true
 
 
-def test_PEPTIDE_MAPPINGS():
+def test_peptide_constants():
     from khtools.sequence_encodings import PEPTIDE_MAPPINGS, \
         AMINO_ACID_SINGLE_LETTERS
 
