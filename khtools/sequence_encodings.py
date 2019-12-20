@@ -75,6 +75,11 @@ DAYHOFF_V2_MAPPING = {
     "W": "f",
     "Y": "f"
 }
+
+# Hydrophobic-polar encoding, a 2-letter alphabet. This is a very simple
+# encoding and was taken from this textbook:
+# Phillips, R., Kondev, J., Theriot, J., & Garcia, H. (2012).
+# Physical Biology of the Cell. Garland Science.
 HP_MAPPING = {
     # Hydrophobic
     "A": "h",
