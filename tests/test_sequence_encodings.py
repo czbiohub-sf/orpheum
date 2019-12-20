@@ -23,6 +23,14 @@ def nucleotide_string():
     return "GATTACA"
 
 
+@pytest.fixture(params=['protein', 'peptide', 'dayhoff',
+                          'botvinnik',
+                          'hydrophobic-polar', 'hp', 'aa9', 'gbmr4',
+                          'sdm12', 'hsdm17'])
+def reduced_alphabet(request):
+    return request.param
+
+
 def test_translations():
     from khtools.sequence_encodings import DAYHOFF_MAPPING, HP_MAPPING, \
         BOTVINNIK_MAPPING, AMINO_ACID_SINGLE_LETTERS, DNA_ALPHABET, \
@@ -97,14 +105,39 @@ def test_botvinnikize(peptide_string):
     assert test == true
 
 
-def test_encode_peptide(peptide_string, molecule):
+def test_peptide_constants():
+    from khtools.sequence_encodings import PEPTIDE_MAPPINGS, \
+        AMINO_ACID_SINGLE_LETTERS
+
+    for key, mapping in PEPTIDE_MAPPINGS.items():
+        try:
+            assert all(x in mapping for x in AMINO_ACID_SINGLE_LETTERS)
+        except AssertionError:
+            not_found = [x for x in AMINO_ACID_SINGLE_LETTERS
+                         if x not in mapping]
+            raise AssertionError(f"Amino acids not present in {key} mapping: "
+                                 f"{not_found}")
+
+
+def test_encode_peptide(peptide_string, reduced_alphabet):
     from khtools.sequence_encodings import encode_peptide
 
-    test = encode_peptide(peptide_string, molecule)
-    if molecule == 'dayhoff':
+    test = encode_peptide(peptide_string, reduced_alphabet)
+    true = peptide_string
+    if reduced_alphabet == 'dayhoff':
         true = 'bbbdbfecdac'
-    elif molecule == 'hydrophobic-polar':
+    elif reduced_alphabet == 'hydrophobic-polar' or reduced_alphabet == 'hp':
         true = 'phpphhhpppp'
-    elif molecule == 'protein':
+    elif reduced_alphabet == 'protein' or reduced_alphabet == 'peptide':
         true = peptide_string
+    elif reduced_alphabet == 'botvinnik':
+        true = 'dadkacbfghf'
+    elif reduced_alphabet == 'aa9':
+        true = 'aaafabbdgbd'
+    elif reduced_alphabet == 'gbmr4':
+        true =  'aaababbaaba'
+    elif reduced_alphabet == 'sdm12':
+        true = 'eaejafgcchc'
+    elif reduced_alphabet == 'hsdm17':
+        true = 'gagqajkcdmc'
     assert test == true

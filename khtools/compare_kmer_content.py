@@ -12,8 +12,10 @@ from sourmash.logging import notify
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
 from .sequence_encodings import amino_keto_ize, \
-    weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
-    botvinnikize
+    weak_strong_ize, purine_pyrimidize, encode_peptide
+
+MOLECULES_TO_COMPARE = 'aa20', 'dayhoff6', 'hp2', 'botvinnik8', 'aa9', \
+                       'gbmr4', 'sdm12', 'hsdm17'
 
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
@@ -108,55 +110,23 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
     return df
 
 
-def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
+def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
+                         molecules=MOLECULES_TO_COMPARE):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
 
-    protein_df = kmer_comparison_table(id1, seq1, id2, seq2,
-                                       molecule_name='protein', ksizes=ksizes)
+    dfs = []
+    for molecule in molecules:
+        reencoded1 = encode_peptide(seq1, molecule)
+        reencoded2 = encode_peptide(seq2, molecule)
 
-    botvinnik1 = botvinnikize(seq1)
-    botvinnik2 = botvinnikize(seq2)
+        df = kmer_comparison_table(id1, reencoded1, id2, reencoded2,
+                                   molecule_name=molecule,
+                                   ksizes=ksizes)
+        dfs.append(df)
 
-    botvinnik_df = kmer_comparison_table(
-        id1,
-        botvinnik1,
-        id2,
-        botvinnik2,
-        molecule_name='botvinnik',
-        ksizes=ksizes)
-
-    dayhoff1 = dayhoffize(seq1)
-    dayhoff2 = dayhoffize(seq2)
-
-    dayhoff_df = kmer_comparison_table(id1, dayhoff1, id2, dayhoff2,
-                                       molecule_name='dayhoff', ksizes=ksizes)
-
-    dayhoff_v2_1 = dayhoff_v2_ize(seq1)
-    dayhoff_v2_2 = dayhoff_v2_ize(seq2)
-
-    dayhoff_v2_df = kmer_comparison_table(
-        id1,
-        dayhoff_v2_1,
-        id2,
-        dayhoff_v2_2,
-        molecule_name='dayhoff_v2',
-        ksizes=ksizes)
-
-    hp1 = hpize(seq1)
-    hp2 = hpize(seq2)
-
-    hp_df = kmer_comparison_table(
-        id1,
-        hp1,
-        id2,
-        hp2,
-        molecule_name='hydrophobic-polar',
-        ksizes=ksizes)
-
-    df = pd.concat([protein_df, botvinnik_df, dayhoff_df, dayhoff_v2_df,
-                    hp_df], ignore_index=True)
+    df = pd.concat(dfs, ignore_index=True)
     return df
 
 
