@@ -98,8 +98,16 @@ HP_MAPPING = {
 # Reduced amino acid alphabets exhibit an improved sensitivity and
 # selectivity in fold assignment. Bioinformatics, 25(11), 1356–1362.
 # http://doi.org/10.1093/bioinformatics/btp164
+# ---
+# GBMR4 stands for generalized bond matrix representation, 4-letter alphabet.
+# GBMR4 is based on protein  structure predictions,  and is originally from
+# this paper:
+# Rackovsky, S. (1990). Quantitative organization of the known protein x-ray
+# structures. I. Methods and short-length-scale results. Proteins: Structure,
+# Function, and Bioinformatics, 7(4), 378–402.
+# http://doi.org/10.1002/prot.340070409
 GBMR4_MAPPING = {
-    # Small/polar?
+    # Small/polar
     'A': 'a',
     'D': 'a',
     'K': 'a',
@@ -110,7 +118,7 @@ GBMR4_MAPPING = {
     'S': 'a',
     'Q': 'a',
 
-    # Hydrophobic/large?
+    # Hydrophobic/large
     'Y': 'b',
     'F': 'b',
     'L': 'b',
@@ -126,7 +134,13 @@ GBMR4_MAPPING = {
     "P": "d"
 }
 
-
+# SDM12 stands for Structure Derived Matrix, 12-letter alphabet. It is derived
+# from protein structure prediction.
+# This is originally from this paper:
+# Prlić, A., Domingues, F. S., & Sippl, M. J. (2000).
+# Structure-derived substitution matrices for alignment of distantly related
+# sequences. Protein Engineering, Design and Selection, 13(8), 545–550.
+# http://doi.org/10.1093/protein/13.8.545
 SDM12_MAPPING = {
     "A": "a",
     "D": "b",
@@ -152,6 +166,13 @@ SDM12_MAPPING = {
     "P": "l"
 }
 
+# HSDM17 stands for Homologous Structure Derived Matrix, 17-letter alphabet.
+# It is derived from protein structure prediction across divergent species.
+# This is originally from this paper:
+# Prlić, A., Domingues, F. S., & Sippl, M. J. (2000).
+# Structure-derived substitution matrices for alignment of distantly related
+# sequences. Protein Engineering, Design and Selection, 13(8), 545–550.
+# http://doi.org/10.1093/protein/13.8.545
 HSDM17_MAPPING = {
     "A": "a",
     "D": "b",
@@ -175,7 +196,7 @@ HSDM17_MAPPING = {
     "H": "q"
 }
 
-# aa9 from following paper:
+# aa9 stands for "amino acid, 9-letter alphabet" from following paper:
 # Hu, X., & Friedberg, I. (2019).
 # SwiftOrtho: A fast, memory-efficient, multiple genome orthology classifier.
 # GigaScience, 8(10), 309–12. http://doi.org/10.1093/gigascience/giz118
@@ -197,6 +218,7 @@ AA9_MAPPING = {
     "W": 'i'
 }
 
+# This is Olga Botvinnik's attempt at making a mapping as well
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
     "A": "a",
