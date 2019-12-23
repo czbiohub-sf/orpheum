@@ -111,8 +111,16 @@ HP_MAPPING = {
 # Reduced amino acid alphabets exhibit an improved sensitivity and
 # selectivity in fold assignment. Bioinformatics, 25(11), 1356–1362.
 # http://doi.org/10.1093/bioinformatics/btp164
+# ---
+# GBMR4 stands for generalized bond matrix representation, 4-letter alphabet.
+# GBMR4 is based on protein  structure predictions,  and is originally from
+# this paper:
+# Rackovsky, S. (1990). Quantitative organization of the known protein x-ray
+# structures. I. Methods and short-length-scale results. Proteins: Structure,
+# Function, and Bioinformatics, 7(4), 378–402.
+# http://doi.org/10.1002/prot.340070409
 GBMR4_MAPPING = {
-    # Small/polar?
+    # Small/polar
     'A': 'a',
     'D': 'a',
     'K': 'a',
@@ -171,6 +179,13 @@ SDM12_MAPPING = {
     "P": "l"
 }
 
+# HSDM17 stands for Homologous Structure Derived Matrix, 17-letter alphabet.
+# It is derived from protein structure prediction across divergent species.
+# This is originally from this paper:
+# Prlić, A., Domingues, F. S., & Sippl, M. J. (2000).
+# Structure-derived substitution matrices for alignment of distantly related
+# sequences. Protein Engineering, Design and Selection, 13(8), 545–550.
+# http://doi.org/10.1093/protein/13.8.545
 HSDM17_MAPPING = {
     "A": "a",
     "D": "b",
@@ -194,7 +209,7 @@ HSDM17_MAPPING = {
     "H": "q"
 }
 
-# aa9 from following paper:
+# aa9 stands for "amino acid, 9-letter alphabet" from following paper:
 # Hu, X., & Friedberg, I. (2019).
 # SwiftOrtho: A fast, memory-efficient, multiple genome orthology classifier.
 # GigaScience, 8(10), 309–12. http://doi.org/10.1093/gigascience/giz118
@@ -216,6 +231,7 @@ AA9_MAPPING = {
     "W": 'i'
 }
 
+# This is Olga Botvinnik's attempt at making a mapping as well
 BOTVINNIK_MAPPING = {
     # Small and hydrophobic
     "A": "a",
@@ -282,25 +298,32 @@ SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
 HSDM17_TRANSLATION = str.maketrans(HSDM17_MAPPING)
 BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
-PEPTIDE_ENCODINGS = {"hp": HP_TRANSLATION,
-                     "hp2": HP_TRANSLATION,
-                     "hydrophobic-polar": HP_TRANSLATION,
-                     "dayhoff": DAYHOFF_TRANSLATION,
-                     "dayhoff6": DAYHOFF_TRANSLATION,
+PEPTIDE_ENCODINGS = {'hp': HP_TRANSLATION,
+                     'hp2': HP_TRANSLATION,
+                     'hydrophobic-polar': HP_TRANSLATION,
+                     'dayhoff': DAYHOFF_TRANSLATION,
+                     'dayhoff6': DAYHOFF_TRANSLATION,
                      'dayhoff_v2': DAYHOFF_V2_TRANSLATION,
                      'botvinnik': BOTVINNIK_TRANSLATION,
                      'botvinnik8': BOTVINNIK_TRANSLATION,
-                     "aa9": AA9_TRANSLATION,
+                     'aa9': AA9_TRANSLATION,
                      'gbmr4': GBMR4_TRANSLATION,
                      'sdm12': SDM12_TRANSLATION,
                      'hsdm17': HSDM17_TRANSLATION}
 
+
+PROTEIN_LIKE = 'protein', 'peptide', 'protein20', 'peptide20', 'aa20'
+DAYHOFF_LIKE = 'dayhoff', 'dayhoff6'
+HP_LIKE = 'hydrophobic-polar', 'hydrophobic-polar2', 'hp', 'hp2',
+
 VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'aa20', \
+                          'protein20', 'peptide20'\
+                          'aa20', \
                           'dayhoff', 'dayhoff6' \
                           'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp2', \
-                          'aa9', 'gbmr4', \
+                          'hydrophobic-polar', 'hp', 'hp2', \
+                          'aa9', \
+                          'gbmr4', \
                           'sdm12', 'hsdm17'
 
 
