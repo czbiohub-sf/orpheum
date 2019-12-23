@@ -317,7 +317,7 @@ DAYHOFF_LIKE = 'dayhoff', 'dayhoff6'
 HP_LIKE = 'hydrophobic-polar', 'hydrophobic-polar2', 'hp', 'hp2',
 
 VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'peptide20'\
+                          'protein20', 'peptide20', \
                           'aa20', \
                           'dayhoff', 'dayhoff6' \
                           'botvinnik', 'botvinnik8', \
