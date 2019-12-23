@@ -312,7 +312,8 @@ PEPTIDE_ENCODINGS = {'hp': HP_TRANSLATION,
                      'hsdm17': HSDM17_TRANSLATION}
 
 VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'aa20', \
+                          'protein20', 'peptide20'\
+                          'aa20', \
                           'dayhoff', 'dayhoff6' \
                           'botvinnik', 'botvinnik8', \
                           'hydrophobic-polar', 'hp2', \
