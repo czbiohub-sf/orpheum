@@ -23,9 +23,13 @@ def nucleotide_string():
     return "GATTACA"
 
 
-@pytest.fixture(params=['protein', 'peptide', 'dayhoff',
-                          'botvinnik',
-                          'hydrophobic-polar', 'hp', 'aa9', 'gbmr4',
+@pytest.fixture(params=['protein', 'peptide', \
+                          'protein20', 'peptide20'\
+                          'aa20', \
+                          'dayhoff', 'dayhoff6' \
+                          'botvinnik', 'botvinnik8', \
+                          'hydrophobic-polar', 'hp2', \
+                          'aa9', 'gbmr4', \
                           'sdm12', 'hsdm17'])
 def reduced_alphabet(request):
     return request.param
@@ -126,11 +130,19 @@ def test_encode_peptide(peptide_string, reduced_alphabet):
     true = peptide_string
     if reduced_alphabet == 'dayhoff':
         true = 'bbbdbfecdac'
+    if reduced_alphabet == 'dayhoff6':
+        true = 'bbbdbfecdac'
     elif reduced_alphabet == 'hydrophobic-polar' or reduced_alphabet == 'hp':
+        true = 'phpphhhpppp'
+    elif reduced_alphabet == 'hydrophobic-polar2' or reduced_alphabet == 'hp2':
         true = 'phpphhhpppp'
     elif reduced_alphabet == 'protein' or reduced_alphabet == 'peptide':
         true = peptide_string
+    elif reduced_alphabet == 'protein20' or reduced_alphabet == 'aa20':
+        true = peptide_string
     elif reduced_alphabet == 'botvinnik':
+        true = 'dadkacbfghf'
+    elif reduced_alphabet == 'botvinnik8':
         true = 'dadkacbfghf'
     elif reduced_alphabet == 'aa9':
         true = 'aaafabbdgbd'
