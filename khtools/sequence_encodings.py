@@ -316,8 +316,9 @@ VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
                           'aa20', \
                           'dayhoff', 'dayhoff6' \
                           'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp2', \
-                          'aa9', 'gbmr4', \
+                          'hydrophobic-polar', 'hp', 'hp2', \
+                          'aa9', \
+                          'gbmr4', \
                           'sdm12', 'hsdm17'
 
 
