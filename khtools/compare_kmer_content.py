@@ -77,6 +77,18 @@ def kmerize(seq, ksize):
     return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
 
 
+def kmerize_ordered(seq, ksize):
+    """Return an ordered dictionary of k-mers, with their sequence location"""
+    kmers = OrderedDict()
+    for i in range(len(seq) - ksize + 1):
+        kmer = seq[i:i + ksize]
+        if kmer not in kmers:
+            kmers[kmer] = [i]
+        else:
+            kmers[kmer].append(i)
+    return kmers
+
+
 def jaccardize(set1, set2):
     """Compute jaccard index of two sets"""
     denominator = min(len(set1), len(set2))
