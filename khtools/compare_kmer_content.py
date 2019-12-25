@@ -366,7 +366,8 @@ def cli(fastas,
                 seq = record['sequence']
                 seqlist.append((seq_id, seq))
 
-    ksizes = list(range(ksize_min, ksize_max, ksize_step))
+    # add 1 to max since range is not inclusive of last interval
+    ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))
 
     comparisons = compare_all_seqs(seqlist, n_jobs=processes,
                                    ksizes=ksizes, moltype='protein')

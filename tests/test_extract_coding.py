@@ -117,18 +117,6 @@ def true_scores(true_scores_path):
     return pd.read_csv(true_scores_path)
 
 
-@pytest.fixture
-def true_protein_coding_fasta_path(data_folder):
-    return os.path.join(data_folder, "extract_coding",
-                        "true_protein_coding.fasta")
-
-
-@pytest.fixture
-def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
-    with open(true_protein_coding_fasta_path) as f:
-        return f.read()
-
-
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
                      true_scores, true_scores_path,
                      true_protein_coding_fasta_path):
@@ -185,6 +173,8 @@ def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
         peptide_fasta, reads
     ])
     assert result.exit_code == 0
+    # CliRunner jams together the stderr and stdout so just check if the
+    # true string is contained in the output
     assert true_protein_coding_fasta_string in result.output
 
 

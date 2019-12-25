@@ -5,6 +5,7 @@ Tests comparing k-mer content
 """
 from io import StringIO
 
+from click.testing import CliRunner
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
@@ -132,3 +133,44 @@ seq1,seq2,4,0.75,amino_keto
 """
     true = pd.read_csv(StringIO(s))
     pdt.assert_equal(test, true)
+
+
+def test_cli(capsys, true_protein_coding_fasta_path):
+    from khtools.compare_kmer_content import cli
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [true_protein_coding_fasta_path,
+                                 '--ksize-max', '3'])
+    assert result.exit_code == 0
+    output_string = '''id1,id2,ksize,jaccard,molecule
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.0,protein
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,protein
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.2631578947368421,botvinnik
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,botvinnik
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.4666666666666667,dayhoff
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.05263157894736842,dayhoff
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.4375,dayhoff_v2
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,dayhoff_v2
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,hydrophobic-polar
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,hydrophobic-polar
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.047619047619047616,protein
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,protein
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.2631578947368421,botvinnik
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.05,botvinnik
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.6428571428571429,dayhoff
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.2631578947368421,dayhoff
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.5,dayhoff_v2
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.21052631578947367,dayhoff_v2
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hydrophobic-polar
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hydrophobic-polar
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.14285714285714285,protein
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,protein
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.3157894736842105,botvinnik
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,botvinnik
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.7857142857142857,dayhoff
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.2631578947368421,dayhoff
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.625,dayhoff_v2
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.05263157894736842,dayhoff_v2
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hydrophobic-polar
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hydrophobic-polar'''
+    assert output_string in result.output
