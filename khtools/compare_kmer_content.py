@@ -201,6 +201,9 @@ def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype='protein'):
         return compare_peptide_seqs(id1_seq1, id2_seq2, ksizes)
     elif moltype.lower() == 'dna':
         return compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes)
+    else:
+        raise ValueError(f"{moltype} is not a valid molecule type! Only "
+                         f"'protein' and 'dna' are supported")
 
 
 def compare_args_unpack(args, ksizes, moltype):
@@ -209,7 +212,7 @@ def compare_args_unpack(args, ksizes, moltype):
     return compare_seqs(*args, ksizes=ksizes, moltype=moltype)
 
 
-def get_comparison_at_index(index, seqlist1, seqlist2,
+def get_comparison_at_index(index, seqlist1, seqlist2=None,
                             ksizes=KSIZES, n_background=100,
                             moltype='protein', verbose=False):
     """Returns similarities of all the combinations of signature at index in the
@@ -230,18 +233,12 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
     with rest of the signatures from index+1
     """
     startt = time.time()
-    pairs_iterator = [(seqlist1[index], seqlist2[index])]
-    random_seqlist2 = random.sample(seqlist2, n_background)
-    this_index_seqlist1 = [seqlist1[index]] * n_background
-    background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
-    if verbose:
-        print("background_pairs:")
-        pprint(background_pairs)
+    if seqlist2 is not None:
+        seq_iterator = get_paired_seq_iterator(index, n_background, seqlist1,
+                                               seqlist2, verbose)
+    else:
+        seq_iterator = itertools.product([seqlist1[index]], seqlist1[index + 1:])
 
-    seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
-    if verbose:
-        print("seq_iterator:")
-        pprint(seq_iterator)
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
@@ -250,6 +247,22 @@ def get_comparison_at_index(index, seqlist1, seqlist2,
         time.time() - startt,
         end='\r')
     return comparision_df_list
+
+
+def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
+    pairs_iterator = [(seqlist1[index], seqlist2[index])]
+    random_seqlist2 = random.sample(seqlist2, n_background)
+    this_index_seqlist1 = [seqlist1[index]] * n_background
+    background_pairs = list(zip(this_index_seqlist1, random_seqlist2))
+    if verbose:
+        print("background_pairs:")
+        pprint(background_pairs)
+    seq_iterator = list(
+        itertools.chain(*[pairs_iterator, background_pairs]))
+    if verbose:
+        print("seq_iterator:")
+        pprint(seq_iterator)
+    return seq_iterator
 
 
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
@@ -270,8 +283,6 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     if seqlist2 is not None:
         if len(seqlist1) != len(seqlist2):
             raise ValueError("Can only compare two sequences of equal length")
-    else:
-        seqlist2 = seqlist1
 
     t0 = time.time()
     len_seqlist1 = len(seqlist1)
@@ -315,6 +326,15 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 @click.option("--alphabets",
               default=','.join(VALID_PEPTIDE_MOLECULES),
               help="Which protein-coding alphabet to use for comparisons")
+@click.option("--ksize-min",
+              default=2, type=click.INT,
+              help="k-mer sizes to use for comparison")
+@click.option("--ksize-max",
+              default=25, type=click.INT,
+              help="k-mer sizes to use for comparison")
+@click.option("--ksize-step",
+              default=1, type=click.INT,
+              help="k-mer sizes to use for comparison")
 @click.option("--parquet",
               default=None,
               help="If provided, save table to a space-efficient and fast-IO "
@@ -331,6 +351,9 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
               help="Number of processes to use for parallelization")
 def cli(fastas,
         alphabets,
+        ksize_min,
+        ksize_max,
+        ksize_step,
         parquet,
         no_csv,
         processes=2):
@@ -343,9 +366,10 @@ def cli(fastas,
                 seq = record['sequence']
                 seqlist.append((seq_id, seq))
 
-    for alphabet in alphabets_parsed:
-        comparisons = compare_all_seqs(seqlist, n_jobs=processes,
-                                       moltype=alphabet)
+    ksizes = list(range(ksize_min, ksize_max, ksize_step))
+
+    comparisons = compare_all_seqs(seqlist, n_jobs=processes,
+                                   ksizes=ksizes, moltype='protein')
 
     if parquet is not None:
         comparisons.to_parquet(parquet)
