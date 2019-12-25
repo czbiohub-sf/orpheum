@@ -360,6 +360,10 @@ def cli(fastas,
     """Compute k-mer similarity of all pairwise sequences"""
     alphabets_parsed = alphabets.split(',')
     seqlist = []
+    if len(fastas) == 0:
+        raise ValueError("No sequence files provided! "
+                         "Argument 'fastas' is required!")
+
     for fasta in fastas:
         with screed.open(fasta) as records:
             for record in records:
@@ -367,7 +371,7 @@ def cli(fastas,
                 seq = record['sequence']
                 seqlist.append((seq_id, seq))
     if len(seqlist) == 0:
-        raise ValueError("No sequences provided!")
+        raise ValueError(f"No sequences found in files: {' '.join(fastas)}!")
 
     # add 1 to max since range is not inclusive of last interval
     ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))

@@ -198,8 +198,9 @@ def test_cli_no_input():
     runner = CliRunner()
     result = runner.invoke(cli)
     assert result.exit_code == -1
-    error_message = 'No sequences provided!'
-    assert error_message == result.exception.args[0]
+    error_message = "No sequence files provided! Argument 'fastas' is " \
+                    "required!"
+    assert error_message in result.exception.args[0]
 
 
 def test_cli_parquet_no_csv(tmpdir, true_protein_coding_fasta_path, ksize_args,
