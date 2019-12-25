@@ -4,6 +4,7 @@ test_compare_kmer_content.py
 Tests comparing k-mer content
 """
 from io import StringIO
+import os
 
 from click.testing import CliRunner
 import pandas as pd
@@ -135,14 +136,14 @@ seq1,seq2,4,0.75,amino_keto
     pdt.assert_equal(test, true)
 
 
-def test_cli(capsys, true_protein_coding_fasta_path):
-    from khtools.compare_kmer_content import cli
+@pytest.fixture
+def ksize_args():
+    return ['--ksize-max', '3']
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [true_protein_coding_fasta_path,
-                                 '--ksize-max', '3'])
-    assert result.exit_code == 0
-    output_string = '''id1,id2,ksize,jaccard,molecule
+
+@pytest.fixture
+def true_comparison_csv_kmax3():
+    return '''id1,id2,ksize,jaccard,molecule
 SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.0,protein
 SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,protein
 SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.2631578947368421,botvinnik
@@ -173,4 +174,44 @@ SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 ja
 SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.05263157894736842,dayhoff_v2
 SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hydrophobic-polar
 SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hydrophobic-polar'''
-    assert output_string in result.output
+
+
+@pytest.fixture
+def true_comparison_df(true_comparison_csv_kmax3):
+    return pd.read_csv(StringIO(true_comparison_csv_kmax3))
+
+
+def test_cli(true_protein_coding_fasta_path, ksize_args,
+             true_comparison_csv_kmax3):
+    from khtools.compare_kmer_content import cli
+
+    runner = CliRunner()
+    args = ksize_args + [true_protein_coding_fasta_path]
+    result = runner.invoke(cli, args)
+    assert result.exit_code == 0
+    assert true_comparison_csv_kmax3 in result.output
+
+
+def test_cli_parquet_no_csv(tmpdir, true_protein_coding_fasta_path, ksize_args,
+                            true_comparison_csv_kmax3, true_comparison_df):
+    from khtools.compare_kmer_content import cli
+
+    parquet = os.path.join(tmpdir, 'coding_scores.parquet')
+
+    runner = CliRunner()
+    args = ksize_args + ['--parquet', parquet, '--no-csv',
+                         true_protein_coding_fasta_path]
+    result = runner.invoke(cli, args)
+    assert result.exit_code == 0
+
+    # Check that csv was not output to stdout
+    assert true_comparison_csv_kmax3 not in result.output
+
+    # Check existence of parquet file
+    assert os.path.exists(parquet)
+
+    # the CLI adds the filename to the scoring dataframe
+    true = true_comparison_df.copy()
+
+    test = pd.read_parquet(parquet)
+    pdt.assert_equal(test, true)
