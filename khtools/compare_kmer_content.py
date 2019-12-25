@@ -5,15 +5,16 @@ from pprint import pprint
 import random
 import time
 
-
+import click
 import pandas as pd
+import screed
 from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
-from .sequence_encodings import amino_keto_ize, \
+from khtools.sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
-    botvinnikize
+    botvinnikize, VALID_PEPTIDE_MOLECULES
 
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
@@ -60,10 +61,10 @@ divergence_estimates = pd.Series({"Amniota": 312,
                                   'NA': 0})
 divergence_estimates = divergence_estimates.sort_values()
 
-
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
-    21, 23, 24, 25
+         21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
+
 
 # Hydrophobic/hydrophilic mapping
 
@@ -269,6 +270,8 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     if seqlist2 is not None:
         if len(seqlist1) != len(seqlist2):
             raise ValueError("Can only compare two sequences of equal length")
+    else:
+        seqlist2 = seqlist1
 
     t0 = time.time()
     len_seqlist1 = len(seqlist1)
@@ -305,3 +308,50 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 
     notify(f"Total time: {time.time() - t0}")
     return peptide_kmer_comparisons
+
+
+@click.command()
+@click.argument("fastas", nargs=-1)
+@click.option("--alphabets",
+              default=','.join(VALID_PEPTIDE_MOLECULES),
+              help="Which protein-coding alphabet to use for comparisons")
+@click.option("--parquet",
+              default=None,
+              help="If provided, save table to a space-efficient and fast-IO "
+                   "Apache Parquet format file of this name. This format is "
+                   "compatible with Python/Pandas and R.")
+@click.option("--no-csv",
+              is_flag=True,
+              default=False,
+              help="Don't output csv to stdout")
+@click.option('--processes',
+              '-p',
+              default=2,
+              type=click.INT,
+              help="Number of processes to use for parallelization")
+def cli(fastas,
+        alphabets,
+        parquet,
+        no_csv,
+        processes=2):
+    alphabets_parsed = alphabets.split(',')
+    seqlist = []
+    for fasta in fastas:
+        with screed.open(fasta) as records:
+            for record in records:
+                seq_id = record['name']
+                seq = record['sequence']
+                seqlist.append((seq_id, seq))
+
+    for alphabet in alphabets_parsed:
+        comparisons = compare_all_seqs(seqlist, n_jobs=processes,
+                                       moltype=alphabet)
+
+    if parquet is not None:
+        comparisons.to_parquet(parquet)
+    if not no_csv:
+        click.echo(comparisons.to_csv(index=False))
+
+
+if __name__ == '__main__':
+    cli()
