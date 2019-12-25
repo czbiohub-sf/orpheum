@@ -357,6 +357,7 @@ def cli(fastas,
         parquet,
         no_csv,
         processes=2):
+    """Compute k-mer similarity of all pairwise sequences"""
     alphabets_parsed = alphabets.split(',')
     seqlist = []
     for fasta in fastas:
@@ -365,6 +366,8 @@ def cli(fastas,
                 seq_id = record['name']
                 seq = record['sequence']
                 seqlist.append((seq_id, seq))
+    if len(seqlist) == 0:
+        raise ValueError("No sequences provided!")
 
     # add 1 to max since range is not inclusive of last interval
     ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))

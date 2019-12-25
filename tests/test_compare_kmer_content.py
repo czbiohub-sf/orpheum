@@ -192,6 +192,16 @@ def test_cli(true_protein_coding_fasta_path, ksize_args,
     assert true_comparison_csv_kmax3 in result.output
 
 
+def test_cli_no_input():
+    from khtools.compare_kmer_content import cli
+
+    runner = CliRunner()
+    result = runner.invoke(cli)
+    assert result.exit_code == -1
+    error_message = 'No sequences provided!'
+    assert error_message == result.exception.args[0]
+
+
 def test_cli_parquet_no_csv(tmpdir, true_protein_coding_fasta_path, ksize_args,
                             true_comparison_csv_kmax3, true_comparison_df):
     from khtools.compare_kmer_content import cli
