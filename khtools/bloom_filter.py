@@ -246,7 +246,7 @@ def get_peptide_ksize(molecule, peptide_ksize):
             peptide_ksize = DEFAULT_DAYHOFF_KSIZE
         elif molecule in HP_LIKE:
             peptide_ksize = DEFAULT_HP_KSIZE
-        if molecule not in VALID_PEPTIDE_MOLECULES:
+        else:
             raise ValueError(f"{molecule} does not have a default k-mer size! "
                              f"Only 'protein', 'hydrophobic-polar', or"
                              f" 'dayhoff' have a default protein ksize")

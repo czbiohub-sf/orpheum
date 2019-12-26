@@ -93,6 +93,5 @@ def test_get_peptide_ksize_with_ksize(molecule):
 def test_get_peptide_ksize_with_bad_molecule():
     from khtools.bloom_filter import get_peptide_ksize
 
-    peptide_ksize = 123
     with pytest.raises(ValueError):
-        get_peptide_ksize("not a real molecule type", peptide_ksize)
+        get_peptide_ksize("not a real molecule type", None)
