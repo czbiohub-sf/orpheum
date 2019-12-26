@@ -1,24 +1,24 @@
-read_id,jaccard_in_peptide_db,n_kmers,classification,filename
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1,1.0,11.0,Coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.6196593 Ibis_Run100924_C3PO:6:29:16733:12435/1,0.08333333333333333,12.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.20767303 Ibis_Run100924_C3PO:6:104:6864:5062/1,0.09090909090909093,11.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.12582274 Ibis_Run100924_C3PO:6:62:11779:17975/1,0.0,11.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.13334230 Ibis_Run100924_C3PO:6:66:16579:20350/1,0.0,7.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1,1.0,13.0,Coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.6813354 Ibis_Run100924_C3PO:6:32:10591:13073/1,0.0,12.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.23113368 Ibis_Run100924_C3PO:6:114:13840:18459/1,0.0,9.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.10872941 Ibis_Run100924_C3PO:6:53:6164:10522/1,0.09090909090909093,11.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.6192120 Ibis_Run100924_C3PO:6:29:5833:11991/1,0.0,11.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.21295280 Ibis_Run100924_C3PO:6:106:2590:13965/1,0.08333333333333333,12.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.21201208 Ibis_Run100924_C3PO:6:106:2763:5109/1,,,No translation frames without stop codons,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.18327923 Ibis_Run100924_C3PO:6:92:9077:13885/1,0.09090909090909093,11.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1,1.0,11.0,Coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.21417895 Ibis_Run100924_C3PO:6:107:8793:5012/1,0.0,11.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.17165743 Ibis_Run100924_C3PO:6:86:18789:18450/1,,,No translation frames without stop codons,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.21229494 Ibis_Run100924_C3PO:6:106:6163:7753/1,,,No translation frames without stop codons,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.21218773 Ibis_Run100924_C3PO:6:106:16921:6743/1,,,All translations shorter than peptide k-mer size + 1,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.20124664 Ibis_Run100924_C3PO:6:101:4701:5309/1,0.07692307692307693,13.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.16841308 Ibis_Run100924_C3PO:6:85:6205:5805/1,0.0,12.0,Non-coding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.1531 Ibis_Run100924_C3PO:6:1:15718:1062/1,,,Read length was shorter than 3 * peptide k-mer size,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.2318 Ibis_Run100924_C3PO:6:1:15779:1141/1,,,Read length was shorter than 3 * peptide k-mer size,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-adversarial_low_complexity_peptide,,1.0,Low complexity peptide in dayhoff encoding,/Users/olgabot/code/kmer-hashing/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+read_id,jaccard_in_peptide_db,n_kmers,classification
+SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1,1.0,11.0,Coding
+SRR306838.6196593 Ibis_Run100924_C3PO:6:29:16733:12435/1,0.08333333333333333,12.0,Non-coding
+SRR306838.20767303 Ibis_Run100924_C3PO:6:104:6864:5062/1,0.09090909090909091,11.0,Non-coding
+SRR306838.12582274 Ibis_Run100924_C3PO:6:62:11779:17975/1,0.0,11.0,Non-coding
+SRR306838.13334230 Ibis_Run100924_C3PO:6:66:16579:20350/1,0.0,7.0,Non-coding
+SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1,1.0,13.0,Coding
+SRR306838.6813354 Ibis_Run100924_C3PO:6:32:10591:13073/1,0.0,12.0,Non-coding
+SRR306838.23113368 Ibis_Run100924_C3PO:6:114:13840:18459/1,0.0,9.0,Non-coding
+SRR306838.10872941 Ibis_Run100924_C3PO:6:53:6164:10522/1,0.09090909090909091,11.0,Non-coding
+SRR306838.6192120 Ibis_Run100924_C3PO:6:29:5833:11991/1,0.0,11.0,Non-coding
+SRR306838.21295280 Ibis_Run100924_C3PO:6:106:2590:13965/1,0.08333333333333333,12.0,Non-coding
+SRR306838.21201208 Ibis_Run100924_C3PO:6:106:2763:5109/1,,,No translation frames without stop codons
+SRR306838.18327923 Ibis_Run100924_C3PO:6:92:9077:13885/1,0.09090909090909091,11.0,Non-coding
+SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1,1.0,11.0,Coding
+SRR306838.21417895 Ibis_Run100924_C3PO:6:107:8793:5012/1,0.0,11.0,Non-coding
+SRR306838.17165743 Ibis_Run100924_C3PO:6:86:18789:18450/1,,,No translation frames without stop codons
+SRR306838.21229494 Ibis_Run100924_C3PO:6:106:6163:7753/1,,,No translation frames without stop codons
+SRR306838.21218773 Ibis_Run100924_C3PO:6:106:16921:6743/1,,,All translations shorter than peptide k-mer size + 1
+SRR306838.20124664 Ibis_Run100924_C3PO:6:101:4701:5309/1,0.07692307692307693,13.0,Non-coding
+SRR306838.16841308 Ibis_Run100924_C3PO:6:85:6205:5805/1,0.0,12.0,Non-coding
+SRR306838.1531 Ibis_Run100924_C3PO:6:1:15718:1062/1,,,Read length was shorter than 3 * peptide k-mer size
+SRR306838.2318 Ibis_Run100924_C3PO:6:1:15779:1141/1,,,Read length was shorter than 3 * peptide k-mer size
+adversarial_low_complexity_peptide,,1.0,Low complexity peptide in dayhoff encoding
