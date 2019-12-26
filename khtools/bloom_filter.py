@@ -8,7 +8,8 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from khtools.compare_kmer_content import kmerize
-from khtools.sequence_encodings import encode_peptide, VALID_PEPTIDE_MOLECULES
+from khtools.sequence_encodings import encode_peptide, \
+    VALID_PEPTIDE_MOLECULES, PROTEIN_LIKE, DAYHOFF_LIKE, HP_LIKE
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
@@ -16,8 +17,8 @@ DEFAULT_MAX_TABLESIZE = int(1e8)
 
 # Default k-mer sizes for different alphabets
 DEFAULT_PROTEIN_KSIZE = 7
-DEFAULT_DAYHOFF_KSIZE = 11
-DEFAULT_HP_KSIZE = 21
+DEFAULT_DAYHOFF_KSIZE = 12
+DEFAULT_HP_KSIZE = 31
 
 
 def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
@@ -238,16 +239,15 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
 
 
 def get_peptide_ksize(molecule, peptide_ksize):
-    if molecule not in VALID_PEPTIDE_MOLECULES:
-        raise ValueError(f"{molecule} is not a valid protein encoding! "
-                         f"Only one of 'protein', 'hydrophobic-polar', or"
-                         f" 'dayhoff' can be specified")
-
     if peptide_ksize is None:
-        if molecule == 'protein':
+        if molecule in PROTEIN_LIKE:
             peptide_ksize = DEFAULT_PROTEIN_KSIZE
-        elif molecule == 'dayhoff':
+        elif molecule in DAYHOFF_LIKE:
             peptide_ksize = DEFAULT_DAYHOFF_KSIZE
-        elif molecule == 'hydrophobic-polar' or molecule == 'hp':
+        elif molecule in HP_LIKE:
             peptide_ksize = DEFAULT_HP_KSIZE
+        else:
+            raise ValueError(f"{molecule} does not have a default k-mer size! "
+                             f"Only 'protein', 'hydrophobic-polar', or"
+                             f" 'dayhoff' have a default protein ksize")
     return peptide_ksize
