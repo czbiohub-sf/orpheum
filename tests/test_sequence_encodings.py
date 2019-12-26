@@ -24,7 +24,7 @@ def nucleotide_string():
 
 
 @pytest.fixture(params=['protein', 'peptide', \
-                          'protein20', 'peptide20'\
+                          'protein20', 'peptide20', \
                           'aa20', \
                           'dayhoff', 'dayhoff6' \
                           'botvinnik', 'botvinnik8', \
