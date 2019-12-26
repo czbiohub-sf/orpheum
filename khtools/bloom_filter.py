@@ -17,8 +17,8 @@ DEFAULT_MAX_TABLESIZE = int(1e8)
 
 # Default k-mer sizes for different alphabets
 DEFAULT_PROTEIN_KSIZE = 7
-DEFAULT_DAYHOFF_KSIZE = 11
-DEFAULT_HP_KSIZE = 21
+DEFAULT_DAYHOFF_KSIZE = 12
+DEFAULT_HP_KSIZE = 31
 
 
 def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
@@ -242,7 +242,7 @@ def get_peptide_ksize(molecule, peptide_ksize):
     if peptide_ksize is None:
         if molecule in PROTEIN_LIKE:
             peptide_ksize = DEFAULT_PROTEIN_KSIZE
-        elif molecule == DAYHOFF_LIKE:
+        elif molecule in DAYHOFF_LIKE:
             peptide_ksize = DEFAULT_DAYHOFF_KSIZE
         elif molecule in HP_LIKE:
             peptide_ksize = DEFAULT_HP_KSIZE
