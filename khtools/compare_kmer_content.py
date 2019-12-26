@@ -62,7 +62,7 @@ divergence_estimates = pd.Series({"Amniota": 312,
 divergence_estimates = divergence_estimates.sort_values()
 
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
-         21, 23, 24, 25
+    21, 23, 24, 25
 COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
 
@@ -237,7 +237,8 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         seq_iterator = get_paired_seq_iterator(index, n_background, seqlist1,
                                                seqlist2, verbose)
     else:
-        seq_iterator = itertools.product([seqlist1[index]], seqlist1[index + 1:])
+        seq_iterator = itertools.product(
+            [seqlist1[index]], seqlist1[index + 1:])
 
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
@@ -358,7 +359,6 @@ def cli(fastas,
         no_csv,
         processes=2):
     """Compute k-mer similarity of all pairwise sequences"""
-    alphabets_parsed = alphabets.split(',')
     seqlist = []
     if len(fastas) == 0:
         raise ValueError("No sequence files provided! "
