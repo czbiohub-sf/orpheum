@@ -41,14 +41,18 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
 # right sequences
 @pytest.fixture(params=[('protein', DEFAULT_PROTEIN_KSIZE),
                         ('dayhoff', DEFAULT_DAYHOFF_KSIZE),
+                        # This k-mer size is too short for dayhoff and will
+                        # fail on the dataset
                         pytest.param(('dayhoff', DEFAULT_PROTEIN_KSIZE),
                                      marks=pytest.mark.xfail),
+                        # Default peptide k-mer size for HP is 31 which
+                        # corresponds to a nucleotide read length of 90, and
+                        # is too long for this dataset
                         pytest.param(('hydrophobic-polar', DEFAULT_HP_KSIZE),
-                                     marks=pytest.mark.skip,
-                                     reason="Default peptide k-mer size for "
-                                            "HP is 31 which corresponds to a "
-                                            "nucleotide read length of 90, "
-                                            "and is too long for this dataset"),
+                                     marks=pytest.mark.skip),
+                        # This is a wayyy too short k-mer size for the HP
+                        # alphabet and should definitely fail when scoring
+                        # reads
                         pytest.param(
                             ('hydrophobic-polar', DEFAULT_PROTEIN_KSIZE),
                             marks=pytest.mark.xfail)],
