@@ -197,7 +197,7 @@ def test_cli_no_input():
 
     runner = CliRunner()
     result = runner.invoke(cli)
-    assert result.exit_code == -1
+    assert result.exit_code != 0
     error_message = "No sequence files provided! Argument 'fastas' is " \
                     "required!"
     assert error_message in result.exception.args[0]
