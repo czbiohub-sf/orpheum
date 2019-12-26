@@ -296,7 +296,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 @click.command()
 @click.argument("fastas", nargs=-1)
 @click.option("--alphabets",
-              default=','.join(VALID_PEPTIDE_MOLECULES),
+              default=','.join(MOLECULES_TO_COMPARE),
               help="Which protein-coding alphabet to use for comparisons")
 @click.option("--ksize-min",
               default=2, type=click.INT,
