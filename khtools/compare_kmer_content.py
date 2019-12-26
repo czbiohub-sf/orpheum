@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from functools import partial
 import itertools
 import multiprocessing
@@ -75,6 +76,18 @@ COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
     return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
+
+
+def kmerize_ordered(seq, ksize):
+    """Return an ordered dictionary of k-mers, with their sequence location"""
+    kmers = OrderedDict()
+    for i in range(len(seq) - ksize + 1):
+        kmer = seq[i:i + ksize]
+        if kmer not in kmers:
+            kmers[kmer] = [i]
+        else:
+            kmers[kmer].append(i)
+    return kmers
 
 
 def jaccardize(set1, set2):

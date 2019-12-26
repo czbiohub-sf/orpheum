@@ -88,6 +88,16 @@ def peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
 
 
 @pytest.fixture
+def coding_peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
+    filename = os.path.join(
+        data_folder, 'bloom_filter',
+        f'gencode.v32.pc_translations.subsample5.randomseed0-{molecule}_'
+        f'ksize-{peptide_ksize}.bloomfilter.nodegraph'
+    )
+    return filename
+
+
+@pytest.fixture
 def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
                          peptide_ksize):
     from khtools.bloom_filter import load_nodegraph
@@ -107,11 +117,12 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
 
 @pytest.fixture
 def coding_peptide_bloom_filter(
-        peptide_bloom_filter_path, coding_peptide_fasta, molecule, peptide_ksize):
+    coding_peptide_bloom_filter_path, coding_peptide_fasta, molecule,
+    peptide_ksize):
     from khtools.bloom_filter import load_nodegraph
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
-        return load_nodegraph(peptide_bloom_filter_path)
+        return load_nodegraph(coding_peptide_bloom_filter_path)
     except (FileNotFoundError, OSError):
         from khtools.bloom_filter import make_peptide_bloom_filter
 
@@ -119,5 +130,5 @@ def coding_peptide_bloom_filter(
                                                  peptide_ksize,
                                                  molecule,
                                                  tablesize=1e6)
-        bloom_filter.save(peptide_bloom_filter_path)
+        bloom_filter.save(coding_peptide_bloom_filter_path)
         return bloom_filter

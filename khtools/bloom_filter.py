@@ -7,7 +7,7 @@ import screed
 from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
-from khtools.compare_kmer_content import kmerize
+from khtools.compare_kmer_content import kmerize, kmerize_ordered
 from khtools.sequence_encodings import encode_peptide, VALID_PEPTIDE_MOLECULES
 
 # khmer Nodegraph features
@@ -76,6 +76,33 @@ class BasedIntParamType(click.ParamType):
 BASED_INT = BasedIntParamType()
 
 
+def check_seqs_in_bloom_filter(peptide_fasta, peptide_ksize, molecule,
+                               bloom_filter, load_filter=True):
+    if load_filter:
+        nodegraph = load_nodegraph(bloom_filter)
+    else:
+        nodegraph = bloom_filter
+    with screed.open(peptide_fasta) as records:
+        for record in records:
+            sequence = encode_peptide(record['sequence'], molecule)
+            kmers = kmerize_ordered(sequence, peptide_ksize)
+            for kmer, positions in kmers.items():
+                # Convert the k-mer into an integer
+                hashed = hash_murmur(kmer)
+                try:
+                    assert nodegraph.get(hashed)
+                except AssertionError:
+                    raise AssertionError(f"K-mer {kmer} in positions "
+                                         f"{', '.join(map(str, positions))} "
+                                         f"from "
+                                         f"sequence:\n{record['sequence']}\n"
+                                         f"encoded:\n{sequence}\nwere not found"
+                                         f" in the bloom filter "
+                                         f"{bloom_filter}")
+    print(f"All k-mers of size {peptide_ksize} encoded in the {molecule} "
+          f"alphabet from:\n{peptide_fasta}\nwere found in:\n{bloom_filter}")
+
+
 def make_peptide_bloom_filter(peptide_fasta,
                               peptide_ksize,
                               molecule,
@@ -92,8 +119,8 @@ def make_peptide_bloom_filter(peptide_fasta,
                 continue
             sequence = encode_peptide(record['sequence'], molecule)
             try:
-                kmers = kmerize(sequence, peptide_ksize)
-                for kmer in kmers:
+                kmers = kmerize_ordered(sequence, peptide_ksize)
+                for kmer, position in kmers.items():
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
 
