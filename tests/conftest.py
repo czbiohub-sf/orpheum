@@ -43,7 +43,12 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
                         ('dayhoff', DEFAULT_DAYHOFF_KSIZE),
                         pytest.param(('dayhoff', DEFAULT_PROTEIN_KSIZE),
                                      marks=pytest.mark.xfail),
-                        ('hydrophobic-polar', DEFAULT_HP_KSIZE),
+                        pytest.param(('hydrophobic-polar', DEFAULT_HP_KSIZE),
+                                     marks=pytest.mark.skip,
+                                     reason="Default peptide k-mer size for "
+                                            "HP is 31 which corresponds to a "
+                                            "nucleotide read length of 90, "
+                                            "and is too long for this dataset"),
                         pytest.param(
                             ('hydrophobic-polar', DEFAULT_PROTEIN_KSIZE),
                             marks=pytest.mark.xfail)],
