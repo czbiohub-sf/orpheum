@@ -96,10 +96,10 @@ def test_six_frame_translation_no_stops(seq):
     assert test == true
 
 
-def test_get_longest_translation(seq):
-    from khtools.extract_coding import get_longest_translation
+def test_get_all_translation(seq):
+    from khtools.extract_coding import get_all_translations
 
-    test = {k: str(v) for k, v in get_longest_translation(seq).items()}
+    test = {k: str(v) for k, v in get_all_translations(seq).items()}
     true = {}
     assert test == true
 

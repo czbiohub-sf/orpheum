@@ -42,8 +42,6 @@ def variable_peptide_fasta(
         request, peptide_fasta, adversarial_peptide_fasta, coding_peptide_fasta):
     if request.param == 'normal':
         return peptide_fasta
-    elif request.param == 'coding':
-        return coding_peptide_fasta
     else:
         return adversarial_peptide_fasta
 
