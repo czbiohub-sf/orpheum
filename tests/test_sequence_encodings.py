@@ -23,13 +23,13 @@ def nucleotide_string():
     return "GATTACA"
 
 
-@pytest.fixture(params=['protein', 'peptide', \
-                          'protein20', 'peptide20', \
-                          'aa20', \
-                          'dayhoff', 'dayhoff6' \
-                          'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp2', \
-                          'aa9', 'gbmr4', \
+@pytest.fixture(params=['protein', 'peptide',
+                          'protein20', 'peptide20',
+                          'aa20',
+                          'dayhoff', 'dayhoff6',
+                          'botvinnik', 'botvinnik8',
+                          'hydrophobic-polar', 'hp2',
+                          'aa9', 'gbmr4',
                           'sdm12', 'hsdm17'])
 def reduced_alphabet(request):
     return request.param
