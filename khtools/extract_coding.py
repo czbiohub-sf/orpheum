@@ -512,7 +512,8 @@ def maybe_write_json_summary(coding_scores, json_summary):
                 classification_percentages.to_dict()
         }
         with open(json_summary, 'w') as f:
-            click.echo(f"Writing extract_coding summary to {json_summary}")
+            click.echo(f"Writing extract_coding summary to {json_summary}",
+                       err=True)
             json.dump(metadata, fp=f)
 
 
