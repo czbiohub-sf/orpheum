@@ -111,18 +111,18 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
 
 
 def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
-                         molecules=MOLECULES_TO_COMPARE):
+                         alphabets=MOLECULES_TO_COMPARE):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
 
     dfs = []
-    for molecule in molecules:
-        reencoded1 = encode_peptide(seq1, molecule)
-        reencoded2 = encode_peptide(seq2, molecule)
+    for alphabet in alphabets:
+        reencoded1 = encode_peptide(seq1, alphabet)
+        reencoded2 = encode_peptide(seq2, alphabet)
 
         df = kmer_comparison_table(id1, reencoded1, id2, reencoded2,
-                                   molecule_name=molecule,
+                                   molecule_name=alphabet,
                                    ksizes=ksizes)
         dfs.append(df)
 

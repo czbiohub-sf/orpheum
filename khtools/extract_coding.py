@@ -495,7 +495,7 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option('--peptide-ksize',
               default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
-              " different molecules are, "
+              " different alphabets are, "
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
