@@ -3,6 +3,7 @@ import itertools
 import multiprocessing
 from pprint import pprint
 import random
+from typing import Sequence
 import time
 
 import click
@@ -214,7 +215,8 @@ def compare_args_unpack(args, ksizes, moltype):
 
 def get_comparison_at_index(index, seqlist1, seqlist2=None,
                             ksizes=KSIZES, n_background=100,
-                            moltype='protein', verbose=False):
+                            moltype='protein', verbose=False,
+                            paired_seqlists=True):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't
     redundantly calculate signatures with all the other indices prior to
@@ -234,8 +236,11 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
     """
     startt = time.time()
     if seqlist2 is not None:
-        seq_iterator = get_paired_seq_iterator(index, n_background, seqlist1,
-                                               seqlist2, verbose)
+        if paired_seqlists:
+            seq_iterator = get_paired_seq_iterator(index, n_background,
+                                                   seqlist1, seqlist2, verbose)
+        else:
+            seq_iterator = itertools.product([seqlist1[index]], seqlist2)
     else:
         seq_iterator = itertools.product(
             [seqlist1[index]], seqlist1[index + 1:])
@@ -251,6 +256,16 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
 
 
 def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
+    """Compare index i for seqlist1 and seqlist2, plus background
+
+    Choose random seqs from seqlist2 for background
+
+    Parameters
+    ----------
+    index : object
+
+
+    """
     pairs_iterator = [(seqlist1[index], seqlist2[index])]
     random_seqlist2 = random.sample(seqlist2, n_background)
     this_index_seqlist1 = [seqlist1[index]] * n_background
@@ -267,23 +282,46 @@ def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
 
 
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
-                     moltype='protein', n_background=100):
+                     moltype='protein', n_background=100,
+                     paired_seqlists=True):
     """
 
     Parameters
     ----------
-    seqlist : list
+    seqlist1 : list
         List of (id, seq) tuples
+    seqlist2 : list, optional
+        List of (id, seq) tuples
+    ksizes : iterable of int
+        K-mer sizes to extract and compare the sequences on
+    moltype : str
+        One of "protein" or "dna" -- for knowing which alphabets to use
+    n_background : int
+        When paired_seqlist is True, how many random background sequences to
+        choose from seqlist2
     n_jobs : int
         Number of jobs for multiprocessing
+    paired_seqlists : bool
+        If True, then seqlist1 and seqlist2 have sequences at the same index
+        that need to be compared, i.e. index 0 across the two
 
     Returns
     -------
 
     """
     if seqlist2 is not None:
-        if len(seqlist1) != len(seqlist2):
-            raise ValueError("Can only compare two sequences of equal length")
+        if paired_seqlists and len(seqlist1) != len(seqlist2):
+            raise ValueError("When comparing pairs of sequences, can only "
+                             "compare two sequences of equal length")
+        elif not paired_seqlists:
+            # Want seqlist1 to be shorter so that there are fewer, bigger jobs
+            # to minimize thread spawning costs
+            if len(seqlist2) > len(seqlist1):
+                # Swap the seqlist orders so seqlist1 is the shorter one
+                old_seqlist1 = seqlist1
+                old_seqlist2 = seqlist2
+                seqlist2 = old_seqlist1
+                seqlist1 = old_seqlist2
 
     t0 = time.time()
     len_seqlist1 = len(seqlist1)
@@ -298,7 +336,8 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         seqlist2=seqlist2,
         n_background=n_background,
         ksizes=ksizes,
-        moltype=moltype)
+        moltype=moltype,
+        paired_seqlists=paired_seqlists)
     notify("Created similarity func")
 
     # Initialize multiprocess.pool
@@ -349,6 +388,11 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
               is_flag=True,
               default=False,
               help="Don't output csv to stdout")
+@click.option("--paired-seqlists",
+              is_flag=True,
+              default=False,
+              help="Fastas are paired 1:1 by item, so compare item 1 in "
+                   "fasta1 to item 1 in fasta2")
 @click.option('--processes',
               '-p',
               default=2,
@@ -361,7 +405,8 @@ def cli(fastas,
         ksize_max,
         ksize_step,
         parquet,
-        no_csv,
+        no_csv=False,
+        paired_seqlists=False,
         processes=2):
     """Compute k-mer similarity of all pairwise sequences"""
     if len(fastas) == 0:
@@ -378,7 +423,8 @@ def cli(fastas,
 
     comparisons = compare_all_seqs(seqlist, seqlist2=seqlist2,
                                    n_jobs=processes, ksizes=ksizes,
-                                   moltype='protein')
+                                   moltype='protein',
+                                   paired_seqlists=paired_seqlists)
 
     if parquet is not None:
         comparisons.to_parquet(parquet)
@@ -386,7 +432,7 @@ def cli(fastas,
         click.echo(comparisons.to_csv(index=False))
 
 
-def parse_fastas(fastas):
+def parse_fastas(fastas: Sequence):
     seqlist = []
     for fasta in fastas:
         with screed.open(fasta) as records:
