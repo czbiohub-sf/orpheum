@@ -74,6 +74,19 @@ COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 # linkers. BMC Research Notes, 1–6. http://doi.org/10.1186/s13104-018-3221-0
 
 
+def sanitize_id(value):
+    """
+    Normalizes string, converts to lowercase, removes non-alpha characters,
+    and converts spaces to hyphens.
+
+    Cribbed from https://stackoverflow.com/a/295466/1628971
+    """
+    import re
+    value = value.split()[0].split('|')[0]
+    # value = re.sub('[^\w\s-]', '_', value).strip().lower()
+    # value = re.sub('[-\s]+', '-', value)
+    return value
+
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
     return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
@@ -216,7 +229,9 @@ def compare_args_unpack(args, ksizes, moltype):
 def get_comparison_at_index(index, seqlist1, seqlist2=None,
                             ksizes=KSIZES, n_background=100,
                             moltype='protein', verbose=False,
-                            paired_seqlists=True):
+                            paired_seqlists=True,
+                            intermediate_csv=False,
+                            intermediate_parquet=False):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't
     redundantly calculate signatures with all the other indices prior to
@@ -231,8 +246,17 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         based on the cosine similarity.
     :param boolean downsample by max_hash if True
     :param siglist list of signatures
+
+    intermediate_parquet : bool
+        Write intermediate file of all comparisons at index i to an
+        IO-efficient parquet format
+    intermediate_csv : bool
+        Write intermediate file of all comparisons at index i to an
+        csv format
+
     :return: list of similarities for the combinations of signature at index
     with rest of the signatures from index+1
+
     """
     startt = time.time()
     if seqlist2 is not None:
@@ -252,6 +276,16 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         index,
         time.time() - startt,
         end='\r')
+
+    if intermediate_csv or intermediate_parquet:
+        id1 = seqlist1[index][0]
+        id1_sanitized = sanitize_id(id1)
+        # print(id1_sanitized)
+        df = pd.concat(comparision_df_list)
+        if intermediate_csv:
+            df.to_csv(id1_sanitized + ".csv")
+        if intermediate_parquet:
+            df.to_parquet(id1_sanitized + ".parquet")
     return comparision_df_list
 
 
@@ -283,8 +317,9 @@ def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
 
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                      moltype='protein', n_background=100,
-                     paired_seqlists=True):
-    """
+                     paired_seqlists=True, intermediate_csv=False,
+                     intermediate_parquet=False):
+    """Compare k-mer content of sequences across k-mer sizes and alphabets
 
     Parameters
     ----------
@@ -304,6 +339,12 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     paired_seqlists : bool
         If True, then seqlist1 and seqlist2 have sequences at the same index
         that need to be compared, i.e. index 0 across the two
+    intermediate_parquet : bool
+        Write intermediate file of all comparisons at index i to an
+        IO-efficient parquet format
+    intermediate_csv : bool
+        Write intermediate file of all comparisons at index i to an
+        csv format
 
     Returns
     -------
@@ -337,7 +378,10 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         n_background=n_background,
         ksizes=ksizes,
         moltype=moltype,
-        paired_seqlists=paired_seqlists)
+        paired_seqlists=paired_seqlists,
+        intermediate_csv=intermediate_csv,
+        intermediate_parquet=intermediate_parquet
+    )
     notify("Created similarity func")
 
     # Initialize multiprocess.pool
@@ -393,6 +437,14 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
               default=False,
               help="Fastas are paired 1:1 by item, so compare item 1 in "
                    "fasta1 to item 1 in fasta2")
+@click.option("--intermediate-parquet",
+              is_flag=True, default=False,
+              help="If provided, write a parquet file for each individual "
+                   "comparison at index i, in current directory")
+@click.option("--intermediate-csv",
+              is_flag=True, default=False,
+              help="If provided, write a csv file for each individual "
+                   "comparison at index i, in current directory")
 @click.option('--processes',
               '-p',
               default=2,
@@ -407,6 +459,8 @@ def cli(fastas,
         parquet,
         no_csv=False,
         paired_seqlists=False,
+        intermediate_csv=False,
+        intermediate_parquet=False,
         processes=2):
     """Compute k-mer similarity of all pairwise sequences"""
     if len(fastas) == 0:
@@ -424,7 +478,9 @@ def cli(fastas,
     comparisons = compare_all_seqs(seqlist, seqlist2=seqlist2,
                                    n_jobs=processes, ksizes=ksizes,
                                    moltype='protein',
-                                   paired_seqlists=paired_seqlists)
+                                   paired_seqlists=paired_seqlists,
+                                   intermediate_csv=intermediate_csv,
+                                   intermediate_parquet=intermediate_parquet)
 
     if parquet is not None:
         comparisons.to_parquet(parquet)
@@ -433,6 +489,19 @@ def cli(fastas,
 
 
 def parse_fastas(fastas: Sequence):
+    """Open fasta files and create list of (id, seq) tuples
+
+    Parameters
+    ----------
+    fastas : Sequence
+        List of strings or paths of fastas to open with Screed
+
+    Returns
+    -------
+    seqlist : List[Tuple[str, str]]
+        List of (id, seq) tuple
+
+    """
     seqlist = []
     for fasta in fastas:
         with screed.open(fasta) as records:
