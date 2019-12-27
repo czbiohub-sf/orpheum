@@ -324,6 +324,11 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 
 @click.command()
 @click.argument("fastas", nargs=-1)
+@click.option("--fastas2",
+              default=None,
+              help="Optional. Instead of doing an all-by-all comparison of "
+                   "the provided fasta arguments, do fastas2 vs fastas "
+                   "arguments")
 @click.option("--alphabets",
               default=','.join(VALID_PEPTIDE_MOLECULES),
               help="Which protein-coding alphabet to use for comparisons")
@@ -351,6 +356,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
               type=click.INT,
               help="Number of processes to use for parallelization")
 def cli(fastas,
+        fastas2,
         alphabets,
         ksize_min,
         ksize_max,
@@ -359,11 +365,30 @@ def cli(fastas,
         no_csv,
         processes=2):
     """Compute k-mer similarity of all pairwise sequences"""
-    seqlist = []
     if len(fastas) == 0:
         raise ValueError("No sequence files provided! "
                          "Argument 'fastas' is required!")
+    seqlist = parse_fasta(fastas)
+    if fastas2 is not None:
+        seqlist2 = parse_fasta(fastas2)
+    else:
+        seqlist2 = None
 
+    # add 1 to max since range is not inclusive of last interval
+    ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))
+
+    comparisons = compare_all_seqs(seqlist, seqlist2=seqlist2,
+                                   n_jobs=processes, ksizes=ksizes,
+                                   moltype='protein')
+
+    if parquet is not None:
+        comparisons.to_parquet(parquet)
+    if not no_csv:
+        click.echo(comparisons.to_csv(index=False))
+
+
+def parse_fasta(fastas):
+    seqlist = []
     for fasta in fastas:
         with screed.open(fasta) as records:
             for record in records:
@@ -372,17 +397,7 @@ def cli(fastas,
                 seqlist.append((seq_id, seq))
     if len(seqlist) == 0:
         raise ValueError(f"No sequences found in files: {' '.join(fastas)}!")
-
-    # add 1 to max since range is not inclusive of last interval
-    ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))
-
-    comparisons = compare_all_seqs(seqlist, n_jobs=processes,
-                                   ksizes=ksizes, moltype='protein')
-
-    if parquet is not None:
-        comparisons.to_parquet(parquet)
-    if not no_csv:
-        click.echo(comparisons.to_csv(index=False))
+    return seqlist
 
 
 if __name__ == '__main__':
