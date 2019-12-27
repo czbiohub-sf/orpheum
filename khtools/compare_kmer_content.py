@@ -324,8 +324,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 
 @click.command()
 @click.argument("fastas", nargs=-1)
-@click.option("--fastas2",
-              default=None,
+@click.option("--fastas2", default=None,
               help="Optional. Instead of doing an all-by-all comparison of "
                    "the provided fasta arguments, do fastas2 vs fastas "
                    "arguments")
@@ -368,9 +367,9 @@ def cli(fastas,
     if len(fastas) == 0:
         raise ValueError("No sequence files provided! "
                          "Argument 'fastas' is required!")
-    seqlist = parse_fasta(fastas)
+    seqlist = parse_fastas(fastas)
     if fastas2 is not None:
-        seqlist2 = parse_fasta(fastas2)
+        seqlist2 = parse_fastas([fastas2])
     else:
         seqlist2 = None
 
@@ -387,7 +386,7 @@ def cli(fastas,
         click.echo(comparisons.to_csv(index=False))
 
 
-def parse_fasta(fastas):
+def parse_fastas(fastas):
     seqlist = []
     for fasta in fastas:
         with screed.open(fasta) as records:
