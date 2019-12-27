@@ -221,10 +221,6 @@ def test_score_long_pc_reads(
                        coding_peptide_bloom_filter,
                        molecule=molecule,
                        long_reads=True)
-    print("pc options {} {}".format(
-        coding_peptide_bloom_filter,
-        molecule))
-    print(test.to_string())
     # Check that scoring was the same
     pdt.assert_equal(test, true_scores)
 
@@ -257,10 +253,6 @@ def test_score_long_npc_reads(
                        peptide_bloom_filter,
                        molecule=molecule,
                        long_reads=True)
-    print("npc options {} {}".format(
-        peptide_bloom_filter,
-        molecule))
-    print(test.to_string())
     # Check that scoring was the same
     pdt.assert_equal(test, true_scores)
 
