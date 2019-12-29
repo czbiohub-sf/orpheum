@@ -82,7 +82,7 @@ def sanitize_id(value):
     Cribbed from https://stackoverflow.com/a/295466/1628971
     """
     import re
-    value = value.split()[0].split('|')[0]
+    value = value.split()[0].replace('|', '__')
     # value = re.sub('[^\w\s-]', '_', value).strip().lower()
     # value = re.sub('[-\s]+', '-', value)
     return value
