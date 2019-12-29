@@ -269,16 +269,17 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         seq_iterator = itertools.product(
             [seqlist1[index]], seqlist1[index + 1:])
 
+    id1 = seqlist1[index][0]
+
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
-        "comparison for index {} done in {:.5f} seconds",
-        index,
+        "comparison for index {} (id: {}) done in {:.5f} seconds",
+        index, id1,
         time.time() - startt,
         end='\r')
 
     if intermediate_csv or intermediate_parquet:
-        id1 = seqlist1[index][0]
         id1_sanitized = sanitize_id(id1)
         # print(id1_sanitized)
         df = pd.concat(comparision_df_list)
@@ -363,9 +364,13 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                 old_seqlist2 = seqlist2
                 seqlist2 = old_seqlist1
                 seqlist1 = old_seqlist2
+            n_comparisons = len(seqlist1) * len(seqlist2)
+        else:
+            n_comparisons = len(seqlist1) * len(seqlist1)
 
     t0 = time.time()
     len_seqlist1 = len(seqlist1)
+    notify(f"Number of comparisons: {n_comparisons:,}")
 
     # Initialize the function using func.partial with the common arguments like
     # siglist, ignore_abundance, downsample, for computing all the signatures
