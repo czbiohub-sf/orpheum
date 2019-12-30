@@ -231,7 +231,8 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
                             moltype='protein', verbose=False,
                             paired_seqlists=True,
                             intermediate_csv=False,
-                            intermediate_parquet=False):
+                            intermediate_parquet=False,
+                            no_final_concatention=False):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't
     redundantly calculate signatures with all the other indices prior to
@@ -287,7 +288,12 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
             df.to_csv(id1_sanitized + ".csv")
         if intermediate_parquet:
             df.to_parquet(id1_sanitized + ".parquet")
-    return comparision_df_list
+        del df
+    if no_final_concatention:
+        del comparision_df_list
+        return []
+    else:
+        return comparision_df_list
 
 
 def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
@@ -319,7 +325,7 @@ def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                      moltype='protein', n_background=100,
                      paired_seqlists=True, intermediate_csv=False,
-                     intermediate_parquet=False):
+                     intermediate_parquet=False, no_final_concatention=False):
     """Compare k-mer content of sequences across k-mer sizes and alphabets
 
     Parameters
@@ -388,7 +394,8 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         moltype=moltype,
         paired_seqlists=paired_seqlists,
         intermediate_csv=intermediate_csv,
-        intermediate_parquet=intermediate_parquet
+        intermediate_parquet=intermediate_parquet,
+        no_final_concatention=no_final_concatention,
     )
     notify("Created similarity func")
 
@@ -453,6 +460,9 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
               is_flag=True, default=False,
               help="If provided, write a csv file for each individual "
                    "comparison at index i, in current directory")
+@click.option("--no-final-concatenation",
+              is_flag=True, default=False,
+              help="If provided, then don't concatenate ")
 @click.option('--processes',
               '-p',
               default=2,
@@ -469,6 +479,7 @@ def cli(fastas,
         paired_seqlists=False,
         intermediate_csv=False,
         intermediate_parquet=False,
+        no_final_concatention=False,
         processes=2):
     """Compute k-mer similarity of all pairwise sequences"""
     if len(fastas) == 0:
@@ -480,6 +491,12 @@ def cli(fastas,
     else:
         seqlist2 = None
 
+    if no_final_concatention:
+        if not intermediate_parquet or not intermediate_csv:
+            raise Exception("--no-final-concatenation provided but neither "
+                            "--intermediate-parquet nor --intermediate-csv "
+                            "provided, so no output will be created!")
+
     # add 1 to max since range is not inclusive of last interval
     ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))
 
@@ -488,7 +505,8 @@ def cli(fastas,
                                    moltype='protein',
                                    paired_seqlists=paired_seqlists,
                                    intermediate_csv=intermediate_csv,
-                                   intermediate_parquet=intermediate_parquet)
+                                   intermediate_parquet=intermediate_parquet,
+                                   no_final_concatention=no_final_concatention)
 
     if parquet is not None:
         comparisons.to_parquet(parquet)
