@@ -13,10 +13,10 @@ from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
-from .sequence_encodings import amino_keto_ize, \
-    weak_strong_ize, purine_pyrimidize, encode_peptide, VALID_PEPTIDE_MOLECULES
+from khtools.sequence_encodings import amino_keto_ize, \
+    weak_strong_ize, purine_pyrimidize, encode_peptide
 
-MOLECULES_TO_COMPARE = 'aa20', 'dayhoff6', 'hp2', 'botvinnik8', 'aa9', \
+MOLECULES_TO_COMPARE = 'protein', 'dayhoff', 'hp', 'botvinnik', 'aa9', \
                        'gbmr4', 'sdm12', 'hsdm17'
 
 divergence_estimates = pd.Series({"Amniota": 312,
@@ -63,6 +63,7 @@ divergence_estimates = pd.Series({"Amniota": 312,
 
                                   'NA': 0})
 divergence_estimates = divergence_estimates.sort_values()
+
 
 KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
     21, 23, 24, 25
