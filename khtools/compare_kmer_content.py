@@ -388,7 +388,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                    "the provided fasta arguments, do fastas2 vs fastas "
                    "arguments")
 @click.option("--alphabets",
-              default=','.join(VALID_PEPTIDE_MOLECULES),
+              default=','.join(MOLECULES_TO_COMPARE),
               help="Which protein-coding alphabet to use for comparisons")
 @click.option("--ksize-min",
               default=2, type=click.INT,
