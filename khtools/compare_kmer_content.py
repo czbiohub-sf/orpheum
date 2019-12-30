@@ -335,13 +335,16 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                 old_seqlist2 = seqlist2
                 seqlist2 = old_seqlist1
                 seqlist1 = old_seqlist2
-            n_comparisons = len(seqlist1) * len(seqlist2)
+            n = len(seqlist1)
+            m = len(seqlist2)
         else:
-            n_comparisons = len(seqlist1) * len(seqlist1)
+            n = len(seqlist1)
+            m = len(seqlist1)
 
+    n_comparisons = n * m
     t0 = time.time()
     len_seqlist1 = len(seqlist1)
-    notify(f"Number of comparisons: {n_comparisons:,}")
+    notify(f"Number of comparisons: {n} * {m} = {n_comparisons:,}")
 
     # Initialize the function using func.partial with the common arguments like
     # siglist, ignore_abundance, downsample, for computing all the signatures
