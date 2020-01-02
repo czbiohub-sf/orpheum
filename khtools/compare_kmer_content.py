@@ -1,6 +1,7 @@
 from functools import partial
 import itertools
 import multiprocessing
+import os
 from pprint import pprint
 import random
 from typing import Sequence
@@ -260,6 +261,21 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
 
     """
     startt = time.time()
+    id1 = seqlist1[index][0]
+    id1_sanitized = sanitize_id(id1)
+    csv = id1_sanitized + ".csv"
+    parquet = id1_sanitized + ".parquet"
+    if os.path.exists(parquet):
+        notify(
+            f"Found {parquet} already exists for {id1}, skipping",
+            end='\r')
+        return []
+    if os.path.exists(csv):
+        notify(
+            f"Found {csv} already exists for {id1}, skipping",
+            end='\r')
+        return []
+
     if seqlist2 is not None:
         if paired_seqlists:
             seq_iterator = get_paired_seq_iterator(index, n_background,
@@ -270,24 +286,21 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         seq_iterator = itertools.product(
             [seqlist1[index]], seqlist1[index + 1:])
 
-    id1 = seqlist1[index][0]
-
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
         "comparison for index {} (id: {}) done in {:.5f} seconds",
         index, id1,
         time.time() - startt,
-        end='\r')
+        end='\n')
 
     if intermediate_csv or intermediate_parquet:
-        id1_sanitized = sanitize_id(id1)
         # print(id1_sanitized)
         df = pd.concat(comparision_df_list)
         if intermediate_csv:
-            df.to_csv(id1_sanitized + ".csv")
+            df.to_csv(csv)
         if intermediate_parquet:
-            df.to_parquet(id1_sanitized + ".parquet")
+            df.to_parquet(parquet)
         del df
     if no_final_concatention:
         del comparision_df_list
