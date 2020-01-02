@@ -233,7 +233,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
                             paired_seqlists=True,
                             intermediate_csv=False,
                             intermediate_parquet=False,
-                            no_final_concatention=False):
+                            no_final_concatenation=False):
     """Returns similarities of all the combinations of signature at index in the
     siglist with the rest of the indices starting at index + 1. Doesn't
     redundantly calculate signatures with all the other indices prior to
@@ -302,7 +302,7 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         if intermediate_parquet:
             df.to_parquet(parquet)
         del df
-    if no_final_concatention:
+    if no_final_concatenation:
         del comparision_df_list
         return []
     else:
@@ -338,7 +338,7 @@ def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
 def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                      moltype='protein', n_background=100,
                      paired_seqlists=True, intermediate_csv=False,
-                     intermediate_parquet=False, no_final_concatention=False):
+                     intermediate_parquet=False, no_final_concatenation=False):
     """Compare k-mer content of sequences across k-mer sizes and alphabets
 
     Parameters
@@ -408,7 +408,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         paired_seqlists=paired_seqlists,
         intermediate_csv=intermediate_csv,
         intermediate_parquet=intermediate_parquet,
-        no_final_concatention=no_final_concatention,
+        no_final_concatenation=no_final_concatenation,
     )
     notify("Created similarity func")
 
@@ -492,7 +492,7 @@ def cli(fastas,
         paired_seqlists=False,
         intermediate_csv=False,
         intermediate_parquet=False,
-        no_final_concatention=False,
+        no_final_concatenation=False,
         processes=2):
     """Compute k-mer similarity of all pairwise sequences"""
     if len(fastas) == 0:
@@ -519,7 +519,7 @@ def cli(fastas,
                                    paired_seqlists=paired_seqlists,
                                    intermediate_csv=intermediate_csv,
                                    intermediate_parquet=intermediate_parquet,
-                                   no_final_concatention=no_final_concatention)
+                                   no_final_concatenation=no_final_concatenation)
 
     # Only write the final output if there is a final concatenation
     if not no_final_concatention:
