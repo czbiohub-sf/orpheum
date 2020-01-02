@@ -479,10 +479,12 @@ def cli(fastas,
                                    intermediate_parquet=intermediate_parquet,
                                    no_final_concatention=no_final_concatention)
 
-    if parquet is not None:
-        comparisons.to_parquet(parquet)
-    if not no_csv:
-        click.echo(comparisons.to_csv(index=False))
+    # Only write the final output if there is a final concatenation
+    if not no_final_concatention:
+        if parquet is not None:
+            comparisons.to_parquet(parquet)
+        if not no_csv:
+            click.echo(comparisons.to_csv(index=False))
 
 
 def parse_fastas(fastas: Sequence):
