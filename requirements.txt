@@ -19,4 +19,4 @@ scikit_learn
 sourmash
 biopython
 vaex
-click_log
+click-log
