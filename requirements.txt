@@ -15,7 +15,7 @@ fastcluster
 ipykernel
 setuptools
 httmock
-scikit_learn
+scikit-learn
 sourmash
 biopython
 vaex
