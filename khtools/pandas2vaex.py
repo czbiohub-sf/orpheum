@@ -44,7 +44,7 @@ def cli(parquet, output_folder=None):
     # \b above prevents rewrapping of paragraph
     times = {}
     prefix = parquet.split('.parquet')[0]
-    logger.info(prefix)
+    # logger.info(prefix)
     try:
         t0 = time.time()
         df = pd.read_parquet(parquet)
