@@ -4,7 +4,7 @@ numpy
 pandas
 joblib
 networkx
-s3fs
+s3fs<0.3
 scipy
 requests
 seaborn
