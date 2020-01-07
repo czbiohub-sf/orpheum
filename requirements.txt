@@ -18,3 +18,4 @@ httmock
 scikit_learn
 sourmash
 biopython
+vaex
