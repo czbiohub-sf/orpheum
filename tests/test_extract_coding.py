@@ -96,10 +96,32 @@ def test_six_frame_translation_no_stops(seq):
     assert test == true
 
 
-def test_get_longest_translation(seq):
-    from khtools.extract_coding import get_longest_translation
-
-    test = {k: str(v) for k, v in get_longest_translation(seq).items()}
+def test_get_all_translations():
+    from khtools.extract_coding import get_all_translations
+    s = """
+        CAACACCCTCATCTGCCACATTGACAAGTTCTTCCCACCAGTGCTCAACGTCACGTG
+        GCTGTGCAACGGGGAGCTGGTCACTGAGGGTGTCGCTGAGAGCCTCTTCCTGCCCAGAACAGA
+        TTACAGCTTCCACAAGTTCCATTACCTGACCTTTGTGCCCTCAGCAGAGGACTTCTATGACT
+        GCAGGGTGGAGCACTGGGGCTTGGACCAGCCGCTCCTCAAGCACTGGGAGGCCCAAGAGCCAA
+        TCCAGATGCCTGAGACAACGGAGACTGTGCTCTGTGCCCTGGGCCTGGTGCTGGGCCTAGTCGGC
+        ATCATCGTGGGCACCGTCCTCATCATAAAGTCTCTGCGTTCTGGCCATGACCCCCGGGCCCAGGGG
+        ACCCTGTGAAATACTGTAAAGGTGGGAATGTAAAGAGGAGGCCCTAGGATTTGTAGAATGTAAGGAA
+        GGGAGGAAAAATTCAATCTGATAAGTGTTCATTGATCTTCTAATGGGTTAAAAGCATTCAGCCACATA
+        ACAACAACAACACCGATAACTAACTGAGTAGTTAATATGGTCAGGCGCTATTCTGAGGATTTACATTT
+        ATTAACTCACTTTATTCTCACACATAGTCTTTGAGGTAGGTACTATTATTTTCACTATTTCACATGAGA
+        GATACTTACATCTTTTTACATACACAGAGACTTTAAGCACTTTGATCAAGTTCCCACAGCTATGAAGTAGT
+        AGGGCTAGCTTCCAATCCAGAAAGTCTGGATCCAAGACTGTTTATCCACTGTCCTATTCACCCTATTTTG
+        TGAAGGAAAAGACCAAGTTCAAATTCTCCAGAGTCCATTGCCAAATAATGGAGTCAGATCTATATTTCT
+        ATACATAATTACAACACAGTGTGGTGGGTGCCTGTAACTACTTACTGTCTCTACTTGGACTCATTCCAT
+        GGCAATGTTCACACAAAAAATGCCCCTCCAGAGATCTTACAGGTTTCTATTTATCATAACACTCACCAT
+        GCTTTATATTTTTATATGTTTTGGGAATTCTCTTAGCATTAGACAGTGAACTTCCATGCAGATGACCAC
+        ATCTAATTCATTATTATTATTGTTATTCATGCTGGACCTCAGGTACAAAAGGTTAAGAACTTCTCAGTTC
+        ATTATATGATCATCATTGGTGCCTCCGAGCTCTCTCTCTCTCCCTTGATTTATTTGGTCCCTTTTATCTC
+        CAGTCCTTACTCCCATATCTAACCTCTTACCCCTACCTCATAGGTAAACATTTTAATGAATTTGATGTTT
+        CCTTTTATTTGCATAGATCCTCTGTAATATGTAGTAGTGTCCAGTGTACATGTATTTTTAATTAACCAAAA
+        TGGCATTAAATTATAGATCTAATTTTGTA"""
+    seq = Seq(s)
+    test = {k: str(v) for k, v in get_all_translations(seq).items()}
     true = {}
     assert test == true
 
@@ -211,40 +233,36 @@ def test_score_shortreads(
             assert true_line.strip() in captured_lines
 
 
-def test_score_long_pc_reads(
-        capsys, tmpdir, longpcreads, peptide_bloom_filter, molecule,
-        true_scores, true_scores_path,
-        true_protein_coding_fasta_path):
-    from khtools.extract_coding import score_reads
+# def test_score_long_pc_reads(
+#         capsys, tmpdir, longpcreads, coding_peptide_bloom_filter, molecule,
+#         true_scores, true_scores_path,
+#         true_protein_coding_fasta_path):
+#     from khtools.extract_coding import score_reads
 
-    test = score_reads(longpcreads,
-                       peptide_bloom_filter,
-                       molecule=molecule,
-                       long_reads=True)
-    print("pc options {} {}".format(
-        peptide_bloom_filter,
-        molecule))
-    print(test.to_string())
-    # Check that scoring was the same
-    pdt.assert_equal(test, true_scores)
+#     test = score_reads(longpcreads,
+#                        coding_peptide_bloom_filter,
+#                        molecule=molecule,
+#                        long_reads=True)
+#     # Check that scoring was the same
+#     pdt.assert_equal(test, true_scores)
 
-    # --- Check fasta output --- #
-    captured = capsys.readouterr()
-    test_names = []
-    for line in captured.out.splitlines():
-        if line.startswith(">"):
-            test_names.append(line.lstrip('>'))
+#     # --- Check fasta output --- #
+#     captured = capsys.readouterr()
+#     test_names = []
+#     for line in captured.out.splitlines():
+#         if line.startswith(">"):
+#             test_names.append(line.lstrip('>'))
 
-    # Check that the proper sequences were output
-    true_names = get_fasta_record_names(true_protein_coding_fasta_path)
+#     # Check that the proper sequences were output
+#     true_names = get_fasta_record_names(true_protein_coding_fasta_path)
 
-    # Check that precision is high -- everything in "test" was truly coding
-    assert all(test_name in true_names for test_name in test_names)
+#     # Check that precision is high -- everything in "test" was truly coding
+#     assert all(test_name in true_names for test_name in test_names)
 
-    captured_lines = captured.out.splitlines()
-    with open(true_protein_coding_fasta_path) as f:
-        for true_line in f.readlines():
-            assert true_line.strip() in captured_lines
+#     captured_lines = captured.out.splitlines()
+#     with open(true_protein_coding_fasta_path) as f:
+#         for true_line in f.readlines():
+#             assert true_line.strip() in captured_lines
 
 
 # def test_score_long_npc_reads(
@@ -257,10 +275,6 @@ def test_score_long_pc_reads(
 #                        peptide_bloom_filter,
 #                        molecule=molecule,
 #                        long_reads=True)
-#     print("npc options {} {}".format(
-#         peptide_bloom_filter,
-#         molecule))
-#     print(test.to_string())
 #     # Check that scoring was the same
 #     pdt.assert_equal(test, true_scores)
 

@@ -106,21 +106,25 @@ def six_frame_translation_no_stops(seq, debug=False):
     return forward_translations
 
 
-def get_longest_translation(seq):
-    matches = re.finditer("ATG", str(seq.upper()))
-    longest_translation = ""
+def get_all_translations(seq):
     translations = {}
-    start_index = stop_index = 0
-    for match in matches:
-        translation = seq[match.start():].translate(to_stop=True)
-        if (longest_translation == "" or
-            len(translation) > len(longest_translation)):
-            start_index = match.start()
-            longest_translation = translation
-            stop_index = start_index + 3 * len(translation)
-    translations[(start_index + 1, stop_index + 3)] = longest_translation
-    print("translations {}".format(translations))
-    print("length of translations is {}".format(len(translations)))
+    seq = seq.join([Seq("ATG")])
+    translation = seq[0:].translate(to_stop=True)
+    stop_index = 3 * len(translation)
+    translations[(1, stop_index + 3)] = translation
+    seq = seq[stop_index + 3:]
+    matches = re.finditer("ATG", str(seq.upper()))
+
+    if translations == {}:
+        start_index = 0
+    else:
+        start_index = stop_index + 3
+    for index, match in enumerate(matches):
+        start_index = match.start()
+        translation = seq[start_index:].translate(to_stop=True)
+        stop_index = start_index + 3 * len(translation)
+        translations[(start_index + 1, stop_index + 3)] = translation
+    print(translations)
     return translations
 
 
@@ -287,7 +291,7 @@ def score_single_read(sequence,
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
 
     if long_reads:
-        translations = get_longest_translation(seq)
+        translations = get_all_translations(seq)
     else:
         translations = six_frame_translation_no_stops(seq)
     # For all translations, use the one with the maximum number of k-mers
@@ -521,9 +525,9 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
 @click.option('--peptide-ksize',
-              default=None, type=int,
+              default=None,
               help="K-mer size of the peptide sequence to use. Defaults for"
-              " different alphabets are, "
+              " different molecules are, "
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
