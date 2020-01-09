@@ -353,21 +353,21 @@ ALPHABET_SIZES = {'protein': 20,
                   'hsdm17': 17}
 
 BEST_KSIZES = {'protein': 7,
-          'peptide': 7,
-          'protein20': 7,
-          'peptide20': 7,
-          'aa20': 7,
-          'dayhoff': 12,
-          'dayhoff6': 12,
-          'botvinnik': 11,
-          'botvinnik8': 11,
-          'hydrophobic-polar': 31,
-          'hp': 31,
-          'hp2': 31,
-          'aa9': 10,
-          'gbmr4': 16,
-          'sdm12': 9,
-          'hsdm17': 8}
+               'peptide': 7,
+               'protein20': 7,
+               'peptide20': 7,
+               'aa20': 7,
+               'dayhoff': 12,
+               'dayhoff6': 12,
+               'botvinnik': 11,
+               'botvinnik8': 11,
+               'hydrophobic-polar': 31,
+               'hp': 31,
+               'hp2': 31,
+               'aa9': 10,
+               'gbmr4': 16,
+               'sdm12': 9,
+               'hsdm17': 8}
 
 
 # Nucleic acid mappings
