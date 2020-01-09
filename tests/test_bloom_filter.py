@@ -16,6 +16,8 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
             ("protein", 7): 13966,
             ("dayhoff", 7): 10090,
             ("dayhoff", 11): 13605,
+            ("dayhoff", 12): 13816,
+            ("hydrophobic-polar", 31): 12888,
             ("hydrophobic-polar", 21): 13076,
             ("hydrophobic-polar", 7): 136
         }
@@ -25,14 +27,15 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
             ("dayhoff", 7): 99863,
             ("dayhoff", 11): 472197,
             ("dayhoff", 12): 488469,
+            ("hydrophobic-polar", 31): 515863,
             ("hydrophobic-polar", 21): 434810,
             ("hydrophobic-polar", 7): 170
         }
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(molecule, peptide_ksize)]
 
-    # For now, assert that the number of kmers is within 5% of the true value
-    assert test.n_unique_kmers() > true_n_unique_kmers * 0.95
-    assert test.n_unique_kmers() < true_n_unique_kmers * 1.05
+    # For now, assert that the number of kmers is within 0.1% of the true value
+    assert test.n_unique_kmers() > true_n_unique_kmers * 0.999
+    assert test.n_unique_kmers() < true_n_unique_kmers * 1.001
 
 
 def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
@@ -93,6 +96,5 @@ def test_get_peptide_ksize_with_ksize(molecule):
 def test_get_peptide_ksize_with_bad_molecule():
     from khtools.bloom_filter import get_peptide_ksize
 
-    peptide_ksize = 123
     with pytest.raises(ValueError):
-        get_peptide_ksize("not a real molecule type", peptide_ksize)
+        get_peptide_ksize("not a real molecule type", None)
