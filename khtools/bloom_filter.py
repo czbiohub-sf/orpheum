@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide, \
-    VALID_PEPTIDE_MOLECULES, KSIZES
+    VALID_PEPTIDE_MOLECULES, BEST_KSIZES
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
