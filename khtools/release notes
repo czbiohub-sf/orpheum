@@ -1,0 +1,10 @@
+P Falciparum RBC Cell/Parasite stage detection and labeling models
+lumi confusion_matrix cli command added
+lumi mosaic and lumi disassemble images to cli added
+lumi split_train_val cli command added
+lumi dataset transform --type csv added
+lumi data_aug_demo command added to visualize the data augmentation technique outputs
+Focal loss added
+Documentation added
+Matplotlib, opencv, scikit-learn, scikit-video, natsort, pandas dependencies for the above commands added
+More data augmentation techniques i.e 90 degree rotation, random patch gaussian added
