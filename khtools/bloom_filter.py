@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide, \
-    VALID_PEPTIDE_MOLECULES, PROTEIN_LIKE, DAYHOFF_LIKE, HP_LIKE
+    VALID_PEPTIDE_MOLECULES, KSIZES
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
@@ -182,7 +182,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
 @click.option('--peptide-ksize',
               default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
-              " different alphabets are, "
+              " different molecules are, "
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
@@ -240,13 +240,9 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
 
 def get_peptide_ksize(molecule, peptide_ksize):
     if peptide_ksize is None:
-        if molecule in PROTEIN_LIKE:
-            peptide_ksize = DEFAULT_PROTEIN_KSIZE
-        elif molecule in DAYHOFF_LIKE:
-            peptide_ksize = DEFAULT_DAYHOFF_KSIZE
-        elif molecule in HP_LIKE:
-            peptide_ksize = DEFAULT_HP_KSIZE
-        else:
+        try:
+            peptide_ksize = KSIZES[molecule]
+        except KeyError:
             raise ValueError(f"{molecule} does not have a default k-mer size! "
                              f"Only 'protein', 'hydrophobic-polar', or"
                              f" 'dayhoff' have a default protein ksize")
