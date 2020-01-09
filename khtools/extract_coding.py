@@ -108,7 +108,6 @@ def six_frame_translation_no_stops(seq, debug=False):
 
 def get_all_translations(seq):
     translations = {}
-    seq = seq.join([Seq("ATG")])
     translation = seq[0:].translate(to_stop=True)
     stop_index = 3 * len(translation)
     translations[(1, stop_index + 3)] = translation
