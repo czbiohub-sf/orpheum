@@ -352,7 +352,7 @@ ALPHABET_SIZES = {'protein': 20,
                   'sdm12': 12,
                   'hsdm17': 17}
 
-KSIZES = {'protein': 7,
+BEST_KSIZES = {'protein': 7,
           'peptide': 7,
           'protein20': 7,
           'peptide20': 7,

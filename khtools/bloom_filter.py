@@ -8,8 +8,7 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from khtools.compare_kmer_content import kmerize
-from khtools.sequence_encodings import encode_peptide, \
-    VALID_PEPTIDE_MOLECULES, KSIZES
+from khtools.sequence_encodings import encode_peptide, BEST_KSIZES
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
@@ -241,7 +240,7 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
 def get_peptide_ksize(molecule, peptide_ksize):
     if peptide_ksize is None:
         try:
-            peptide_ksize = KSIZES[molecule]
+            peptide_ksize = BEST_KSIZES[molecule]
         except KeyError:
             raise ValueError(f"{molecule} does not have a default k-mer size! "
                              f"Only 'protein', 'hydrophobic-polar', or"
