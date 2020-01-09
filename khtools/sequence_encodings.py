@@ -1,3 +1,5 @@
+from math import ceil, log
+
 DNA_ALPHABET = "A", "C", "G", "T"
 AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", \
                             "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
