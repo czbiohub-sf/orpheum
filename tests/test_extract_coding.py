@@ -96,15 +96,94 @@ def test_six_frame_translation_no_stops(seq):
     assert test == true
 
 
+def test_get_all_translations():
+    from khtools.extract_coding import get_all_translations
+    s = "CAACACCCTCATCTGCCACATTGACAAGTTCTTCCCACCAGTGCTCAACGTCACGTG" \
+        "GCTGTGCAACGGGGAGCTGGTCACTGAGGGTGTCGCTGAGAGCCTCTTCCTGCCCAGAACAGA" \
+        "TTACAGCTTCCACAAGTTCCATTACCTGACCTTTGTGCCCTCAGCAGAGGACTTCTATGACT" \
+        "GCAGGGTGGAGCACTGGGGCTTGGACCAGCCGCTCCTCAAGCACTGGGAGGCCCAAGAGCCAA" \
+        "TCCAGATGCCTGAGACAACGGAGACTGTGCTCTGTGCCCTGGGCCTGGTGCTGGGCCTAGTCGGC" \
+        "ATCATCGTGGGCACCGTCCTCATCATAAAGTCTCTGCGTTCTGGCCATGACCCCCGGGCCCAGGGG" \
+        "ACCCTGTGAAATACTGTAAAGGTGGGAATGTAAAGAGGAGGCCCTAGGATTTGTAGAATGTAAGGAA" \
+        "GGGAGGAAAAATTCAATCTGATAAGTGTTCATTGATCTTCTAATGGGTTAAAAGCATTCAGCCACAT" \
+        "AACAACAACAACACCGATAACTAACTGAGTAGTTAATATGGTCAGGCGCTATTCTGAGGATTTACA" \
+        "TTTATTAACTCACTTTATTCTCACACATAGTCTTTGAGGTAGGTACTATTATTTTCACTATTTCAC" \
+        "ATGAGAGATACTTACATCTTTTTACATACACAGAGACTTTAAGCACTTTGATCAAGTTCCCACAGC" \
+        "TATGAAGTAGTAGGGCTAGCTTCCAATCCAGAAAGTCTGGATCCAAGACTGTTTATCCACTGTCC" \
+        "TATTCACCCTATTTTGTGAAGGAAAAGACCAAGTTCAAATTCTCCAGAGTCCATTGCCAAATAA" \
+        "TGGAGTCAGATCTATATTTCTATACATAATTACAACACAGTGTGGTGGGTGCCTGTAACTACTT" \
+        "ACTGTCTCTACTTGGACTCATTCCATGGCAATGTTCACACAAAAAATGCCCCTCCAGAGATCTT" \
+        "ACAGGTTTCTATTTATCATAACACTCACCATGCTTTATATTTTTATATGTTTTGGGAATTCTCT" \
+        "TAGCATTAGACAGTGAACTTCCATGCAGATGACCACATCTAATTCATTATTATTATTGTTATT" \
+        "CATGCTGGACCTCAGGTACAAAAGGTTAAGAACTTCTCAGTTCATTATATGATCATCATTGGT" \
+        "GCCTCCGAGCTCTCTCTCTCTCCCTTGATTTATTTGGTCCCTTTTATCTCCAGTCCTTACTCCCA" \
+        "TATCTAACCTCTTACCCCTACCTCATAGGTAAACATTTTAATGAATTTGATGTTTCCTTTTA" \
+        "TTTGCATAGATCCTCTGTAATATGTAGTAGTGTCCAGTGTACATGTATTTTTAATTAACC" \
+        "AAAATGGCATTAAATTATAGATCTAATTTTGTA"
+    seq = Seq(s)
+    test = {k: str(v) for k, v in get_all_translations(seq).items()}
+    true = {
+        (1, 24): 'QHPHLPH',
+        (156, 284): 'MTAGWSTGAWTSRSSSTGRPKSQSRCLRQRRLCSVPWAWCWA',
+        (230, 364): 'MPETTETVLCALGLVLGLVGIIVGTVLIIKSLRSGHDPRAQGTL',
+        (336, 374): 'MTPGPRGPCEIL',
+        (383, 388): 'M',
+        (413, 418): 'M',
+        (465, 473): 'MG',
+        (527, 592): 'MVRRYSEDLHLLTHFILTHSL',
+        (622, 663): 'MRDTYIFLHTQRL',
+        (689, 697): 'MK',
+        (816, 845): 'MESDLYFYT',
+        (905, 1024): 'MAMFTQKMPLQRSYRFLFIITLTMLYIFICFGNSLSIRQ',
+        (911, 1024): 'MFTQKMPLQRSYRFLFIITLTMLYIFICFGNSLSIRQ',
+        (926, 1024): 'MPLQRSYRFLFIITLTMLYIFICFGNSLSIRQ',
+        (974, 1024): 'MLYIFICFGNSLSIRQ',
+        (991, 1011): 'MFWEFS',
+        (1031, 1123): 'MQMTTSNSLLLLLFMLDLRYKRLRTSQFII',
+        (1037, 1123): 'MTTSNSLLLLLFMLDLRYKRLRTSQFII',
+        (1073, 1123): 'MLDLRYKRLRTSQFII',
+        (1120, 1206): 'MIIIGASELSLSPLIYLVPFISSPYSHI',
+        (1240, 1281): 'MNLMFPFICIDPL',
+        (1249, 1281): 'MFPFICIDPL',
+        (1283, 1288): 'M',
+        (1304, 1315): 'MYF',
+        (1325, 1357): 'MALNYRSNFV'
+    }
+    assert test == true
+
+
 @pytest.fixture
-def reads(data_folder):
+def shortreads(data_folder):
     return os.path.join(
         data_folder,
         'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
 
 
 @pytest.fixture
+def longpcreads(data_folder):
+    return os.path.join(
+        data_folder, "extract_coding",
+        'gencode.v32.pc_transcripts.subsample5.fa')
+
+
+@pytest.fixture
+def longnpcreads(data_folder):
+    return os.path.join(
+        data_folder, "extract_coding",
+        'gencode.v32.npc_transcripts.subsample5.fa')
+
+
+@pytest.fixture
 def true_scores_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
+        f"subsampled_n22__molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.csv")
+
+
+@pytest.fixture
+def true_long_read_pc_fasta_path(data_folder, molecule, peptide_ksize):
     return os.path.join(
         data_folder, "extract_coding",
         "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
@@ -129,12 +208,59 @@ def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
         return f.read()
 
 
-def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
-                     true_scores, true_scores_path,
-                     true_protein_coding_fasta_path):
+@pytest.fixture
+def true_longreads_pc_scores_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "gencode.v32.pc_transcripts.subsample5"
+        f"_molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.csv")
+
+
+@pytest.fixture
+def true_long_read_pc_fasta_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "gencode.v32.pc_transcripts.subsample5"
+        f"_molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.fasta")
+
+
+@pytest.fixture
+def true_longreads_pc_scores(true_longreads_pc_scores_path):
+    return pd.read_csv(true_longreads_pc_scores_path)
+
+
+@pytest.fixture
+def true_longreads_npc_scores_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "gencode.v32.npc_transcripts.subsample5"
+        f"_molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.csv")
+
+
+@pytest.fixture
+def true_long_read_npc_fasta_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "gencode.v32.npc_transcripts.subsample5"
+        f"_molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.fasta")
+
+
+@pytest.fixture
+def true_longreads_npc_scores(true_longreads_npc_scores_path):
+    return pd.read_csv(true_longreads_npc_scores_path)
+
+
+def test_score_shortreads(
+        capsys, tmpdir, shortreads, peptide_bloom_filter, molecule,
+        true_scores, true_scores_path,
+        true_protein_coding_fasta_path):
     from khtools.extract_coding import score_reads
 
-    test = score_reads(reads,
+    test = score_reads(shortreads,
                        peptide_bloom_filter,
                        molecule=molecule)
 
@@ -160,6 +286,66 @@ def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
             assert true_line.strip() in captured_lines
 
 
+def test_score_long_pc_reads(
+        capsys, tmpdir, longpcreads, coding_peptide_bloom_filter,
+        true_longreads_pc_scores, true_longreads_pc_scores_path,
+        true_long_read_pc_fasta_path):
+    from khtools.extract_coding import score_reads
+
+    test = score_reads(longpcreads,
+                       coding_peptide_bloom_filter,
+                       long_reads=True)
+    # Check that scoring was the same
+    pdt.assert_equal(test, true_longreads_pc_scores)
+
+    # --- Check fasta output --- #
+    captured = capsys.readouterr()
+    test_names = []
+    for line in captured.out.splitlines():
+        if line.startswith(">"):
+            test_names.append(line.lstrip('>'))
+
+    # Check that the proper sequences were output
+    true_names = get_fasta_record_names(true_long_read_pc_fasta_path)
+    # Check that precision is high -- everything in "test" was truly coding
+    assert all(test_name in true_names for test_name in test_names)
+
+    captured_lines = captured.out.splitlines()
+    with open(true_long_read_pc_fasta_path) as f:
+        for true_line in f.readlines():
+            assert true_line.strip() in captured_lines
+
+
+def test_score_long_npc_reads(
+        capsys, tmpdir, longnpcreads, noncoding_peptide_bloom_filter,
+        true_longreads_npc_scores, true_longreads_npc_scores_path,
+        true_long_read_npc_fasta_path):
+    from khtools.extract_coding import score_reads
+
+    test = score_reads(longnpcreads,
+                       noncoding_peptide_bloom_filter,
+                       long_reads=True)
+    # Check that scoring was the same
+    pdt.assert_equal(test, true_longreads_npc_scores)
+
+    # --- Check fasta output --- #
+    captured = capsys.readouterr()
+    test_names = []
+    for line in captured.out.splitlines():
+        if line.startswith(">"):
+            test_names.append(line.lstrip('>'))
+
+    # Check that the proper sequences were output
+    true_names = get_fasta_record_names(true_long_read_npc_fasta_path)
+    # Check that precision is high -- everything in "test" was truly coding
+    assert all(test_name in true_names for test_name in test_names)
+
+    captured_lines = captured.out.splitlines()
+    with open(true_long_read_npc_fasta_path) as f:
+        for true_line in f.readlines():
+            assert true_line.strip() in captured_lines
+
+
 def write_fasta_string_to_file(fasta_string, folder, prefix):
     test_fasta_filename = os.path.join(folder, prefix + '.fasta')
     with open(test_fasta_filename) as f:
@@ -175,25 +361,25 @@ def get_fasta_record_names(fasta_path):
     return set(names)
 
 
-def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
+def test_cli_peptide_fasta(shortreads, peptide_fasta, molecule, peptide_ksize,
                            true_protein_coding_fasta_string):
     from khtools.extract_coding import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
         '--peptide-ksize', peptide_ksize, '--molecule', molecule,
-        peptide_fasta, reads
+        peptide_fasta, shortreads
     ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
 
 
-def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
+def test_cli_bad_jaccard_threshold_float(shortreads, peptide_fasta):
     from khtools.extract_coding import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        "--jaccard-threshold", "3.14", peptide_fasta, reads
+        "--jaccard-threshold", "3.14", peptide_fasta, shortreads
     ])
     assert result.exit_code == 2
     error_message = 'Error: Invalid value for "--jaccard-threshold": ' \
@@ -202,12 +388,12 @@ def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
     assert error_message in result.output
 
 
-def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
+def test_cli_bad_jaccard_threshold_string(shortreads, peptide_fasta):
     from khtools.extract_coding import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        "--jaccard-threshold", "beyonce", peptide_fasta, reads
+        "--jaccard-threshold", "beyonce", peptide_fasta, shortreads
     ])
     assert result.exit_code == 2
     error_message = 'Error: Invalid value for "--jaccard-threshold": beyonce' \
@@ -215,21 +401,22 @@ def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
     assert error_message in result.output
 
 
-def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
-                                  peptide_ksize,
-                                  true_protein_coding_fasta_string):
+def test_cli_peptide_bloom_filter(
+        shortreads, peptide_bloom_filter_path, molecule,
+        peptide_ksize,
+        true_protein_coding_fasta_string):
     from khtools.extract_coding import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
         '--peptide-ksize', peptide_ksize, "--peptides-are-bloom-filter",
-        '--molecule', molecule, peptide_bloom_filter_path, reads
+        '--molecule', molecule, peptide_bloom_filter_path, shortreads
     ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
 
 
-def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
+def test_cli_csv(tmpdir, shortreads, peptide_bloom_filter_path, molecule,
                  peptide_ksize, true_protein_coding_fasta_string, true_scores):
     from khtools.extract_coding import cli
 
@@ -239,7 +426,7 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
     result = runner.invoke(cli, [
         '--peptide-ksize', peptide_ksize, "--csv", csv,
         "--peptides-are-bloom-filter", '--molecule', molecule,
-        peptide_bloom_filter_path, reads
+        peptide_bloom_filter_path, shortreads
     ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
@@ -247,13 +434,13 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
 
     # the CLI adds the filename to the scoring dataframe
     true = true_scores.copy()
-    true['filename'] = reads
+    true['filename'] = shortreads
 
     test_scores = pd.read_csv(csv)
     pdt.assert_equal(test_scores, true)
 
 
-def test_cli_coding_nucleotide_fasta(tmpdir, reads, peptide_fasta):
+def test_cli_coding_nucleotide_fasta(tmpdir, shortreads, peptide_fasta):
     from khtools.extract_coding import cli
 
     coding_nucleotide_fasta = os.path.join(tmpdir, 'coding_nucleotides.fasta')
@@ -261,13 +448,13 @@ def test_cli_coding_nucleotide_fasta(tmpdir, reads, peptide_fasta):
     runner = CliRunner()
     result = runner.invoke(cli, [
         "--coding-nucleotide-fasta", coding_nucleotide_fasta,
-        peptide_fasta, reads
+        peptide_fasta, shortreads
     ])
     assert result.exit_code == 0
     assert os.path.exists(coding_nucleotide_fasta)
 
 
-def test_cli_noncoding_fasta(tmpdir, reads, peptide_fasta):
+def test_cli_noncoding_fasta(tmpdir, shortreads, peptide_fasta):
     from khtools.extract_coding import cli
 
     noncoding_nucleotide_fasta = os.path.join(tmpdir,
@@ -276,13 +463,13 @@ def test_cli_noncoding_fasta(tmpdir, reads, peptide_fasta):
     runner = CliRunner()
     result = runner.invoke(cli, [
         "--noncoding-nucleotide-fasta", noncoding_nucleotide_fasta,
-        peptide_fasta, reads
+        peptide_fasta, shortreads
     ])
     assert result.exit_code == 0
     assert os.path.exists(noncoding_nucleotide_fasta)
 
 
-def test_cli_low_complexity_nucleotide(tmpdir, reads, peptide_fasta):
+def test_cli_low_complexity_nucleotide(tmpdir, shortreads, peptide_fasta):
     from khtools.extract_coding import cli
 
     low_complexity_nucleotide_fasta = os.path.join(
@@ -291,7 +478,7 @@ def test_cli_low_complexity_nucleotide(tmpdir, reads, peptide_fasta):
     runner = CliRunner()
     result = runner.invoke(cli, [
         "--low-complexity-nucleotide-fasta", low_complexity_nucleotide_fasta,
-        peptide_fasta, reads
+        peptide_fasta, shortreads
     ])
     assert result.exit_code == 0
     assert os.path.exists(low_complexity_nucleotide_fasta)
@@ -299,7 +486,7 @@ def test_cli_low_complexity_nucleotide(tmpdir, reads, peptide_fasta):
 
 def test_cli_low_complexity_peptide(
         tmpdir,
-        reads,
+        shortreads,
         peptide_fasta):
     from khtools.extract_coding import cli
 
@@ -309,13 +496,13 @@ def test_cli_low_complexity_peptide(
     runner = CliRunner()
     result = runner.invoke(cli, [
         "--low-complexity-peptide-fasta", low_complexity_peptide_fasta,
-        peptide_fasta, reads
+        peptide_fasta, shortreads
     ])
     assert result.exit_code == 0
     assert os.path.exists(low_complexity_peptide_fasta)
 
 
-def test_cli_json_summary(tmpdir, reads, peptide_fasta):
+def test_cli_json_summary(tmpdir, shortreads, peptide_fasta):
     from khtools.extract_coding import cli
 
     json_summary = os.path.join(tmpdir, 'coding_summary.json')
@@ -323,7 +510,7 @@ def test_cli_json_summary(tmpdir, reads, peptide_fasta):
     runner = CliRunner()
     result = runner.invoke(cli, [
         "--json-summary", json_summary,
-        peptide_fasta, reads
+        peptide_fasta, shortreads
     ])
     assert result.exit_code == 0
     assert os.path.exists(json_summary)
