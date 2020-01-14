@@ -122,9 +122,34 @@ def test_get_all_translations():
         "AAAATGGCATTAAATTATAGATCTAATTTTGTA"
     seq = Seq(s)
     test = {k: str(v) for k, v in get_all_translations(seq).items()}
-    print(test)
-    true = {}
-    assert test != true
+    true = {
+        (1, 24): 'QHPHLPH',
+        (156, 284): 'MTAGWSTGAWTSRSSSTGRPKSQSRCLRQRRLCSVPWAWCWA',
+        (230, 364): 'MPETTETVLCALGLVLGLVGIIVGTVLIIKSLRSGHDPRAQGTL',
+        (336, 374): 'MTPGPRGPCEIL',
+        (383, 388): 'M',
+        (413, 418): 'M',
+        (465, 473): 'MG',
+        (527, 592): 'MVRRYSEDLHLLTHFILTHSL',
+        (622, 663): 'MRDTYIFLHTQRL',
+        (689, 697): 'MK',
+        (816, 845): 'MESDLYFYT',
+        (905, 1024): 'MAMFTQKMPLQRSYRFLFIITLTMLYIFICFGNSLSIRQ',
+        (911, 1024): 'MFTQKMPLQRSYRFLFIITLTMLYIFICFGNSLSIRQ',
+        (926, 1024): 'MPLQRSYRFLFIITLTMLYIFICFGNSLSIRQ',
+        (974, 1024): 'MLYIFICFGNSLSIRQ',
+        (991, 1011): 'MFWEFS',
+        (1031, 1123): 'MQMTTSNSLLLLLFMLDLRYKRLRTSQFII',
+        (1037, 1123): 'MTTSNSLLLLLFMLDLRYKRLRTSQFII',
+        (1073, 1123): 'MLDLRYKRLRTSQFII',
+        (1120, 1206): 'MIIIGASELSLSPLIYLVPFISSPYSHI',
+        (1240, 1281): 'MNLMFPFICIDPL',
+        (1249, 1281): 'MFPFICIDPL',
+        (1283, 1288): 'M',
+        (1304, 1315): 'MYF',
+        (1325, 1357): 'MALNYRSNFV'
+    }
+    assert test == true
 
 
 @pytest.fixture
@@ -158,8 +183,29 @@ def true_scores_path(data_folder, molecule, peptide_ksize):
 
 
 @pytest.fixture
+def true_long_read_pc_fasta_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
+        f"subsampled_n22__molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.csv")
+
+
+@pytest.fixture
 def true_scores(true_scores_path):
     return pd.read_csv(true_scores_path)
+
+
+@pytest.fixture
+def true_protein_coding_fasta_path(data_folder):
+    return os.path.join(data_folder, "extract_coding",
+                        "true_protein_coding.fasta")
+
+
+@pytest.fixture
+def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
+    with open(true_protein_coding_fasta_path) as f:
+        return f.read()
 
 
 @pytest.fixture
@@ -169,6 +215,15 @@ def true_longreads_pc_scores_path(data_folder, molecule, peptide_ksize):
         "gencode.v32.pc_transcripts.subsample5"
         f"_molecule-{molecule}_ksize-"
         f"{peptide_ksize}.csv")
+
+
+@pytest.fixture
+def true_long_read_pc_fasta_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "gencode.v32.pc_transcripts.subsample5"
+        f"_molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.fasta")
 
 
 @pytest.fixture
@@ -186,20 +241,17 @@ def true_longreads_npc_scores_path(data_folder, molecule, peptide_ksize):
 
 
 @pytest.fixture
-def true_longreads_pc_scores(true_longreads_npc_scores_path):
+def true_long_read_npc_fasta_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "gencode.v32.npc_transcripts.subsample5"
+        f"_molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.fasta")
+
+
+@pytest.fixture
+def true_longreads_npc_scores(true_longreads_npc_scores_path):
     return pd.read_csv(true_longreads_npc_scores_path)
-
-
-@pytest.fixture
-def true_protein_coding_fasta_path(data_folder):
-    return os.path.join(data_folder, "extract_coding",
-                        "true_protein_coding.fasta")
-
-
-@pytest.fixture
-def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
-    with open(true_protein_coding_fasta_path) as f:
-        return f.read()
 
 
 def test_score_shortreads(
@@ -234,68 +286,64 @@ def test_score_shortreads(
             assert true_line.strip() in captured_lines
 
 
-# def test_score_long_pc_reads(
-#         capsys, tmpdir, longpcreads, coding_peptide_bloom_filter, molecule,
-#         true_scores, true_scores_path,
-#         true_protein_coding_fasta_path):
-#     from khtools.extract_coding import score_reads
+def test_score_long_pc_reads(
+        capsys, tmpdir, longpcreads, coding_peptide_bloom_filter,
+        true_longreads_pc_scores, true_longreads_pc_scores_path,
+        true_long_read_pc_fasta_path):
+    from khtools.extract_coding import score_reads
 
-#     test = score_reads(longpcreads,
-#                        coding_peptide_bloom_filter,
-#                        molecule=molecule,
-#                        long_reads=True)
-#     # Check that scoring was the same
-#     pdt.assert_equal(test, true_scores)
+    test = score_reads(longpcreads,
+                       coding_peptide_bloom_filter,
+                       long_reads=True)
+    # Check that scoring was the same
+    pdt.assert_equal(test, true_longreads_pc_scores)
 
-#     # --- Check fasta output --- #
-#     captured = capsys.readouterr()
-#     test_names = []
-#     for line in captured.out.splitlines():
-#         if line.startswith(">"):
-#             test_names.append(line.lstrip('>'))
+    # --- Check fasta output --- #
+    captured = capsys.readouterr()
+    test_names = []
+    for line in captured.out.splitlines():
+        if line.startswith(">"):
+            test_names.append(line.lstrip('>'))
 
-#     # Check that the proper sequences were output
-#     true_names = get_fasta_record_names(true_protein_coding_fasta_path)
+    # Check that the proper sequences were output
+    true_names = get_fasta_record_names(true_long_read_pc_fasta_path)
+    # Check that precision is high -- everything in "test" was truly coding
+    assert all(test_name in true_names for test_name in test_names)
 
-#     # Check that precision is high -- everything in "test" was truly coding
-#     assert all(test_name in true_names for test_name in test_names)
-
-#     captured_lines = captured.out.splitlines()
-#     with open(true_protein_coding_fasta_path) as f:
-#         for true_line in f.readlines():
-#             assert true_line.strip() in captured_lines
+    captured_lines = captured.out.splitlines()
+    with open(true_long_read_pc_fasta_path) as f:
+        for true_line in f.readlines():
+            assert true_line.strip() in captured_lines
 
 
-# def test_score_long_npc_reads(
-#         capsys, tmpdir, longnpcreads, peptide_bloom_filter, molecule,
-#         true_scores, true_scores_path,
-#         true_protein_coding_fasta_path):
-#     from khtools.extract_coding import score_reads
+def test_score_long_npc_reads(
+        capsys, tmpdir, longnpcreads, noncoding_peptide_bloom_filter,
+        true_longreads_npc_scores, true_longreads_npc_scores_path,
+        true_long_read_npc_fasta_path):
+    from khtools.extract_coding import score_reads
 
-#     test = score_reads(longnpcreads,
-#                        peptide_bloom_filter,
-#                        molecule=molecule,
-#                        long_reads=True)
-#     # Check that scoring was the same
-#     pdt.assert_equal(test, true_scores)
+    test = score_reads(longnpcreads,
+                       noncoding_peptide_bloom_filter,
+                       long_reads=True)
+    # Check that scoring was the same
+    pdt.assert_equal(test, true_longreads_npc_scores)
 
-#     # --- Check fasta output --- #
-#     captured = capsys.readouterr()
-#     test_names = []
-#     for line in captured.out.splitlines():
-#         if line.startswith(">"):
-#             test_names.append(line.lstrip('>'))
+    # --- Check fasta output --- #
+    captured = capsys.readouterr()
+    test_names = []
+    for line in captured.out.splitlines():
+        if line.startswith(">"):
+            test_names.append(line.lstrip('>'))
 
-#     # Check that the proper sequences were output
-#     true_names = get_fasta_record_names(true_protein_coding_fasta_path)
+    # Check that the proper sequences were output
+    true_names = get_fasta_record_names(true_long_read_npc_fasta_path)
+    # Check that precision is high -- everything in "test" was truly coding
+    assert all(test_name in true_names for test_name in test_names)
 
-#     # Check that precision is high -- everything in "test" was truly coding
-#     assert all(test_name in true_names for test_name in test_names)
-
-#     captured_lines = captured.out.splitlines()
-#     with open(true_protein_coding_fasta_path) as f:
-#         for true_line in f.readlines():
-#             assert true_line.strip() in captured_lines
+    captured_lines = captured.out.splitlines()
+    with open(true_long_read_npc_fasta_path) as f:
+        for true_line in f.readlines():
+            assert true_line.strip() in captured_lines
 
 
 def write_fasta_string_to_file(fasta_string, folder, prefix):

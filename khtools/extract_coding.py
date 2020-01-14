@@ -111,9 +111,8 @@ def get_all_translations(seq):
     translation = seq[0:].translate(to_stop=True, cds=False)
     stop_index = 3 * len(translation)
     translations[(1, stop_index + 3)] = translation
-    seq = seq[stop_index + 3:]
+    seq = seq[stop_index:]
     matches = re.finditer("ATG", str(seq.upper()))
-    translations = {}
     if translations == {}:
         start_index = 0
     else:
@@ -123,7 +122,6 @@ def get_all_translations(seq):
         translation = seq[start_index:].translate(to_stop=True)
         stop_index = start_index + 3 * len(translation)
         translations[(start_index + 1, stop_index + 3)] = translation
-    print(translations)
     return translations
 
 
@@ -291,8 +289,14 @@ def score_single_read(sequence,
 
     if long_reads:
         translations = get_all_translations(seq)
+        # Filter and remove translations of length less than ksize
+        translations = dict(
+            filter(
+                lambda elem: len(
+                    elem[1]) >= peptide_ksize, translations.items()))
     else:
         translations = six_frame_translation_no_stops(seq)
+
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
     max_n_kmers = 0
