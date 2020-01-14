@@ -92,13 +92,14 @@ def check_seqs_in_bloom_filter(peptide_fasta, peptide_ksize, molecule,
                 try:
                     assert nodegraph.get(hashed)
                 except AssertionError:
-                    raise AssertionError(f"K-mer {kmer} in positions "
-                                         f"{', '.join(map(str, positions))} "
-                                         f"from "
-                                         f"sequence:\n{record['sequence']}\n"
-                                         f"encoded:\n{sequence}\nwere not found"
-                                         f" in the bloom filter "
-                                         f"{bloom_filter}")
+                    raise AssertionError(
+                        f"K-mer {kmer} in positions "
+                        f"{', '.join(map(str, positions))} "
+                        f"from "
+                        f"sequence:\n{record['sequence']}\n"
+                        f"encoded:\n{sequence}\nwere not found"
+                        f" in the bloom filter "
+                        f"{bloom_filter}")
     print(f"All k-mers of size {peptide_ksize} encoded in the {molecule} "
           f"alphabet from:\n{peptide_fasta}\nwere found in:\n{bloom_filter}")
 
