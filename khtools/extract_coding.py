@@ -106,6 +106,22 @@ def six_frame_translation_no_stops(seq, debug=False):
     return forward_translations
 
 
+def get_longest_translation(seq):
+    matches = re.finditer("ATG", str(seq.upper()))
+    longest_translation = ""
+    translations = {}
+    start_index = stop_index = 0
+    for match in matches:
+        translation = seq[match.start():].translate(to_stop=True)
+        if (longest_translation == "" or
+            len(translation) > len(longest_translation)):
+            start_index = match.start()
+            longest_translation = translation
+            stop_index = start_index + 3 * len(translation)
+    translations[(start_index + 1, stop_index + 3)] = longest_translation
+    return translations
+
+
 def get_all_translations(seq):
     translations = {}
     translation = seq[0:].translate(to_stop=True, cds=False)
@@ -114,14 +130,15 @@ def get_all_translations(seq):
     seq = seq[stop_index:]
     matches = re.finditer("ATG", str(seq.upper()))
     if translations == {}:
-        start_index = 0
+        offset = 0
     else:
-        start_index = stop_index + 3
+        offset = stop_index
     for index, match in enumerate(matches):
         start_index = match.start()
         translation = seq[start_index:].translate(to_stop=True)
         stop_index = start_index + 3 * len(translation)
-        translations[(start_index + 1, stop_index + 3)] = translation
+        translations[(offset + start_index + 1, offset + stop_index + 3)] = \
+            translation
     return translations
 
 
@@ -288,7 +305,7 @@ def score_single_read(sequence,
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
 
     if long_reads:
-        translations = get_all_translations(seq)
+        translations = get_longest_translation(seq)
         # Filter and remove translations of length less than ksize
         translations = dict(
             filter(

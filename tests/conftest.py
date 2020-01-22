@@ -29,11 +29,13 @@ def coding_peptide_fasta(data_folder):
         'gencode.v32.pc_translations.subsample5.randomseed0.fa')
     return filename
 
+
 @pytest.fixture
 def noncoding_peptide_fasta(data_folder):
+    # Change this to nucleotide sequences fasta for non-protein coding sequence
     filename = os.path.join(
         data_folder, 'bloom_filter',
-        'gencode.v32.npc_translations.subsample5.randomseed0.fa')
+        'gencode.v32.pc_translations.subsample5.randomseed0.fa')
     return filename
 
 
