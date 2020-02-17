@@ -494,6 +494,7 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
 @click.option('--peptide-ksize',
+              type=int,
               default=None,
               help="K-mer size of the peptide sequence to use. Defaults for"
               " different molecules are, "
