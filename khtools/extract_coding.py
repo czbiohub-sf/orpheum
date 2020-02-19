@@ -491,9 +491,9 @@ def maybe_write_json_summary(coding_scores, json_summary):
                 classification_value_counts.to_dict(),
             'classification_percentages':
                 classification_percentages.to_dict(),
-            'n_reads_with_multiple_coding_frames':
+            'histogram_n_coding_frames_per_read':
                 coding_per_read_histogram.to_dict(),
-            'percentage_reads_with_multiple_coding_frames':
+            'histogram_n_coding_frames_per_read_percentages':
                 coding_per_read_histogram_percentages.to_dict()
         }
         with open(json_summary, 'w') as f:
