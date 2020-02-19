@@ -474,7 +474,7 @@ def maybe_write_json_summary(coding_scores, json_summary):
         n_coding_per_read = coding_scores.query('classification == "Coding"').read_id.value_counts()
         coding_per_read_histogram = n_coding_per_read.value_counts()
         coding_per_read_histogram_percentages = \
-            coding_per_read_histogram/coding_per_read_histogram.sum()
+            100 * coding_per_read_histogram/coding_per_read_histogram.sum()
 
         classification_value_counts = \
             coding_scores.classification.value_counts()
