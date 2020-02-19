@@ -1,4 +1,5 @@
 from click.testing import CliRunner
+import numpy as np
 import pytest
 
 
@@ -34,8 +35,8 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(molecule, peptide_ksize)]
 
     # For now, assert that the number of kmers is within 0.1% of the true value
-    assert test.n_unique_kmers() > true_n_unique_kmers * 0.999
-    assert test.n_unique_kmers() < true_n_unique_kmers * 1.001
+    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers,
+                               rtol=0.001)
 
 
 def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
