@@ -471,6 +471,9 @@ def maybe_write_csv(coding_scores, csv):
 
 def maybe_write_json_summary(coding_scores, json_summary):
     if json_summary:
+        n_coding_per_read = coding_scores.query('classification == "Coding"').read_id.value_counts()
+        coding_per_read_histogram = n_coding_per_read.value_counts()
+
         classification_value_counts = \
             coding_scores.classification.value_counts()
         classification_percentages = 100 * classification_value_counts / \
@@ -482,7 +485,9 @@ def maybe_write_json_summary(coding_scores, json_summary):
             'classification_value_counts':
                 classification_value_counts.to_dict(),
             'classification_percentages':
-                classification_percentages.to_dict()
+                classification_percentages.to_dict(),
+            'n_reads_with_multiple_coding_frames':
+                coding_per_read_histogram.to_dict()
         }
         with open(json_summary, 'w') as f:
             click.echo(f"Writing extract_coding summary to {json_summary}", err=True)
