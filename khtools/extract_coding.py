@@ -476,12 +476,15 @@ def maybe_write_json_summary(coding_scores, json_summary):
         coding_per_read_histogram_percentages = \
             100 * coding_per_read_histogram/coding_per_read_histogram.sum()
 
+        files = coding_scores.filename.unique().tolist()
+
         classification_value_counts = \
             coding_scores.classification.value_counts()
         classification_percentages = 100 * classification_value_counts / \
             classification_value_counts.sum()
 
         metadata = {
+            'input_files': files,
             'jaccard_info':
                 coding_scores.jaccard_in_peptide_db.describe().to_dict(),
             'classification_value_counts':
