@@ -5,6 +5,7 @@ Tests for re-encoding biological sequence data
 """
 import pytest
 
+from khtools.sequence_encodings import VALID_PEPTIDE_MOLECULES
 
 # Fixtures are functions-turned-variables that can be used across multiple
 # tests. conftest.py contains fixtures that can be used by any test file
@@ -23,14 +24,7 @@ def nucleotide_string():
     return "GATTACA"
 
 
-@pytest.fixture(params=['protein', 'peptide',
-                          'protein20', 'peptide20',
-                          'aa20',
-                          'dayhoff', 'dayhoff6',
-                          'botvinnik', 'botvinnik8',
-                          'hydrophobic-polar', 'hp2',
-                          'aa9', 'gbmr4',
-                          'sdm12', 'hsdm17'])
+@pytest.fixture(params=VALID_PEPTIDE_MOLECULES)
 def reduced_alphabet(request):
     return request.param
 
