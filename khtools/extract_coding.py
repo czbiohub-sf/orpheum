@@ -471,18 +471,31 @@ def maybe_write_csv(coding_scores, csv):
 
 def maybe_write_json_summary(coding_scores, json_summary):
     if json_summary:
+        n_coding_per_read = coding_scores.query(
+            'classification == "Coding"').read_id.value_counts()
+        coding_per_read_histogram = n_coding_per_read.value_counts()
+        coding_per_read_histogram_percentages = \
+            100 * coding_per_read_histogram / coding_per_read_histogram.sum()
+
+        files = coding_scores.filename.unique().tolist()
+
         classification_value_counts = \
             coding_scores.classification.value_counts()
         classification_percentages = 100 * classification_value_counts / \
             classification_value_counts.sum()
 
         metadata = {
+            'input_files': files,
             'jaccard_info':
                 coding_scores.jaccard_in_peptide_db.describe().to_dict(),
             'classification_value_counts':
                 classification_value_counts.to_dict(),
             'classification_percentages':
-                classification_percentages.to_dict()
+                classification_percentages.to_dict(),
+            'histogram_n_coding_frames_per_read':
+                coding_per_read_histogram.to_dict(),
+            'histogram_n_coding_frames_per_read_percentages':
+                coding_per_read_histogram_percentages.to_dict()
         }
         with open(json_summary, 'w') as f:
             click.echo(f"Writing extract_coding summary to {json_summary}",
@@ -494,10 +507,9 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.argument('peptides', nargs=1)
 @click.argument('reads', nargs=-1)
 @click.option('--peptide-ksize',
-              type=int,
-              default=None,
+              default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
-              " different molecules are, "
+              " different alphabets are, "
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
