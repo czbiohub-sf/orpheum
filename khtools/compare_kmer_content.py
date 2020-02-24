@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from functools import partial
 import itertools
 import multiprocessing
@@ -80,18 +79,6 @@ def kmerize(seq, ksize):
     return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
 
 
-def kmerize_ordered(seq, ksize):
-    """Return an ordered dictionary of k-mers, with their sequence location"""
-    kmers = OrderedDict()
-    for i in range(len(seq) - ksize + 1):
-        kmer = seq[i:i + ksize]
-        if kmer not in kmers:
-            kmers[kmer] = [i]
-        else:
-            kmers[kmer].append(i)
-    return kmers
-
-
 def jaccardize(set1, set2):
     """Compute jaccard index of two sets"""
     denominator = min(len(set1), len(set2))
@@ -124,18 +111,18 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
 
 
 def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
-                         molecules=MOLECULES_TO_COMPARE):
+                         alphabets=MOLECULES_TO_COMPARE):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
 
     dfs = []
-    for molecule in molecules:
-        reencoded1 = encode_peptide(seq1, molecule)
-        reencoded2 = encode_peptide(seq2, molecule)
+    for alphabet in alphabets:
+        reencoded1 = encode_peptide(seq1, alphabet)
+        reencoded2 = encode_peptide(seq2, alphabet)
 
         df = kmer_comparison_table(id1, reencoded1, id2, reencoded2,
-                                   molecule_name=molecule,
+                                   molecule_name=alphabet,
                                    ksizes=ksizes)
         dfs.append(df)
 

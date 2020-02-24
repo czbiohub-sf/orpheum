@@ -1,3 +1,5 @@
+from math import ceil, log
+
 DNA_ALPHABET = "A", "C", "G", "T"
 AMINO_ACID_SINGLE_LETTERS = "R", "H", "K", "D", "E", "S", "T", "N", "Q", "C", \
                             "G", "P", "A", "V", "I", "L", "M", "F", "Y", "W"
@@ -311,13 +313,63 @@ PEPTIDE_ENCODINGS = {'hp': HP_TRANSLATION,
                      'sdm12': SDM12_TRANSLATION,
                      'hsdm17': HSDM17_TRANSLATION}
 
+PROTEIN_LIKE = 'protein', 'peptide', 'protein20', 'peptide20', 'aa20'
+DAYHOFF_LIKE = 'dayhoff', 'dayhoff6'
+HP_LIKE = 'hydrophobic-polar', 'hydrophobic-polar2', 'hp', 'hp2',
+
 VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'aa20', \
-                          'dayhoff', 'dayhoff6' \
+                          'protein20', 'peptide20', \
+                          'aa20', \
+                          'dayhoff', 'dayhoff6', \
                           'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp2', \
-                          'aa9', 'gbmr4', \
+                          'hydrophobic-polar', 'hp', 'hp2', \
+                          'aa9', \
+                          'gbmr4', \
                           'sdm12', 'hsdm17'
+
+VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
+                          'protein20', 'peptide20', \
+                          'aa20', \
+                          'dayhoff', 'dayhoff6', \
+                          'botvinnik', 'botvinnik8', \
+                          'hydrophobic-polar', 'hp', 'hp2', \
+                          'aa9', \
+                          'gbmr4', \
+                          'sdm12', 'hsdm17'
+
+ALPHABET_SIZES = {'protein': 20,
+                  'peptide': 20,
+                  'protein20': 20,
+                  'peptide20': 20,
+                  'aa20': 20,
+                  'dayhoff': 6,
+                  'dayhoff6': 6,
+                  'botvinnik': 8,
+                  'botvinnik8': 8,
+                  'hydrophobic-polar': 2,
+                  'hp': 2,
+                  'hp2': 2,
+                  'aa9': 9,
+                  'gbmr4': 4,
+                  'sdm12': 12,
+                  'hsdm17': 17}
+
+BEST_KSIZES = {'protein': 7,
+               'peptide': 7,
+               'protein20': 7,
+               'peptide20': 7,
+               'aa20': 7,
+               'dayhoff': 12,
+               'dayhoff6': 12,
+               'botvinnik': 11,
+               'botvinnik8': 11,
+               'hydrophobic-polar': 31,
+               'hp': 31,
+               'hp2': 31,
+               'aa9': 10,
+               'gbmr4': 16,
+               'sdm12': 9,
+               'hsdm17': 8}
 
 
 # Nucleic acid mappings
@@ -364,4 +416,25 @@ def encode_peptide(peptide_sequence, molecule):
     else:
         raise ValueError(f"{molecule} is not a valid amino acid encoding, "
                          "only "
-                         "{', '.join(PEPTIDE_ENCODINGS.keys()} can be used")
+                         f"{', '.join(PEPTIDE_ENCODINGS.keys())} can be used")
+
+
+def get_best_kmer_size(sigma, n_items=20 ** 7):
+    """Get the best k-mer size for a particular alphabet
+
+    This is going off of the fact that 7 is empirically the "best" k-mer
+    size for the default amino acid alphabet, which has 20 letters.
+
+    Parameters
+    ----------
+    sigma : int
+        Alphabet size
+    n_items : int
+        Number of expected items in the set
+
+    Returns
+    -------
+    ksize : int
+        Best k-mer size
+    """
+    return int(ceil(log(n_items) / log(sigma)))
