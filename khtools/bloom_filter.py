@@ -20,7 +20,7 @@ DEFAULT_DAYHOFF_KSIZE = 12
 DEFAULT_HP_KSIZE = 31
 
 
-def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
+def per_translation_false_positive_rate(n_kmers_in_translation, n_total_kmers=1e7,
                                         n_hash_functions=DEFAULT_N_TABLES,
                                         tablesize=DEFAULT_MAX_TABLESIZE):
     exponent = - n_hash_functions * n_total_kmers / tablesize
@@ -35,8 +35,32 @@ def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
     print(f"per kmer false positive rate: {per_kmer_fpr}")
 
     # Probability that the number of k-mers in the read are all false positives
-    per_read_fpr = math.pow(per_kmer_fpr, n_kmers_in_read)
+    per_read_fpr = math.pow(per_kmer_fpr, n_kmers_in_translation)
     return per_read_fpr
+
+
+def per_read_false_positive_coding_rate(read_length, peptide_ksize,
+                                        n_total_kmers=4e7, alphabet='protein',
+                                        n_hash_functions=DEFAULT_N_TABLES,
+                                        tablesize=DEFAULT_MAX_TABLESIZE):
+    """Compute the false positive rate that a translated k-mer randomly
+    appears in the database"""
+
+    n_kmers_of_size
+
+    false_positive_rate = 0
+    for frame in range(3):
+        translated_length = math.floor((read_length - frame) / 3)
+        n_kmers_in_translation = translated_length - peptide_ksize + 1
+        frame_fpr = per_translation_false_positive_rate(
+            n_kmers_in_translation, n_total_kmers,
+            n_hash_functions=n_hash_functions,
+            tablesize=tablesize
+        )
+        # multiply by two for both forward and reverse translation frames
+        frame_fpr = 2 * frame_fpr
+        false_positive_rate += frame_fpr
+    return false_positive_rate
 
 
 def load_nodegraph(*args, **kwargs):
