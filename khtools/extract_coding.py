@@ -186,6 +186,33 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
     return is_low_complexity, n_kmers
 
 
+def get_peptide_db_meta(
+        translations, peptide_bloom_filter, peptide_ksize, molecule, verbose):
+    fraction_in_peptide_dbs = {}
+    kmers_in_peptide_dbs = {}
+    kmer_capacities = {}
+
+    for frame, translation in translations.items():
+        # Convert back to string
+        translation = str(translation)
+        encoded = encode_peptide(translation, molecule)
+
+        fraction_in_peptide_db, n_kmers = score_single_translation(
+            encoded,
+            peptide_bloom_filter,
+            peptide_ksize,
+            molecule=molecule,
+            verbose=verbose)
+        fraction_in_peptide_dbs[frame] = fraction_in_peptide_db
+        kmers_in_peptide_dbs[frame] = n_kmers
+        encoded = encode_peptide(translation, molecule)
+        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(
+            encoded, peptide_ksize)
+        kmer_capacities[frame] = is_kmer_low_complexity
+
+    return fraction_in_peptide_dbs, kmers_in_peptide_dbs, kmer_capacities
+
+
 def score_single_read(sequence,
                       peptide_bloom_filter,
                       peptide_ksize,
@@ -265,10 +292,6 @@ def score_single_read(sequence,
 
     # Convert to BioPython sequence object for translation
     translations = six_frame_translation_no_stops(seq)
-    # For all translations, use the one with the maximum number of k-mers
-    # in the databse
-    max_n_kmers = 0
-    max_fraction_in_peptide_db = 0
     if len(translations) == 0:
         return np.nan, np.nan, "No translation frames without stop codons"
 
@@ -280,34 +303,27 @@ def score_single_read(sequence,
     if len(translations) == 0:
         return np.nan, np.nan, "All translations shorter than peptide k-mer " \
                                "size + 1"
+    # For all translations, use the one with the maximum number of k-mers
+    # in the databse
+    fraction_in_peptide_dbs, kmers_in_peptide_dbs, kmer_capacities = get_peptide_db_meta(
+        translations, peptide_bloom_filter, peptide_ksize, molecule, verbose)
 
+    if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
+        maybe_write_fasta(description, noncoding_file_handle, sequence)
+
+    # reset
+    max_fraction_in_peptide_db = 0
+    max_n_kmers = 0
     for frame, translation in translations.items():
-        # Convert back to string
-        translation = str(translation)
-
-        # Maybe reencode to dayhoff/hp space
-        encoded = encode_peptide(translation, molecule)
-
-        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(
-            encoded, peptide_ksize)
-
-        if is_kmer_low_complexity:
+        n_kmers = kmers_in_peptide_dbs[frame]
+        if kmer_capacities[frame]:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
                                     " encoding"
-
-        fraction_in_peptide_db, n_kmers = score_single_translation(
-            encoded,
-            peptide_bloom_filter,
-            peptide_ksize,
-            molecule=molecule,
-            verbose=verbose)
-
-        # Save the highest jaccard
+        fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
         max_fraction_in_peptide_db = max(max_fraction_in_peptide_db,
                                          fraction_in_peptide_db)
-
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             # Update n_kmers if this is the best translation frame
             max_n_kmers = n_kmers
@@ -319,10 +335,7 @@ def score_single_read(sequence,
                       f'jaccard: {fraction_in_peptide_db}'
             write_fasta(sys.stdout, seqname, translation)
             maybe_write_fasta(seqname, coding_nucleotide_file_handle, sequence)
-
-    if max_fraction_in_peptide_db <= jaccard_threshold:
-        maybe_write_fasta(description, noncoding_file_handle, sequence)
-    return max_fraction_in_peptide_db, max_n_kmers, None
+        yield max_fraction_in_peptide_db, max_n_kmers, None
 
 
 def maybe_write_fasta(description, file_handle, sequence):
@@ -396,7 +409,10 @@ def maybe_score_single_read(description, fastas, file_handles,
         jaccard, n_kmers, special_case = too_short_or_low_complexity(
             description, fastas, n_kmers, sequence)
     else:
-        jaccard, n_kmers, special_case = score_single_read(
+        jaccard = 0
+        n_kmers = 0
+        special_case = None
+        for i in score_single_read(
             sequence,
             peptide_bloom_filter,
             peptide_ksize,
@@ -407,7 +423,10 @@ def maybe_score_single_read(description, fastas, file_handles,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
             coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
             low_complexity_peptide_file_handle=file_handles[
-                'low_complexity_peptide'])
+                'low_complexity_peptide']):
+            jaccard = max(jaccard, i[0])
+            n_kmers = max(n_kmers, i[1])
+            special_case = i[2]
 
         if verbose > 1:
             click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)

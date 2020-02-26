@@ -101,3 +101,18 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
                                                  tablesize=1e6)
         bloom_filter.save(peptide_bloom_filter_path)
         return bloom_filter
+
+
+@pytest.fixture
+def peptide_bloom_filter_single_read():
+    data = os.path.join(os.path.abspath(os.path.dirname(__file__)), './data')
+    fasta = os.path.join(
+        data, 'extract_coding',
+        'peptide_fasta_for_score_single_read.fasta')
+    from khtools.bloom_filter import make_peptide_bloom_filter
+
+    bloom_filter = make_peptide_bloom_filter(fasta,
+                                             7,
+                                             "protein",
+                                             tablesize=1e6)
+    return bloom_filter

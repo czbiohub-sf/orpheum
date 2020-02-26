@@ -129,6 +129,21 @@ def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
         return f.read()
 
 
+def test_score_single_read(peptide_bloom_filter_single_read):
+    from khtools.extract_coding import score_single_read
+    sequence = "GGGTGCGGGGGCGGCGCGCGGCGGTGGCGCGGGGGGGGCGGGCGCCGGCGGGGGGGGCGGGGGGGGGGGGGGGGGGGGCGCCGGGGGGGGGGGGGCCGGG"  # noqa
+    score_single_read(sequence,
+                      peptide_bloom_filter_single_read,
+                      peptide_ksize=7,
+                      molecule='protein',
+                      verbose=True,
+                      jaccard_threshold=0.9,
+                      description=None,
+                      noncoding_file_handle=None,
+                      coding_nucleotide_file_handle=None,
+                      low_complexity_peptide_file_handle=None)
+
+
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
                      true_scores, true_scores_path,
                      true_protein_coding_fasta_path):
