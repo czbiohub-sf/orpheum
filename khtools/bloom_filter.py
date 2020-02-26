@@ -8,7 +8,8 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from khtools.compare_kmer_content import kmerize
-from khtools.sequence_encodings import encode_peptide, BEST_KSIZES
+from khtools.sequence_encodings import encode_peptide, BEST_KSIZES, \
+    ALPHABET_SIZES
 
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
@@ -46,14 +47,15 @@ def per_read_false_positive_coding_rate(read_length, peptide_ksize,
     """Compute the false positive rate that a translated k-mer randomly
     appears in the database"""
 
-    n_kmers_of_size
+    alphabet_size = ALPHABET_SIZES[alphabet]
+    n_kmers_of_size = min(n_total_kmers, alphabet_size ** peptide_ksize)
 
     false_positive_rate = 0
     for frame in range(3):
         translated_length = math.floor((read_length - frame) / 3)
         n_kmers_in_translation = translated_length - peptide_ksize + 1
         frame_fpr = per_translation_false_positive_rate(
-            n_kmers_in_translation, n_total_kmers,
+            n_kmers_in_translation, n_kmers_of_size,
             n_hash_functions=n_hash_functions,
             tablesize=tablesize
         )
