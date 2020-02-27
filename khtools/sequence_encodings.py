@@ -327,15 +327,15 @@ VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
                           'gbmr4', \
                           'sdm12', 'hsdm17'
 
-VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'peptide20', \
-                          'aa20', \
-                          'dayhoff', 'dayhoff6', \
-                          'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp', 'hp2', \
-                          'aa9', \
-                          'gbmr4', \
-                          'sdm12', 'hsdm17'
+# Unambiguous, unique peptide molecule names that include the alphabet size
+UNIQUE_VALID_PEPTIDE_MOLECULES = 'protein20', \
+                                 'dayhoff6', \
+                                 'botvinnik8', \
+                                 'hp2', \
+                                 'aa9', \
+                                 'gbmr4', \
+                                 'sdm12', \
+                                 'hsdm17'
 
 ALPHABET_SIZES = {'protein': 20,
                   'peptide': 20,
