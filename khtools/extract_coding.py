@@ -30,17 +30,17 @@ DEFAULT_JACCARD_THRESHOLD = 0.5
 DEFAULT_HP_JACCARD_THRESHOLD = 0.8
 SEQTYPE_TO_ANNOUNCEMENT = {
     "noncoding_nucleotide":
-    "nucleotide sequence from reads WITHOUT matches to "
-    "protein-coding peptides",
+        "nucleotide sequence from reads WITHOUT matches to "
+        "protein-coding peptides",
     "coding_nucleotide":
-    "nucleotide sequence from reads WITH protein-coding translation"
-    " frame nucleotides",
+        "nucleotide sequence from reads WITH protein-coding translation"
+        " frame nucleotides",
     "low_complexity_nucleotide":
-    "nucleotide sequence from low complexity (low entropy) reads",
+        "nucleotide sequence from low complexity (low entropy) reads",
     "low_complexity_peptide":
-    "peptide sequence from low "
-    "complexity (low entropy) translated"
-    " reads"
+        "peptide sequence from low "
+        "complexity (low entropy) translated"
+        " reads"
 }
 SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
@@ -469,40 +469,92 @@ def maybe_write_csv(coding_scores, csv):
         coding_scores.to_csv(csv, index=False)
 
 
-def maybe_write_json_summary(coding_scores, json_summary):
-    if json_summary:
-        n_coding_per_read = coding_scores.query(
-            'classification == "Coding"').read_id.value_counts()
-        coding_per_read_histogram = n_coding_per_read.value_counts()
-        coding_per_read_histogram_percentages = \
-            100 * coding_per_read_histogram / coding_per_read_histogram.sum()
+def maybe_write_json_summary(coding_scores, json_summary,
+                             filenames,
+                             groupby='filename'):
+    if not json_summary:
+        # Early exit if json_summary is not True
+        return
 
-        files = coding_scores.filename.unique().tolist()
-
-        classification_value_counts = \
-            coding_scores.classification.value_counts()
-        classification_percentages = 100 * classification_value_counts / \
-            classification_value_counts.sum()
-
-        jaccard_info = coding_scores.jaccard_in_peptide_db.describe()\
-            .astype(str).to_dict()
-
-        metadata = {
-            'input_files': files,
-            'jaccard_info': jaccard_info,
-            'classification_value_counts':
-                classification_value_counts.to_dict(),
-            'classification_percentages':
-                classification_percentages.to_dict(),
-            'histogram_n_coding_frames_per_read':
-                coding_per_read_histogram.to_dict(),
-            'histogram_n_coding_frames_per_read_percentages':
-                coding_per_read_histogram_percentages.to_dict()
+    if coding_scores.empty:
+        summary = {
+            'input_files': filenames,
+            'jaccard_info': {
+                "count": 0,
+                "mean": None,
+                "std": None,
+                "min": None,
+                "25%": None,
+                "50%": None,
+                "75%": None,
+                "max": None
+            },
+            'classification_value_counts': {
+                "Non-coding": 0,
+                "No translation frames without stop codons": 0,
+                "All translations shorter than peptide k-mer size + 1": 0,
+                "Low complexity peptide in dayhoff encoding": 0,
+                "Coding": 0
+            },
+            'classification_percentages': {
+                "Non-coding": 0,
+                "No translation frames without stop codons": 0,
+                "All translations shorter than peptide k-mer size + 1": 0,
+                "Low complexity peptide in dayhoff encoding": 0,
+                "Coding": 0
+            },
+            'histogram_n_coding_frames_per_read': {
+                "1": 0,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0,
+                "6": 0,
+            },
+            'histogram_n_coding_frames_per_read_percentages': {
+                "1": 0,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0,
+                "6": 0,
+            },
         }
-        with open(json_summary, 'w') as f:
-            click.echo(f"Writing extract_coding summary to {json_summary}",
-                       err=True)
-            json.dump(metadata, fp=f)
+    else:
+        summary = generate_coding_summary(coding_scores, groupby)
+    with open(json_summary, 'w') as f:
+        click.echo(f"Writing extract_coding summary to {json_summary}",
+                   err=True)
+        json.dump(summary, fp=f)
+    return summary
+
+
+def generate_coding_summary(coding_scores, groupby):
+    n_coding_per_read = coding_scores.query(
+        'classification == "Coding"').groupby(groupby).read_id.value_counts()
+    coding_per_read_histogram = n_coding_per_read.groupby(-1).value_counts()
+    coding_per_read_histogram_percentages = \
+        100 * coding_per_read_histogram / coding_per_read_histogram.sum()
+    files = coding_scores.filename.unique().tolist()
+    classification_value_counts = \
+        coding_scores.groupby(groupby).classification.value_counts()
+    classification_percentages = 100 * classification_value_counts / \
+                                 classification_value_counts.sum()
+    jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
+        .astype(str).to_dict()
+    summary = {
+        'input_files': files,
+        'jaccard_info': jaccard_info,
+        'classification_value_counts':
+            classification_value_counts.to_dict(),
+        'classification_percentages':
+            classification_percentages.to_dict(),
+        'histogram_n_coding_frames_per_read':
+            coding_per_read_histogram.to_dict(),
+        'histogram_n_coding_frames_per_read_percentages':
+            coding_per_read_histogram_percentages.to_dict()
+    }
+    return summary
 
 
 @click.command()
@@ -511,16 +563,16 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option('--peptide-ksize',
               default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
-              " different alphabets are, "
-              f"protein: {DEFAULT_PROTEIN_KSIZE}"
-              f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
-              f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
+                   " different alphabets are, "
+                   f"protein: {DEFAULT_PROTEIN_KSIZE}"
+                   f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
+                   f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
 @click.option("--save-peptide-bloom-filter",
               is_flag=True,
               default=False,
               help="If specified, save the peptide bloom filter. "
-              "Default filename is the name of the fasta file plus a "
-              "suffix denoting the protein encoding and peptide ksize")
+                   "Default filename is the name of the fasta file plus a "
+                   "suffix denoting the protein encoding and peptide ksize")
 @click.option('--peptides-are-bloom-filter',
               is_flag=True,
               default=False,
@@ -528,20 +580,20 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option('--jaccard-threshold',
               default=None, type=click.FLOAT, callback=validate_jaccard,
               help="Minimum fraction of peptide k-mers from read in the "
-              "peptide database for this read to be called a "
-              f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
-              f" protein and dayhoff encodings, and "
-              f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
-              f"(hp) encoding")
+                   "peptide database for this read to be called a "
+                   f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
+                   f" protein and dayhoff encodings, and "
+                   f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
+                   f"(hp) encoding")
 @click.option('--molecule',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
-              "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-              "used")
+                   "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+                   "used")
 @click.option('--csv',
               default=False,
               help='Name of csv file to write with all sequence reads and '
-              'their coding scores')
+                   'their coding scores')
 @click.option('--json-summary',
               default=False,
               help='Name of json file to write summarization of coding/'
@@ -553,10 +605,10 @@ def maybe_write_json_summary(coding_scores, json_summary):
               help="If specified, save the noncoding nucleotides to this file")
 @click.option("--low-complexity-nucleotide-fasta",
               help="If specified, save the low-complexity nucleotides to this"
-              " file")
+                   " file")
 @click.option("--low-complexity-peptide-fasta",
               help="If specified, save the low-complexity peptides to this "
-              "file")
+                   "file")
 @click.option('--tablesize', type=BASED_INT,
               default="1e8",
               help='Size of the bloom filter table to use')
@@ -566,8 +618,8 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option("--long-reads",
               is_flag=True,
               help="If set, then only considers reading frames starting with "
-              "start codon (ATG) and ending in a stop codon "
-              "(TAG, TAA, TGA)")
+                   "start codon (ATG) and ending in a stop codon "
+                   "(TAG, TAA, TGA)")
 @click.option("--verbose", is_flag=True, help="Print more output")
 def cli(peptides,
         reads,
@@ -689,7 +741,7 @@ def cli(peptides,
     coding_scores = pd.concat(dfs, ignore_index=True)
 
     maybe_write_csv(coding_scores, csv)
-    maybe_write_json_summary(coding_scores, json_summary)
+    maybe_write_json_summary(coding_scores, json_summary, reads)
 
 
 if __name__ == '__main__':
