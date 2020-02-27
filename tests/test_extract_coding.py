@@ -104,6 +104,12 @@ def reads(data_folder):
 
 
 @pytest.fixture
+def empty_fasta(data_folder):
+    return os.path.join(
+        data_folder, 'empty_fasta.fasta')
+
+
+@pytest.fixture
 def true_scores_path(data_folder, molecule, peptide_ksize):
     return os.path.join(
         data_folder, "extract_coding",
@@ -173,6 +179,14 @@ def get_fasta_record_names(fasta_path):
         name = record['name']
         names.append(name)
     return set(names)
+
+def test_maybe_write_json_summary_empty_coding_scores():
+    from khtools.extract_coding import maybe_write_json_summary
+
+    coding_scores = pd.DataFrame(columns=['read_id', 'jaccard_in_peptide_db',
+                                          'n_kmers', 'classification',
+                                          'filename'])
+    maybe_write_json_summary(coding_scores, json_summary=True)
 
 
 def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
@@ -329,6 +343,20 @@ def test_cli_json_summary(tmpdir, reads, peptide_fasta):
     result = runner.invoke(cli, [
         "--json-summary", json_summary,
         peptide_fasta, reads
+    ])
+    assert result.exit_code == 0
+    assert os.path.exists(json_summary)
+
+
+def test_cli_empty_fasta_json_summary(tmpdir, empty_fasta, peptide_fasta):
+    from khtools.extract_coding import cli
+
+    json_summary = os.path.join(tmpdir, 'coding_summary.json')
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [
+        "--json-summary", json_summary,
+        peptide_fasta, empty_fasta
     ])
     assert result.exit_code == 0
     assert os.path.exists(json_summary)
