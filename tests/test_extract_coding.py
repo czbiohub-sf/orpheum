@@ -186,7 +186,10 @@ def test_maybe_write_json_summary_empty_coding_scores():
     coding_scores = pd.DataFrame(columns=['read_id', 'jaccard_in_peptide_db',
                                           'n_kmers', 'classification',
                                           'filename'])
-    maybe_write_json_summary(coding_scores, json_summary=True)
+    summary = maybe_write_json_summary(coding_scores, json_summary=True,
+                                       filenames=['nonexistent.fa'])
+    assert summary['input_files'] == ['nonexistent.fa']
+    assert summary['jaccard_info']['count'] == 0
 
 
 def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
