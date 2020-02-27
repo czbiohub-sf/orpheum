@@ -13,7 +13,8 @@ import numpy as np
 import pandas as pd
 import screed
 from sourmash._minhash import hash_murmur
-from khtools.sequence_encodings import encode_peptide
+from khtools.sequence_encodings import encode_peptide, \
+    UNIQUE_VALID_PEPTIDE_MOLECULES
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
                                   maybe_save_peptide_bloom_filter,
@@ -45,6 +46,21 @@ SEQTYPE_TO_ANNOUNCEMENT = {
 SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
+
+LOW_COMPLEXITY_CATEGORIES = {
+    f'low_complexity_{alphabet}':
+        f"Low complexity peptide in {alphabet} alphabet"
+    for alphabet in UNIQUE_VALID_PEPTIDE_MOLECULES}
+
+PROTEIN_CODING_CATEGORIES = {
+    "too_short": "All translations shorter than peptide k-mer size + 1",
+    "stop_codons": "All translation frames have stop codons",
+    "coding": "Coding",
+    'non_coding': 'Non-coding'
+}
+PROTEIN_CODING_CATEGORIES.update(LOW_COMPLEXITY_CATEGORIES)
+EMPTY_CODING_CATEGORIES = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
+
 
 
 def validate_jaccard(ctx, param, value):
@@ -270,7 +286,7 @@ def score_single_read(sequence,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     if len(translations) == 0:
-        return np.nan, np.nan, "No translation frames without stop codons"
+        return np.nan, np.nan, "All translation frames have stop codons"
 
     translations = {
         frame: translation
@@ -295,7 +311,7 @@ def score_single_read(sequence,
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
-                                    " encoding"
+                                    " alphabet"
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded,
@@ -489,20 +505,8 @@ def maybe_write_json_summary(coding_scores, json_summary,
                 "75%": None,
                 "max": None
             },
-            'classification_value_counts': {
-                "Non-coding": 0,
-                "No translation frames without stop codons": 0,
-                "All translations shorter than peptide k-mer size + 1": 0,
-                "Low complexity peptide in dayhoff encoding": 0,
-                "Coding": 0
-            },
-            'classification_percentages': {
-                "Non-coding": 0,
-                "No translation frames without stop codons": 0,
-                "All translations shorter than peptide k-mer size + 1": 0,
-                "Low complexity peptide in dayhoff encoding": 0,
-                "Coding": 0
-            },
+            'classification_value_counts': EMPTY_CODING_CATEGORIES,
+            'classification_percentages': EMPTY_CODING_CATEGORIES,
             'histogram_n_coding_frames_per_read': {
                 "1": 0,
                 "2": 0,
@@ -536,19 +540,28 @@ def generate_coding_summary(coding_scores, groupby):
     coding_per_read_histogram_percentages = \
         100 * coding_per_read_histogram / coding_per_read_histogram.sum()
     files = coding_scores.filename.unique().tolist()
-    classification_value_counts = \
-        coding_scores.groupby(groupby).classification.value_counts()
-    classification_percentages = 100 * classification_value_counts / \
-                                 classification_value_counts.sum()
+
+    # Initialize to all zeros
+    classification_value_counts = EMPTY_CODING_CATEGORIES
+    # Replace with observed sequences
+    classification_value_counts.update(
+        coding_scores.groupby(groupby).classification.value_counts().to_dict())
+
+    # Initialize to all zeros
+    classification_percentages = EMPTY_CODING_CATEGORIES
+    # Replace with observations
+    classification_percentages.update(
+        100 * classification_value_counts /
+        classification_value_counts.sum().to_dict)
     jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
         .astype(str).to_dict()
     summary = {
         'input_files': files,
         'jaccard_info': jaccard_info,
         'classification_value_counts':
-            classification_value_counts.to_dict(),
+            classification_value_counts,
         'classification_percentages':
-            classification_percentages.to_dict(),
+            classification_percentages,
         'histogram_n_coding_frames_per_read':
             coding_per_read_histogram.to_dict(),
         'histogram_n_coding_frames_per_read_percentages':
