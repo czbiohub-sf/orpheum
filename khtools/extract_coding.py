@@ -484,10 +484,12 @@ def maybe_write_json_summary(coding_scores, json_summary):
         classification_percentages = 100 * classification_value_counts / \
             classification_value_counts.sum()
 
+        jaccard_info = coding_scores.jaccard_in_peptide_db.describe()\
+            .astype(str).to_dict()
+
         metadata = {
             'input_files': files,
-            'jaccard_info':
-                coding_scores.jaccard_in_peptide_db.describe().to_dict(),
+            'jaccard_info': jaccard_info,
             'classification_value_counts':
                 classification_value_counts.to_dict(),
             'classification_percentages':
