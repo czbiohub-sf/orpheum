@@ -257,7 +257,7 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
     assert true_protein_coding_fasta_string in result.output
 
 
-def test_cli_csv(data_folder, tmpdir, reads, peptide_bloom_filter_path, molecule,
+def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
                  peptide_ksize, true_protein_coding_fasta_string, true_scores):
     from khtools.extract_coding import cli
 

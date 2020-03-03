@@ -188,6 +188,9 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
 
 def get_peptide_db_meta(
         translations, peptide_bloom_filter, peptide_ksize, molecule, verbose):
+    """Return list of fraction_in_peptide_dbs, kmers_in_peptide_dbs,
+    kmer_complexities per translation
+    """
     fraction_in_peptide_dbs = {}
     kmers_in_peptide_dbs = {}
     kmer_capacities = {}
