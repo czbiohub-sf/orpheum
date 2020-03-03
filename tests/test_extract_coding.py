@@ -147,7 +147,7 @@ def peptide_ksize(molecule):
     from khtools.bloom_filter import get_peptide_ksize
 
     ksize = get_peptide_ksize(molecule)
-    return ksize,
+    return ksize
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
