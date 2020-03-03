@@ -135,6 +135,21 @@ def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
         return f.read()
 
 
+@pytest.fixture
+def jaccard_threshold(molecule):
+    from khtools.extract_coding import get_jaccard_threshold
+    threshold = get_jaccard_threshold(None, molecule)
+    return threshold
+
+
+@pytest.fixture
+def peptide_ksize(molecule):
+    from khtools.bloom_filter import get_peptide_ksize
+
+    ksize = get_peptide_ksize(molecule)
+    return ksize,
+
+
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
                      true_scores, true_scores_path,
                      true_protein_coding_fasta_path):
@@ -180,6 +195,7 @@ def get_fasta_record_names(fasta_path):
         names.append(name)
     return set(names)
 
+
 def test_maybe_write_json_summary_empty_coding_scores():
     from khtools.extract_coding import maybe_write_json_summary
 
@@ -188,6 +204,18 @@ def test_maybe_write_json_summary_empty_coding_scores():
                                           'filename'])
     summary = maybe_write_json_summary(coding_scores, json_summary=True,
                                        filenames=['nonexistent.fa'])
+    assert summary['input_files'] == ['nonexistent.fa']
+    assert summary['jaccard_info']['count'] == 0
+
+
+def test_generate_coding_summary(reads, peptide_ksize, jaccard_threshold,
+                       peptide_bloom_filter,
+                       molecule, true_scores):
+    from khtools.extract_coding import generate_coding_summary
+
+    summary = generate_coding_summary(
+        true_scores, peptide_bloom_filter, molecule,
+        peptide_ksize, jaccard_threshold,)
     assert summary['input_files'] == ['nonexistent.fa']
     assert summary['jaccard_info']['count'] == 0
 

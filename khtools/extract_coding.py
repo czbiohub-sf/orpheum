@@ -53,10 +53,13 @@ LOW_COMPLEXITY_CATEGORIES = {
     for alphabet in UNIQUE_VALID_PEPTIDE_MOLECULES}
 
 PROTEIN_CODING_CATEGORIES = {
-    "too_short": "All translations shorter than peptide k-mer size + 1",
+    "too_short_peptide": "All translations shorter than peptide k-mer size + 1",
     "stop_codons": "All translation frames have stop codons",
     "coding": "Coding",
-    'non_coding': 'Non-coding'
+    'non_coding': 'Non-coding',
+    'low_complexity_nucleotide': "Low complexity nucleotide",
+    'too_short_nucleotide':
+        'Read length was shorter than 3 * peptide k-mer size'
 }
 PROTEIN_CODING_CATEGORIES.update(LOW_COMPLEXITY_CATEGORIES)
 EMPTY_CODING_CATEGORIES = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
@@ -286,7 +289,7 @@ def score_single_read(sequence,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     if len(translations) == 0:
-        return np.nan, np.nan, "All translation frames have stop codons"
+        return np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons']
 
     translations = {
         frame: translation
@@ -294,8 +297,7 @@ def score_single_read(sequence,
         if len(translation) > peptide_ksize
     }
     if len(translations) == 0:
-        return np.nan, np.nan, "All translations shorter than peptide k-mer " \
-                               "size + 1"
+        return np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide']
 
     for frame, translation in translations.items():
         # Convert back to string
@@ -310,8 +312,8 @@ def score_single_read(sequence,
         if is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
-                                    " alphabet"
+            category = PROTEIN_CODING_CATEGORIES[f'low_complexity_{molecule}']
+            return np.nan, n_kmers, category
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded,
@@ -485,9 +487,9 @@ def maybe_write_csv(coding_scores, csv):
         coding_scores.to_csv(csv, index=False)
 
 
-def maybe_write_json_summary(coding_scores, json_summary,
-                             filenames,
-                             groupby='filename'):
+def maybe_write_json_summary(coding_scores, json_summary, filenames,
+                             bloom_filter, molecule, peptide_ksize,
+                             jaccard_threshold, groupby='filename'):
     if not json_summary:
         # Early exit if json_summary is not True
         return
@@ -525,7 +527,9 @@ def maybe_write_json_summary(coding_scores, json_summary,
             },
         }
     else:
-        summary = generate_coding_summary(coding_scores, groupby)
+        summary = generate_coding_summary(coding_scores, bloom_filter,
+                                          molecule, peptide_ksize,
+                                          jaccard_threshold, groupby)
     with open(json_summary, 'w') as f:
         click.echo(f"Writing extract_coding summary to {json_summary}",
                    err=True)
@@ -533,7 +537,9 @@ def maybe_write_json_summary(coding_scores, json_summary,
     return summary
 
 
-def generate_coding_summary(coding_scores, groupby):
+def generate_coding_summary(coding_scores, bloom_filter, molecule,
+                            peptide_ksize, jaccard_threshold,
+                            groupby='filename'):
     n_coding_per_read = coding_scores.query(
         'classification == "Coding"').groupby(groupby).read_id.value_counts()
     coding_per_read_histogram = n_coding_per_read.groupby(-1).value_counts()
@@ -553,6 +559,8 @@ def generate_coding_summary(coding_scores, groupby):
     classification_percentages.update(
         100 * classification_value_counts /
         classification_value_counts.sum().to_dict)
+
+    # Get Jaccard distributions, count, min, max, mean, stddev, median
     jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
         .astype(str).to_dict()
     summary = {
@@ -565,7 +573,11 @@ def generate_coding_summary(coding_scores, groupby):
         'histogram_n_coding_frames_per_read':
             coding_per_read_histogram.to_dict(),
         'histogram_n_coding_frames_per_read_percentages':
-            coding_per_read_histogram_percentages.to_dict()
+            coding_per_read_histogram_percentages.to_dict(),
+        'peptide_bloom_filter': bloom_filter,
+        'peptide_alphabet': molecule,
+        'peptide_ksize': peptide_ksize,
+        'jaccard_threshold': jaccard_threshold,
     }
     return summary
 
@@ -754,7 +766,10 @@ def cli(peptides,
     coding_scores = pd.concat(dfs, ignore_index=True)
 
     maybe_write_csv(coding_scores, csv)
-    maybe_write_json_summary(coding_scores, json_summary, reads)
+    maybe_write_json_summary(coding_scores, json_summary, reads,
+                             bloom_filter=peptide_bloom_filter,
+                             molecule=molecule, peptide_ksize=peptide_ksize,
+                             jaccard_threshold=jaccard_threshold)
 
 
 if __name__ == '__main__':

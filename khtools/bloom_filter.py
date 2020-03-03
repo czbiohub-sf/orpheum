@@ -40,6 +40,7 @@ def per_read_false_positive_coding_rate(n_kmers_in_read, n_total_kmers=1e7,
 
 
 def load_nodegraph(*args, **kwargs):
+    """Wrapper to load khmer-style bloom filter called a 'nodegraph'"""
     try:
         # khmer 2.1.1
         return khmer.load_nodegraph(*args, **kwargs)
