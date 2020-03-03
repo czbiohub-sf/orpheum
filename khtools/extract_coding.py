@@ -312,7 +312,6 @@ def score_single_read(sequence,
         maybe_write_fasta(description, noncoding_file_handle, sequence)
 
     # reset
-    max_fraction_in_peptide_db = 0
     max_n_kmers = 0
     for frame, translation in translations.items():
         n_kmers = kmers_in_peptide_dbs[frame]
@@ -322,11 +321,6 @@ def score_single_read(sequence,
             return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
                                     " encoding"
         fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
-        max_fraction_in_peptide_db = max(max_fraction_in_peptide_db,
-                                         fraction_in_peptide_db)
-        if max_fraction_in_peptide_db == fraction_in_peptide_db:
-            # Update n_kmers if this is the best translation frame
-            max_n_kmers = n_kmers
         if fraction_in_peptide_db > jaccard_threshold:
             if verbose:
                 click.echo(f"\t{translation} is above {jaccard_threshold}",
@@ -335,7 +329,7 @@ def score_single_read(sequence,
                       f'jaccard: {fraction_in_peptide_db}'
             write_fasta(sys.stdout, seqname, translation)
             maybe_write_fasta(seqname, coding_nucleotide_file_handle, sequence)
-        yield max_fraction_in_peptide_db, max_n_kmers, None
+            yield fraction_in_peptide_db, n_kmers, None
 
 
 def maybe_write_fasta(description, file_handle, sequence):
@@ -371,15 +365,17 @@ def score_reads(reads,
             if verbose:
                 print(description)
 
-            jaccard, n_kmers, special_case = maybe_score_single_read(
-                description, fastas, file_handles, jaccard_threshold, molecule,
-                nucleotide_ksize, peptide_bloom_filter, peptide_ksize,
-                sequence, verbose)
+            for jaccard, n_kmers, special_case in maybe_score_single_read(
+                    description, fastas, file_handles, jaccard_threshold,
+                    molecule,
+                    nucleotide_ksize, peptide_bloom_filter, peptide_ksize,
+                    sequence, verbose):
 
-            line = get_coding_score_line(description, jaccard,
-                                         jaccard_threshold, n_kmers,
-                                         special_case)
-            scoring_lines.append(line)
+                line = get_coding_score_line(
+                    description, jaccard,
+                    jaccard_threshold, n_kmers,
+                    special_case)
+                scoring_lines.append(line)
 
     maybe_close_files(file_handles)
 
@@ -409,10 +405,7 @@ def maybe_score_single_read(description, fastas, file_handles,
         jaccard, n_kmers, special_case = too_short_or_low_complexity(
             description, fastas, n_kmers, sequence)
     else:
-        jaccard = 0
-        n_kmers = 0
-        special_case = None
-        for i in score_single_read(
+        for jaccard, n_kmers, special_case in score_single_read(
             sequence,
             peptide_bloom_filter,
             peptide_ksize,
@@ -424,13 +417,10 @@ def maybe_score_single_read(description, fastas, file_handles,
             coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
             low_complexity_peptide_file_handle=file_handles[
                 'low_complexity_peptide']):
-            jaccard = max(jaccard, i[0])
-            n_kmers = max(n_kmers, i[1])
-            special_case = i[2]
-
-        if verbose > 1:
-            click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
-    return jaccard, n_kmers, special_case
+            if verbose > 1:
+                click.echo(
+                    f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
+            yield jaccard, n_kmers, special_case
 
 
 def too_short_or_low_complexity(description, fastas, n_kmers, sequence):

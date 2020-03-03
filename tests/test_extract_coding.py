@@ -132,16 +132,25 @@ def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
 def test_score_single_read(peptide_bloom_filter_single_read):
     from khtools.extract_coding import score_single_read
     sequence = "GGGTGCGGGGGCGGCGCGCGGCGGTGGCGCGGGGGGGGCGGGCGCCGGCGGGGGGGGCGGGGGGGGGGGGGGGGGGGGCGCCGGGGGGGGGGGGGCCGGG"  # noqa
-    score_single_read(sequence,
-                      peptide_bloom_filter_single_read,
-                      peptide_ksize=7,
-                      molecule='protein',
-                      verbose=True,
-                      jaccard_threshold=0.9,
-                      description=None,
-                      noncoding_file_handle=None,
-                      coding_nucleotide_file_handle=None,
-                      low_complexity_peptide_file_handle=None)
+    test = score_single_read(
+        sequence,
+        peptide_bloom_filter_single_read,
+        peptide_ksize=7,
+        molecule='protein',
+        verbose=True,
+        jaccard_threshold=0.9,
+        description=None,
+        noncoding_file_handle=None,
+        coding_nucleotide_file_handle=None,
+        low_complexity_peptide_file_handle=None)
+    true = [
+        (1.0, 27, None),
+        (1.0, 23, None),
+        (1.0, 26, None),
+        (1.0, 27, None),
+        (1.0, 23, None),
+        (1.0, 26, None)]
+    assert true == list(test)
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
@@ -152,7 +161,6 @@ def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
     test = score_reads(reads,
                        peptide_bloom_filter,
                        molecule=molecule)
-
     # Check that scoring was the same
     pdt.assert_equal(test, true_scores)
 
@@ -249,7 +257,7 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
     assert true_protein_coding_fasta_string in result.output
 
 
-def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
+def test_cli_csv(data_folder, tmpdir, reads, peptide_bloom_filter_path, molecule,
                  peptide_ksize, true_protein_coding_fasta_string, true_scores):
     from khtools.extract_coding import cli
 
