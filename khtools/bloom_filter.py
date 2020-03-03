@@ -188,9 +188,9 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
 @click.option('--alphabet', '--molecule',
               default='protein',
-              help="The type of amino acid encoding to use. Default is "
-              "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-              "used")
+              help="The type of amino acid alphabet/encoding to use. Default "
+                   "is 'protein', but 'dayhoff' or 'hydrophobic-polar' can "
+                   "be used")
 @click.option('--save-as',
               default=None,
               help='If provided, save peptide bloom filter as this filename. '
