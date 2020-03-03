@@ -238,7 +238,7 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
         save_peptide_bloom_filter=save_peptide_bloom_filter)
 
 
-def get_peptide_ksize(molecule, peptide_ksize):
+def get_peptide_ksize(molecule, peptide_ksize=None):
     if peptide_ksize is None:
         try:
             peptide_ksize = BEST_KSIZES[molecule]
