@@ -186,7 +186,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
-@click.option('--alphabet',
+@click.option('--alphabet', '--molecule',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
               "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -201,7 +201,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
 @click.option('--n-tables', type=int,
               default=DEFAULT_N_TABLES,
               help='Size of the bloom filter table to use')
-def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
+def cli(peptides, peptide_ksize=None, alphabet='protein', save_as=None,
         tablesize=DEFAULT_MAX_TABLESIZE, n_tables=DEFAULT_N_TABLES):
     """Make a peptide bloom filter for your peptides
 
@@ -223,9 +223,9 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
 
     """
     # \b above prevents rewrapping of paragraph
-    peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
+    peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                     molecule,
+                                                     alphabet,
                                                      n_tables=n_tables,
                                                      tablesize=tablesize)
     click.echo("\tDone!", err=True)
@@ -234,7 +234,7 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
     maybe_save_peptide_bloom_filter(
         peptides,
         peptide_bloom_filter,
-        molecule,
+        alphabet,
         save_peptide_bloom_filter=save_peptide_bloom_filter)
 
 

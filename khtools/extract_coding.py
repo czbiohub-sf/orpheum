@@ -251,7 +251,7 @@ def score_single_read(sequence,
         Whether or not to print a lot of stuff
     jaccard_threshold : float
         Value between 0 and 1. By default, the (empirically-chosen) "best"
-        threshold is chosen for each molecule. For "protein" and  "dayhoff",
+        threshold is chosen for each alphabet. For "protein" and  "dayhoff",
         the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
         so lossy it's more likely to match random sequence. These thresholds
         were determined empirically with a pre-chosen human RNA-seq dataset and
