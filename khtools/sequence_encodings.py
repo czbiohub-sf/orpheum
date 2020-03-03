@@ -327,7 +327,7 @@ VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
                           'gbmr4', \
                           'sdm12', 'hsdm17'
 
-# Unambiguous, unique peptide molecule names that include the alphabet size
+# Unambiguous, unique peptide alphabet names that include the alphabet size
 UNIQUE_VALID_PEPTIDE_MOLECULES = 'protein20', \
                                  'dayhoff6', \
                                  'botvinnik8', \
@@ -336,6 +336,18 @@ UNIQUE_VALID_PEPTIDE_MOLECULES = 'protein20', \
                                  'gbmr4', \
                                  'sdm12', \
                                  'hsdm17'
+
+ALPHABET_ALIASES = {
+    # Canonical name: aliases
+    'protein20': ('peptide', 'protein', 'aa20', 'protein20'),
+    'dayhoff6': ('dayhoff', 'dayhoff6'),
+    'hp2': ('hydrophobic-polar', 'hp', 'hp2'),
+    'botvinnik8': ('botvinnik', 'botvinnik8'),
+    'aa9': ('aa9',),
+    'gbmr4': ('gbmr4',),
+    'sdm12': ('sdm12',),
+    'hsdm17': ('hsdm17',),
+}
 
 ALPHABET_SIZES = {'protein': 20,
                   'peptide': 20,

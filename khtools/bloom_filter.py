@@ -150,7 +150,7 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
         click.echo(
             f"Creating peptide bloom filter with file: {peptides}\n"
-            f"Using ksize: {peptide_ksize} and molecule: {molecule} "
+            f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
             f"...",
             err=True)
         peptide_bloom_filter = make_peptide_bloom_filter(
@@ -168,7 +168,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
             filename = save_peptide_bloom_filter
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
-            suffix = f'.molecule-{molecule}_ksize-{ksize}.bloomfilter.' \
+            suffix = f'.alphabet-{molecule}_ksize-{ksize}.bloomfilter.' \
                      f'nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
@@ -186,7 +186,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
-@click.option('--molecule',
+@click.option('--alphabet',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
               "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -194,7 +194,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
 @click.option('--save-as',
               default=None,
               help='If provided, save peptide bloom filter as this filename. '
-              'Otherwise, add ksize and molecule name to input filename.')
+              'Otherwise, add ksize and alphabet name to input filename.')
 @click.option('--tablesize', type=BASED_INT,
               default="1e8",
               help='Size of the bloom filter table to use')

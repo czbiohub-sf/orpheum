@@ -66,7 +66,7 @@ def test_cli_options(peptide_fasta, molecule, peptide_ksize):
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, '--molecule', molecule,
+        '--peptide-ksize', peptide_ksize, '--alphabet', molecule,
         "--tablesize", "1e4",
         peptide_fasta,
     ])
@@ -98,4 +98,4 @@ def test_get_peptide_ksize_with_bad_molecule():
     from khtools.bloom_filter import get_peptide_ksize
 
     with pytest.raises(ValueError):
-        get_peptide_ksize("not a real molecule type", None)
+        get_peptide_ksize("not a real alphabet type", None)

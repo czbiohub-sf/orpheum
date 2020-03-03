@@ -14,7 +14,7 @@ import pandas as pd
 import screed
 from sourmash._minhash import hash_murmur
 from khtools.sequence_encodings import encode_peptide, \
-    UNIQUE_VALID_PEPTIDE_MOLECULES
+    UNIQUE_VALID_PEPTIDE_MOLECULES, ALPHABET_ALIASES
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
                                   maybe_save_peptide_bloom_filter,
@@ -47,10 +47,15 @@ SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
 
+
+LOW_COMPLEXITY_DICTS = [dict(zip((f'low_complexity_{alias}',
+           f"Low complexity peptide in {alphabet} alphabet"))
+      for alias in aliases) for alphabet, aliases in ALPHABET_ALIASES.items()]
+
+# Cribbed from https://stackoverflow.com/questions/3494906/how-do-i-merge-a-list-of-dicts-into-a-single-dict
 LOW_COMPLEXITY_CATEGORIES = {
-    f'low_complexity_{alphabet}':
-        f"Low complexity peptide in {alphabet} alphabet"
-    for alphabet in UNIQUE_VALID_PEPTIDE_MOLECULES}
+    k: v for d in LOW_COMPLEXITY_DICTS for k, v in d.items()}
+
 
 PROTEIN_CODING_CATEGORIES = {
     "too_short_peptide": "All translations shorter than peptide k-mer size + 1",
@@ -208,7 +213,7 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
 def score_single_read(sequence,
                       peptide_bloom_filter,
                       peptide_ksize,
-                      molecule='protein',
+                      alphabet='protein',
                       verbose=True,
                       jaccard_threshold=0.9,
                       description=None,
@@ -230,7 +235,7 @@ def score_single_read(sequence,
         Length of the peptide words in sequence. Must match the k-mer size used
         for the peptide_bloom_filter otherwise nothing will match, or only
         false positives will match.
-    molecule : str
+    alphabet : str
         One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
         encode the protein-coding space. Where "protein"|"peptide" is the
         original 20-letter amino acid encoding, Dayhoff ("dayhoff") is a lossy
@@ -280,7 +285,7 @@ def score_single_read(sequence,
 
     # In case this is used from the Python API and the default threshold isn't
     # specified
-    jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
+    jaccard_threshold = get_jaccard_threshold(jaccard_threshold, alphabet)
 
     # Convert to BioPython sequence object for translation
     translations = six_frame_translation_no_stops(seq)
@@ -304,7 +309,7 @@ def score_single_read(sequence,
         translation = str(translation)
 
         # Maybe reencode to dayhoff/hp space
-        encoded = encode_peptide(translation, molecule)
+        encoded = encode_peptide(translation, alphabet)
 
         is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(
             encoded, peptide_ksize)
@@ -312,14 +317,14 @@ def score_single_read(sequence,
         if is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            category = PROTEIN_CODING_CATEGORIES[f'low_complexity_{molecule}']
+            category = PROTEIN_CODING_CATEGORIES[f'low_complexity_{alphabet}']
             return np.nan, n_kmers, category
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded,
             peptide_bloom_filter,
             peptide_ksize,
-            molecule=molecule,
+            molecule=alphabet,
             verbose=verbose)
 
         # Save the highest jaccard
@@ -610,7 +615,7 @@ def generate_coding_summary(coding_scores, bloom_filter, molecule,
                    f" protein and dayhoff encodings, and "
                    f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
                    f"(hp) encoding")
-@click.option('--molecule',
+@click.option('--alphabet',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -689,7 +694,7 @@ def cli(peptides,
         Input ilfe of peptides is already a bloom filter
     jaccard_threshold : float
         Value between 0 and 1. By default, the (empirically-chosen) "best"
-        threshold is chosen for each molecule. For "protein" and  "dayhoff",
+        threshold is chosen for each alphabet. For "protein" and  "dayhoff",
         the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
         so lossy it's more likely to match random sequence. These thresholds
         were determined empirically with a pre-chosen human RNA-seq dataset and

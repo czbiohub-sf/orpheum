@@ -226,7 +226,7 @@ def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, '--molecule', molecule,
+        '--peptide-ksize', peptide_ksize, '--alphabet', molecule,
         peptide_fasta, reads
     ])
     assert result.exit_code == 0
@@ -273,7 +273,7 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
     runner = CliRunner()
     result = runner.invoke(cli, [
         '--peptide-ksize', peptide_ksize, "--peptides-are-bloom-filter",
-        '--molecule', molecule, peptide_bloom_filter_path, reads
+        '--alphabet', molecule, peptide_bloom_filter_path, reads
     ])
     assert result.exit_code == 0
     assert true_protein_coding_fasta_string in result.output
@@ -288,7 +288,7 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
     runner = CliRunner()
     result = runner.invoke(cli, [
         '--peptide-ksize', peptide_ksize, "--csv", csv,
-        "--peptides-are-bloom-filter", '--molecule', molecule,
+        "--peptides-are-bloom-filter", '--alphabet', molecule,
         peptide_bloom_filter_path, reads
     ])
     assert result.exit_code == 0

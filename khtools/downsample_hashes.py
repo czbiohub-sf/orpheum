@@ -77,5 +77,5 @@ def subset_ksize_moltype_and_compare_numhashes(
     print(similarity_filtered.shape)
 
     similarity_filtered.loc[:, 'ksize'] = ksize
-    similarity_filtered.loc[:, 'molecule'] = molecule
+    similarity_filtered.loc[:, 'alphabet'] = molecule
     return similarity_filtered
