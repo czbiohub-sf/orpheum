@@ -545,7 +545,7 @@ def generate_coding_summary(coding_scores, bloom_filter, molecule,
                             groupby='filename'):
     n_coding_per_read = coding_scores.query(
         'classification == "Coding"').groupby(groupby).read_id.value_counts()
-    coding_per_read_histogram = n_coding_per_read.groupby(-1).value_counts()
+    coding_per_read_histogram = n_coding_per_read.groupby(level=-1).size()
     coding_per_read_histogram_percentages = \
         100 * coding_per_read_histogram / coding_per_read_histogram.sum()
     files = coding_scores.filename.unique().tolist()
@@ -556,12 +556,14 @@ def generate_coding_summary(coding_scores, bloom_filter, molecule,
     classification_value_counts.update(
         coding_scores.groupby(groupby).classification.value_counts().to_dict())
 
+    # Convert to series to make percentage calculation easy
+    classifications = pd.Series(classification_value_counts)
+
     # Initialize to all zeros
     classification_percentages = EMPTY_CODING_CATEGORIES
+    percentages_series = 100 * classifications / classifications.sum()
     # Replace with observations
-    classification_percentages.update(
-        100 * classification_value_counts /
-        classification_value_counts.sum().to_dict)
+    classification_percentages.update(percentages_series.to_dict())
 
     # Get Jaccard distributions, count, min, max, mean, stddev, median
     jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
