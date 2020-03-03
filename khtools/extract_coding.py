@@ -308,14 +308,15 @@ def score_single_read(sequence,
                                "size + 1"
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
-    fraction_in_peptide_dbs, kmers_in_peptide_dbs, kmer_capacities = get_peptide_db_meta(
+    (fraction_in_peptide_dbs,
+     kmers_in_peptide_dbs,
+     kmer_capacities) = get_peptide_db_meta(
         translations, peptide_bloom_filter, peptide_ksize, molecule, verbose)
 
     if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
 
     # reset
-    max_n_kmers = 0
     for frame, translation in translations.items():
         n_kmers = kmers_in_peptide_dbs[frame]
         if kmer_capacities[frame]:

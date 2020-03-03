@@ -153,6 +153,19 @@ def test_score_single_read(peptide_bloom_filter_single_read):
     assert true == list(test)
 
 
+def test_get_peptide_db_meta(
+        peptide_bloom_filter_single_read, peptide_ksize, molecule):
+    from khtools.extract_coding import (
+        get_jaccard_threshold, get_peptide_db_meta, six_frame_translation_no_stops)
+    sequence = "GGGTGCGGGGGCGGCGCGCGGCGGTGGCGCGGGGGGGGCGGGCGCCGGCGGGGGGGGCGGGGGGGGGGGGGGGGGGGGCGCCGGGGGGGGGGGGGCCGGG"  # noqa
+    seq = Seq(sequence)
+
+    # Convert to BioPython sequence object for translation
+    translations = six_frame_translation_no_stops(seq)
+    fraction_in_peptide_dbs, kmers_in_peptide_dbs, kmer_capacities = get_peptide_db_meta(
+        translations, peptide_bloom_filter_single_read, peptide_ksize, molecule, True)
+
+
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
                      true_scores, true_scores_path,
                      true_protein_coding_fasta_path):
