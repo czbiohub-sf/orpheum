@@ -3,6 +3,7 @@ extract_coding.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+import itertools
 import json
 import sys
 import warnings
@@ -47,14 +48,11 @@ SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
 
-
-LOW_COMPLEXITY_DICTS = [dict(zip((f'low_complexity_{alias}',
-           f"Low complexity peptide in {alphabet} alphabet"))
+LOW_COMPLEXITY_PER_ALIAS = [list((f'low_complexity_{alias}',
+           f"Low complexity peptide in {alphabet} alphabet")
       for alias in aliases) for alphabet, aliases in ALPHABET_ALIASES.items()]
-
-# Cribbed from https://stackoverflow.com/questions/3494906/how-do-i-merge-a-list-of-dicts-into-a-single-dict
-LOW_COMPLEXITY_CATEGORIES = {
-    k: v for d in LOW_COMPLEXITY_DICTS for k, v in d.items()}
+LOW_COMPLEXITY_CATEGORIES = dict(
+    list(itertools.chain(*LOW_COMPLEXITY_PER_ALIAS)))
 
 
 PROTEIN_CODING_CATEGORIES = {
