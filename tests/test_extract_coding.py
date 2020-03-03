@@ -196,27 +196,31 @@ def get_fasta_record_names(fasta_path):
     return set(names)
 
 
-def test_maybe_write_json_summary_empty_coding_scores():
-    from khtools.extract_coding import maybe_write_json_summary
+def test_maybe_write_json_summary_empty(peptide_bloom_filter_path, molecule,
+                                        peptide_ksize):
+    from khtools.extract_coding import maybe_write_json_summary, \
+        DEFAULT_JACCARD_THRESHOLD
 
     coding_scores = pd.DataFrame(columns=['read_id', 'jaccard_in_peptide_db',
                                           'n_kmers', 'classification',
                                           'filename'])
-    summary = maybe_write_json_summary(coding_scores, json_summary=True,
-                                       filenames=['nonexistent.fa'])
+    summary = maybe_write_json_summary(
+        coding_scores, json_summary=True, filenames=['nonexistent.fa'],
+        bloom_filter=peptide_bloom_filter_path, molecule=molecule,
+        peptide_ksize=peptide_ksize, jaccard_threshold=DEFAULT_JACCARD_THRESHOLD)
     assert summary['input_files'] == ['nonexistent.fa']
     assert summary['jaccard_info']['count'] == 0
 
 
 def test_generate_coding_summary(reads, peptide_ksize, jaccard_threshold,
-                       peptide_bloom_filter,
-                       molecule, true_scores):
+                                 peptide_bloom_filter,
+                                 molecule, true_scores, true_scores_path):
     from khtools.extract_coding import generate_coding_summary
 
     summary = generate_coding_summary(
         true_scores, peptide_bloom_filter, molecule,
         peptide_ksize, jaccard_threshold,)
-    assert summary['input_files'] == ['nonexistent.fa']
+    assert summary['input_files'] == [reads]
     assert summary['jaccard_info']['count'] == 0
 
 
