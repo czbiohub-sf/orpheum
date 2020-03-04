@@ -159,6 +159,8 @@ def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
     test = score_reads(reads,
                        peptide_bloom_filter,
                        molecule=molecule)
+    # Convert to basename to be compatible with test data
+    test['filename'] = test['filename'].map(os.path.basename)
 
     # Check that scoring was the same
     pdt.assert_equal(test, true_scores)
