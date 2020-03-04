@@ -289,7 +289,6 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, molecule,
     # the CLI adds the filename to the scoring dataframe
     true = true_scores.copy()
     true['filename'] = reads
-
     test_scores = pd.read_csv(csv)
     pdt.assert_equal(test_scores, true)
 
