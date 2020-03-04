@@ -296,7 +296,7 @@ def score_single_read(sequence,
     # Convert to BioPython sequence object for translation
     translations = six_frame_translation_no_stops(seq)
     if len(translations) == 0:
-        return np.nan, np.nan, "No translation frames without stop codons"
+        yield np.nan, np.nan, "No translation frames without stop codons"
 
     translations = {
         frame: translation
@@ -304,7 +304,7 @@ def score_single_read(sequence,
         if len(translation) > peptide_ksize
     }
     if len(translations) == 0:
-        return np.nan, np.nan, "All translations shorter than peptide k-mer " \
+        yield np.nan, np.nan, "All translations shorter than peptide k-mer " \
                                "size + 1"
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
@@ -313,16 +313,12 @@ def score_single_read(sequence,
      kmer_capacities) = get_peptide_db_meta(
         translations, peptide_bloom_filter, peptide_ksize, molecule, verbose)
 
-    if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
-        maybe_write_fasta(description, noncoding_file_handle, sequence)
-
-    # reset
     for frame, translation in translations.items():
         n_kmers = kmers_in_peptide_dbs[frame]
         if kmer_capacities[frame]:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
+            yield np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
                                     " encoding"
         fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
         if fraction_in_peptide_db > jaccard_threshold:
@@ -334,6 +330,10 @@ def score_single_read(sequence,
             write_fasta(sys.stdout, seqname, translation)
             maybe_write_fasta(seqname, coding_nucleotide_file_handle, sequence)
             yield fraction_in_peptide_db, n_kmers, None
+
+    if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
+        maybe_write_fasta(description, noncoding_file_handle, sequence)
+        yield max(fraction_in_peptide_dbs.values()), max(kmers_in_peptide_dbs.values()), "Non-coding"
 
 
 def maybe_write_fasta(description, file_handle, sequence):
@@ -408,6 +408,7 @@ def maybe_score_single_read(description, fastas, file_handles,
         n_kmers = np.nan
         jaccard, n_kmers, special_case = too_short_or_low_complexity(
             description, fastas, n_kmers, sequence)
+        yield jaccard, n_kmers, special_case
     else:
         for jaccard, n_kmers, special_case in score_single_read(
             sequence,
