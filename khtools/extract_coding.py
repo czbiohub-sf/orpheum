@@ -393,6 +393,9 @@ def score_reads(reads,
 
     # Concatenate all the lines into a single dataframe
     scoring_df = pd.DataFrame(scoring_lines, columns=SCORING_DF_COLUMNS)
+
+    # Add the reads that were used to generate these scores as a column
+    scoring_df['filename'] = reads
     return scoring_df
 
 
@@ -765,7 +768,6 @@ def cli(peptides,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
             low_complexity_peptide_fasta=low_complexity_peptide_fasta)
-        df['filename'] = reads_file
         dfs.append(df)
 
     coding_scores = pd.concat(dfs, ignore_index=True)

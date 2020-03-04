@@ -151,7 +151,8 @@ def peptide_ksize(molecule):
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
-                     true_scores, true_scores_path,
+                     true_scores,
+                     true_scores_path,
                      true_protein_coding_fasta_path):
     from khtools.extract_coding import score_reads
 
@@ -214,7 +215,8 @@ def test_maybe_write_json_summary_empty(peptide_bloom_filter_path, molecule,
 
 def test_generate_coding_summary(reads, peptide_ksize, jaccard_threshold,
                                  peptide_bloom_filter,
-                                 molecule, true_scores, true_scores_path):
+                                 molecule, true_scores,
+                                 true_scores_path):
     from khtools.extract_coding import generate_coding_summary
 
     summary = generate_coding_summary(
