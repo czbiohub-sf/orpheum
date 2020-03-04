@@ -618,7 +618,7 @@ def generate_coding_summary(coding_scores, bloom_filter, molecule,
                    f" protein and dayhoff encodings, and "
                    f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
                    f"(hp) encoding")
-@click.option('--alphabet/--encoding/--molecule',
+@click.option('--alphabet', '--encoding', '--molecule',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
