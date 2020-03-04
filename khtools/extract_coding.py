@@ -618,7 +618,7 @@ def generate_coding_summary(coding_scores, bloom_filter, molecule,
                    f" protein and dayhoff encodings, and "
                    f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
                    f"(hp) encoding")
-@click.option('--alphabet',
+@click.option('--alphabet/--encoding/--molecule',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
                    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
@@ -660,7 +660,7 @@ def cli(peptides,
         save_peptide_bloom_filter=True,
         peptides_are_bloom_filter=False,
         jaccard_threshold=None,
-        molecule='protein',
+        alphabet='protein',
         csv=False,
         json_summary=False,
         coding_nucleotide_fasta=None,
@@ -702,7 +702,7 @@ def cli(peptides,
         so lossy it's more likely to match random sequence. These thresholds
         were determined empirically with a pre-chosen human RNA-seq dataset and
         human peptides.
-    molecule : str
+    alphabet : str
         One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
         encode the protein-coding space. Where "protein"|"peptide" is the
         original 20-letter amino acid encoding, Dayhoff ("dayhoff") is a lossy
@@ -748,13 +748,13 @@ def cli(peptides,
         raise NotImplementedError("Not implemented! ... yet :)")
 
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
-        peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
+        peptides, peptide_ksize, alphabet, peptides_are_bloom_filter,
         n_tables=n_tables, tablesize=tablesize)
     click.echo("\tDone!", err=True)
 
     if not peptides_are_bloom_filter:
         maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
-                                        molecule, save_peptide_bloom_filter)
+                                        alphabet, save_peptide_bloom_filter)
 
     dfs = []
     for reads_file in reads:
@@ -762,7 +762,7 @@ def cli(peptides,
             reads_file,
             peptide_bloom_filter,
             jaccard_threshold=jaccard_threshold,
-            molecule=molecule,
+            molecule=alphabet,
             verbose=verbose,
             coding_nucleotide_fasta=coding_nucleotide_fasta,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
@@ -775,7 +775,7 @@ def cli(peptides,
     maybe_write_csv(coding_scores, csv)
     maybe_write_json_summary(coding_scores, json_summary, reads,
                              bloom_filter=peptide_bloom_filter,
-                             molecule=molecule, peptide_ksize=peptide_ksize,
+                             molecule=alphabet, peptide_ksize=peptide_ksize,
                              jaccard_threshold=jaccard_threshold)
 
 
