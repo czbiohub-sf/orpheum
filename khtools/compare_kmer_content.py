@@ -88,6 +88,7 @@ def sanitize_id(value):
     # value = re.sub('[-\s]+', '-', value)
     return value
 
+
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
     return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
@@ -481,13 +482,16 @@ def cli(fastas,
     # add 1 to max since range is not inclusive of last interval
     ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))
 
-    comparisons = compare_all_seqs(seqlist, seqlist2=seqlist2,
-                                   n_jobs=processes, ksizes=ksizes,
-                                   moltype='protein',
-                                   paired_seqlists=paired_seqlists,
-                                   intermediate_csv=intermediate_csv,
-                                   intermediate_parquet=intermediate_parquet,
-                                   no_final_concatenation=no_final_concatenation)
+    comparisons = compare_all_seqs(
+        seqlist,
+        seqlist2=seqlist2,
+        n_jobs=processes,
+        ksizes=ksizes,
+        moltype='protein',
+        paired_seqlists=paired_seqlists,
+        intermediate_csv=intermediate_csv,
+        intermediate_parquet=intermediate_parquet,
+        no_final_concatenation=no_final_concatenation)
 
     # Only write the final output if there is a final concatenation
     if not no_final_concatenation:
