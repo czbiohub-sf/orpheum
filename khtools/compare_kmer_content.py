@@ -473,7 +473,7 @@ def cli(fastas,
     else:
         seqlist2 = None
 
-    if no_final_concatention:
+    if no_final_concatenation:
         if not intermediate_parquet or not intermediate_csv:
             raise Exception("--no-final-concatenation provided but neither "
                             "--intermediate-parquet nor --intermediate-csv "
@@ -491,7 +491,7 @@ def cli(fastas,
                                    no_final_concatenation=no_final_concatenation)
 
     # Only write the final output if there is a final concatenation
-    if not no_final_concatention:
+    if not no_final_concatenation:
         if parquet is not None:
             comparisons.to_parquet(parquet)
         if not no_csv:
