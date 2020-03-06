@@ -118,8 +118,16 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
     lines = []
     for ksize in ksizes:
         jaccard = kmerize_and_jaccard(seq1, seq2, ksize)
-        line = [id1, id2, ksize, jaccard]
-        lines.append(line)
+        if jaccard > 0:
+            line = [id1, id2, ksize, jaccard]
+            lines.append(line)
+        else:
+            # If jaccard=0 at a small ksize, then all future jaccards will also
+            # be 0 --> break and exit
+            remaining_lines = [[id1, id2, k, 0] for k in
+                               range(ksize, max(ksizes)+1)]
+            lines.extend(remaining_lines)
+            break
     df = pd.DataFrame(lines, columns=COLUMNS)
     df['molecule'] = molecule_name
     return df
