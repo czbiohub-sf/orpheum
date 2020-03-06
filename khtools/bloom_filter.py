@@ -175,6 +175,7 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
         click.echo(f"Writing peptide bloom filter to {filename}", err=True)
         peptide_bloom_filter.save(filename)
         click.echo("\tDone!", err=True)
+        return filename
 
 
 @click.command()
