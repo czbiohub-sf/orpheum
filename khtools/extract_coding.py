@@ -436,7 +436,7 @@ def maybe_score_single_read(description, fastas, file_handles,
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
     if is_fastp_low_complexity:
         n_kmers = np.nan
-        jaccard, n_kmers, special_case = too_short_or_low_complexity_nucleotide(
+        jaccard, n_kmers, special_case = check_nucleotide_content(
             description, fastas, n_kmers, sequence)
     else:
         jaccard, n_kmers, special_case = score_single_read(
@@ -457,8 +457,12 @@ def maybe_score_single_read(description, fastas, file_handles,
     return SingleReadScore(jaccard, n_kmers, special_case)
 
 
-def too_short_or_low_complexity_nucleotide(
-        description, fastas, n_kmers, sequence):
+def check_nucleotide_content(description, fastas, n_kmers, sequence):
+    """If passes, then this read can move on to checking protein translations
+
+    Evaluates if this reads' nucleotide content doesn't pass thresholds to be
+    checked for protein-coding-ness
+    """
     if n_kmers > 0:
         jaccard = np.nan
         special_case = "Low complexity nucleotide"
