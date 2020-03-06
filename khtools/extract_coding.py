@@ -48,9 +48,11 @@ SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
 
-LOW_COMPLEXITY_PER_ALIAS = [list((alias,
-           f"Low complexity peptide in {alphabet} alphabet")
-      for alias in aliases) for alphabet, aliases in ALPHABET_ALIASES.items()]
+LOW_COMPLEXITY_PER_ALIAS = [
+    list(
+        (alias,
+         f"Low complexity peptide in {alphabet} alphabet") for alias in aliases) for alphabet,
+    aliases in ALPHABET_ALIASES.items()]
 LOW_COMPLEXITY_CATEGORIES = dict(
     list(itertools.chain(*LOW_COMPLEXITY_PER_ALIAS)))
 
@@ -545,8 +547,8 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
 def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
                             peptide_ksize, jaccard_threshold):
     translation_frame_counts, translation_frame_percentages = \
-            get_n_translated_frames_per_read(
-                coding_scores)
+        get_n_translated_frames_per_read(
+            coding_scores)
 
     files = coding_scores.filename.unique().tolist()
 
