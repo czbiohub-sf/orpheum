@@ -72,7 +72,7 @@ PROTEIN_CODING_CATEGORIES = {
 # Some mild object-orientation
 SingleTranslationScore = namedtuple("SingleTranslationScore",
                                     ['fraction_kmers_in_peptide_db',
-                               'n_total_kmers'])
+                                     'n_total_kmers'])
 LowComplexityScore = namedtuple("LowComplexityScore",
                                 ['is_low_complexity', 'n_total_kmers'])
 
@@ -83,6 +83,7 @@ SingleReadScore = namedtuple(
 PercentagesCounts = namedtuple("PercentagesCounts", ['percentages', 'counts'])
 OutputFastasHandles = namedtuple('OutputFastasHandles',
                                  ['fastas', 'file_handles'])
+
 
 def validate_jaccard(ctx, param, value):
     """Ensure Jaccard threshold is between 0 and 1"""
@@ -306,7 +307,8 @@ def score_single_read(sequence,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     if len(translations) == 0:
-        return SingleReadScore(np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons'])
+        return SingleReadScore(
+            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons'])
 
     translations = {
         frame: translation
@@ -314,7 +316,10 @@ def score_single_read(sequence,
         if len(translation) > peptide_ksize
     }
     if len(translations) == 0:
-        return SingleReadScore(np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide'])
+        return SingleReadScore(
+            np.nan,
+            np.nan,
+            PROTEIN_CODING_CATEGORIES['too_short_peptide'])
 
     for frame, translation in translations.items():
         # Convert back to string
@@ -452,7 +457,8 @@ def maybe_score_single_read(description, fastas, file_handles,
     return SingleReadScore(jaccard, n_kmers, special_case)
 
 
-def too_short_or_low_complexity_nucleotide(description, fastas, n_kmers, sequence):
+def too_short_or_low_complexity_nucleotide(
+        description, fastas, n_kmers, sequence):
     if n_kmers > 0:
         jaccard = np.nan
         special_case = "Low complexity nucleotide"
@@ -560,7 +566,7 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
 
 def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
                             peptide_ksize, jaccard_threshold):
-    translation_frame_percentages, translation_frame_counts= \
+    translation_frame_percentages, translation_frame_counts = \
         get_n_translated_frames_per_read(
             coding_scores)
 
