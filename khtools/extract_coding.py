@@ -553,8 +553,8 @@ def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
 
     files = coding_scores.filename.unique().tolist()
 
-    classification_percentages, classification_value_counts = get_n_per_coding_classification(
-        coding_scores, groupby)
+    classification_percentages, classification_value_counts = \
+        get_n_per_coding_classification(coding_scores, groupby)
 
     # Get Jaccard distributions, count, min, max, mean, stddev, median
     jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
