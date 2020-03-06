@@ -497,6 +497,7 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
     if not json_summary:
         # Early exit if json_summary is not True
         return
+    empty_coding_categories = make_empty_coding_categories(molecule)
 
     if coding_scores.empty:
         summary = {
@@ -511,8 +512,8 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
                 "75%": None,
                 "max": None
             },
-            'classification_value_counts': EMPTY_CODING_CATEGORIES,
-            'classification_percentages': EMPTY_CODING_CATEGORIES,
+            'classification_value_counts': empty_coding_categories,
+            'classification_percentages': empty_coding_categories,
             'histogram_n_coding_frames_per_read': {
                 "1": 0,
                 "2": 0,
@@ -533,7 +534,7 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
     else:
         summary = generate_coding_summary(coding_scores, bloom_filter,
                                           molecule, peptide_ksize,
-                                          jaccard_threshold, groupby)
+                                          jaccard_threshold)
     with open(json_summary, 'w') as f:
         click.echo(f"Writing extract_coding summary to {json_summary}",
                    err=True)
