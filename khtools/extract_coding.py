@@ -48,7 +48,7 @@ SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
 
-LOW_COMPLEXITY_PER_ALIAS = [list((f'low_complexity_{alias}',
+LOW_COMPLEXITY_PER_ALIAS = [list((alias,
            f"Low complexity peptide in {alphabet} alphabet")
       for alias in aliases) for alphabet, aliases in ALPHABET_ALIASES.items()]
 LOW_COMPLEXITY_CATEGORIES = dict(
@@ -56,7 +56,8 @@ LOW_COMPLEXITY_CATEGORIES = dict(
 
 
 PROTEIN_CODING_CATEGORIES = {
-    "too_short_peptide": "All translations shorter than peptide k-mer size + 1",
+    "too_short_peptide":
+        "All translations shorter than peptide k-mer size + 1",
     "stop_codons": "All translation frames have stop codons",
     "coding": "Coding",
     'non_coding': 'Non-coding',
@@ -64,9 +65,6 @@ PROTEIN_CODING_CATEGORIES = {
     'too_short_nucleotide':
         'Read length was shorter than 3 * peptide k-mer size'
 }
-PROTEIN_CODING_CATEGORIES.update(LOW_COMPLEXITY_CATEGORIES)
-EMPTY_CODING_CATEGORIES = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
-
 
 
 def validate_jaccard(ctx, param, value):
@@ -315,7 +313,7 @@ def score_single_read(sequence,
         if is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            category = PROTEIN_CODING_CATEGORIES[f'low_complexity_{alphabet}']
+            category = LOW_COMPLEXITY_CATEGORIES[alphabet]
             return np.nan, n_kmers, category
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
@@ -544,27 +542,32 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
 
 
 def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
-                            peptide_ksize, jaccard_threshold,
-                            groupby='filename'):
-    coding_per_read_histogram_for_json, \
-        coding_per_read_histogram_percentages_for_json = \
+                            peptide_ksize, jaccard_threshold):
+    translation_frame_counts, translation_frame_percentages = \
             get_n_translated_frames_per_read(
-                coding_scores, groupby)
+                coding_scores)
 
     files = coding_scores.filename.unique().tolist()
 
     classification_percentages, classification_value_counts = \
-        get_n_per_coding_classification(coding_scores, groupby)
+        get_n_per_coding_classification(coding_scores, molecule)
 
     # Get Jaccard distributions, count, min, max, mean, stddev, median
     jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
         .to_dict()
     summary = assemble_summary_dict(
         bloom_filter_filename, classification_percentages,
-        classification_value_counts, coding_per_read_histogram_for_json,
-        coding_per_read_histogram_percentages_for_json, files, jaccard_info,
+        classification_value_counts, translation_frame_counts,
+        translation_frame_percentages, files, jaccard_info,
         jaccard_threshold, molecule, peptide_ksize)
     return summary
+
+
+def make_empty_coding_categories(molecule):
+    coding_categories = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
+    molecule_low_complexity_key = LOW_COMPLEXITY_CATEGORIES[molecule]
+    coding_categories[molecule_low_complexity_key] = 0
+    return coding_categories
 
 
 def assemble_summary_dict(bloom_filter, classification_percentages,
@@ -592,44 +595,44 @@ def assemble_summary_dict(bloom_filter, classification_percentages,
     return summary
 
 
-def get_n_per_coding_classification(coding_scores, groupby):
+def get_n_per_coding_classification(coding_scores, molecule):
     # Initialize to all zeros
-    classification_value_counts = EMPTY_CODING_CATEGORIES
+    classification_value_counts = make_empty_coding_categories(molecule)
     # Replace with observed sequences
     classification_value_counts.update(
-        coding_scores.groupby(groupby).classification.value_counts().to_dict())
+        coding_scores.classification.value_counts().to_dict())
     # Convert to series to make percentage calculation easy
     classifications = pd.Series(classification_value_counts)
 
     # Initialize to all zeros
-    classification_percentages = EMPTY_CODING_CATEGORIES
+    classification_percentages = make_empty_coding_categories(molecule)
     percentages_series = 100 * classifications / classifications.sum()
     # Replace with observations
     classification_percentages.update(percentages_series.to_dict())
     return classification_percentages, classification_value_counts
 
 
-def get_n_translated_frames_per_read(coding_scores, groupby='filename'):
+def get_n_translated_frames_per_read(coding_scores, col='n_translated_frames'):
     """Of all coding sequences, get number of possible translations"""
     predicted_coding = coding_scores.query('classification == "Coding"')
-    grouped = predicted_coding.groupby(groupby)
 
-    col = 'n_translated_frames'
+    n_coding_per_read = predicted_coding.read_id.value_counts()
+    n_coding_per_read.index = n_coding_per_read.index.astype(str)
 
-    n_coding_per_read = grouped.read_id.value_counts()
     n_coding_per_read.name = col
     n_coding_per_read_df = n_coding_per_read.to_frame()
 
-    n_translated_frames_grouped = n_coding_per_read_df.groupby('filename')
-
     # Number of reading frames per read, per filename
-    coding_per_read_histogram = n_translated_frames_grouped[col].value_counts()
+    coding_per_read_histogram = n_coding_per_read_df[col].value_counts()
+    index = coding_per_read_histogram.index.astype(str)
+    coding_per_read_histogram.index = 'Number of reads with ' + index + \
+                                      " putative protein-coding translations"
 
-    # per-filename counts
-    per_filename_counts = coding_per_read_histogram.groupby(level=0).sum()
+    # Total number of coding reads
+    total = coding_per_read_histogram.sum()
 
     coding_per_read_histogram_percentages = \
-        100 * coding_per_read_histogram / per_filename_counts
+        100 * coding_per_read_histogram / total
     histogram_for_json = \
         coding_per_read_histogram.to_dict()
     percentages_for_json = \

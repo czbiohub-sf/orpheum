@@ -1,3 +1,4 @@
+import itertools
 from math import ceil, log
 
 DNA_ALPHABET = "A", "C", "G", "T"
@@ -348,6 +349,10 @@ ALPHABET_ALIASES = {
     'sdm12': ('sdm12',),
     'hsdm17': ('hsdm17',),
 }
+
+ALIAS_TO_ALPHABET = dict(itertools.chain(
+    *[list(dict.fromkeys(aliases, canonical_name).items())
+      for canonical_name, aliases in ALPHABET_ALIASES.items()]))
 
 ALPHABET_SIZES = {'protein': 20,
                   'peptide': 20,
