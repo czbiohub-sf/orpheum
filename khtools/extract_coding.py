@@ -3,6 +3,7 @@ extract_coding.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+from collections import namedtuple
 import itertools
 import json
 import sys
@@ -68,6 +69,20 @@ PROTEIN_CODING_CATEGORIES = {
         'Read length was shorter than 3 * peptide k-mer size'
 }
 
+# Some mild object-orientation
+SingleTranslationScore = namedtuple("SingleTranslationScore",
+                                    ['fraction_kmers_in_peptide_db',
+                               'n_total_kmers'])
+LowComplexityScore = namedtuple("LowComplexityScore",
+                                ['is_low_complexity', 'n_total_kmers'])
+
+SingleReadScore = namedtuple(
+    "SingleReadScore",
+    ['max_fraction_kmers_in_peptide_db_across_six_frame_translations',
+     'max_n_kmers', 'special_case'])
+PercentagesCounts = namedtuple("PercentagesCounts", ['percentages', 'counts'])
+OutputFastasHandles = namedtuple('OutputFastasHandles',
+                                 ['fastas', 'file_handles'])
 
 def validate_jaccard(ctx, param, value):
     """Ensure Jaccard threshold is between 0 and 1"""
@@ -150,8 +165,7 @@ def score_single_translation(translation,
         click.echo(kmers_in_peptide_db, err=True)
 
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
-
-    return fraction_in_peptide_db, n_kmers
+    return SingleTranslationScore(fraction_in_peptide_db, n_kmers)
 
 
 def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
@@ -200,12 +214,12 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
             kmers = kmerize(sequence, ksize)
         except ValueError:
             # k-mer size is larger than sequence
-            return None, None
+            return LowComplexityScore(None, None)
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
     is_low_complexity = n_kmers <= min_kmer_entropy
-    return is_low_complexity, n_kmers
+    return LowComplexityScore(is_low_complexity, n_kmers)
 
 
 def score_single_read(sequence,
@@ -292,7 +306,7 @@ def score_single_read(sequence,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     if len(translations) == 0:
-        return np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons']
+        return SingleReadScore(np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons'])
 
     translations = {
         frame: translation
@@ -300,7 +314,7 @@ def score_single_read(sequence,
         if len(translation) > peptide_ksize
     }
     if len(translations) == 0:
-        return np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide']
+        return SingleReadScore(np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide'])
 
     for frame, translation in translations.items():
         # Convert back to string
@@ -316,7 +330,7 @@ def score_single_read(sequence,
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             category = LOW_COMPLEXITY_CATEGORIES[alphabet]
-            return np.nan, n_kmers, category
+            return SingleReadScore(np.nan, n_kmers, category)
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded,
@@ -343,7 +357,7 @@ def score_single_read(sequence,
 
     if max_fraction_in_peptide_db <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
-    return max_fraction_in_peptide_db, max_n_kmers, None
+    return SingleReadScore(max_fraction_in_peptide_db, max_n_kmers, None)
 
 
 def maybe_write_fasta(description, file_handle, sequence):
@@ -417,7 +431,7 @@ def maybe_score_single_read(description, fastas, file_handles,
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
     if is_fastp_low_complexity:
         n_kmers = np.nan
-        jaccard, n_kmers, special_case = too_short_or_low_complexity(
+        jaccard, n_kmers, special_case = too_short_or_low_complexity_nucleotide(
             description, fastas, n_kmers, sequence)
     else:
         jaccard, n_kmers, special_case = score_single_read(
@@ -435,10 +449,10 @@ def maybe_score_single_read(description, fastas, file_handles,
 
         if verbose > 1:
             click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
-    return jaccard, n_kmers, special_case
+    return SingleReadScore(jaccard, n_kmers, special_case)
 
 
-def too_short_or_low_complexity(description, fastas, n_kmers, sequence):
+def too_short_or_low_complexity_nucleotide(description, fastas, n_kmers, sequence):
     if n_kmers > 0:
         jaccard = np.nan
         special_case = "Low complexity nucleotide"
@@ -449,7 +463,7 @@ def too_short_or_low_complexity(description, fastas, n_kmers, sequence):
         n_kmers = np.nan
         special_case = 'Read length was shorter than 3 * peptide ' \
                        'k-mer size'
-    return jaccard, n_kmers, special_case
+    return SingleReadScore(jaccard, n_kmers, special_case)
 
 
 def maybe_close_files(file_handles):
@@ -484,7 +498,7 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
             file_handles[seqtype] = open_and_announce(fasta, seqtype)
         else:
             file_handles[seqtype] = None
-    return fastas, file_handles
+    return OutputFastasHandles(fastas, file_handles)
 
 
 def maybe_write_csv(coding_scores, csv):
@@ -546,7 +560,7 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
 
 def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
                             peptide_ksize, jaccard_threshold):
-    translation_frame_counts, translation_frame_percentages = \
+    translation_frame_percentages, translation_frame_counts= \
         get_n_translated_frames_per_read(
             coding_scores)
 
@@ -600,19 +614,19 @@ def assemble_summary_dict(bloom_filter, classification_percentages,
 
 def get_n_per_coding_classification(coding_scores, molecule):
     # Initialize to all zeros
-    classification_value_counts = make_empty_coding_categories(molecule)
+    counts = make_empty_coding_categories(molecule)
     # Replace with observed sequences
-    classification_value_counts.update(
+    counts.update(
         coding_scores.classification.value_counts().to_dict())
     # Convert to series to make percentage calculation easy
-    classifications = pd.Series(classification_value_counts)
+    classifications = pd.Series(counts)
 
     # Initialize to all zeros
-    classification_percentages = make_empty_coding_categories(molecule)
+    percentages = make_empty_coding_categories(molecule)
     percentages_series = 100 * classifications / classifications.sum()
     # Replace with observations
-    classification_percentages.update(percentages_series.to_dict())
-    return classification_percentages, classification_value_counts
+    percentages.update(percentages_series.to_dict())
+    return PercentagesCounts(percentages, counts)
 
 
 def get_n_translated_frames_per_read(coding_scores, col='n_translated_frames'):
@@ -640,7 +654,7 @@ def get_n_translated_frames_per_read(coding_scores, col='n_translated_frames'):
         coding_per_read_histogram.to_dict()
     percentages_for_json = \
         coding_per_read_histogram_percentages.to_dict()
-    return histogram_for_json, percentages_for_json
+    return PercentagesCounts(percentages_for_json, histogram_for_json)
 
 
 @click.command()

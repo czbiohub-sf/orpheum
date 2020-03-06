@@ -250,7 +250,7 @@ def test_get_n_translated_frames_per_read():
     df = pd.DataFrame(data)
     df['classification'] = "Coding"
 
-    histogram, percentages = get_n_translated_frames_per_read(df)
+    percentages, histogram = get_n_translated_frames_per_read(df)
     assert histogram == {
         'Number of reads with 1 putative protein-coding translations': 5,
         'Number of reads with 2 putative protein-coding translations': 2,
