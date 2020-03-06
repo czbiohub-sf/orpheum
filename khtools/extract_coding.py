@@ -14,8 +14,7 @@ import numpy as np
 import pandas as pd
 import screed
 from sourmash._minhash import hash_murmur
-from khtools.sequence_encodings import encode_peptide, \
-    UNIQUE_VALID_PEPTIDE_MOLECULES, ALPHABET_ALIASES
+from khtools.sequence_encodings import encode_peptide, ALPHABET_ALIASES
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
                                   maybe_save_peptide_bloom_filter,
@@ -51,7 +50,8 @@ SCORING_DF_COLUMNS = [
 LOW_COMPLEXITY_PER_ALIAS = [
     list(
         (alias,
-         f"Low complexity peptide in {alphabet} alphabet") for alias in aliases) for alphabet,
+         f"Low complexity peptide in {alphabet} alphabet")
+        for alias in aliases) for alphabet,
     aliases in ALPHABET_ALIASES.items()]
 LOW_COMPLEXITY_CATEGORIES = dict(
     list(itertools.chain(*LOW_COMPLEXITY_PER_ALIAS)))
