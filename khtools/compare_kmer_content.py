@@ -15,8 +15,10 @@ from sourmash.logging import notify
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
 from khtools.sequence_encodings import amino_keto_ize, \
-    weak_strong_ize, purine_pyrimidize, encode_peptide, VALID_PEPTIDE_MOLECULES
+    weak_strong_ize, purine_pyrimidize, encode_peptide
 
+MOLECULES_TO_COMPARE = 'peptide20', 'dayhoff6', 'botvinnik8', 'hp2', 'aa9', \
+                       'gbmr4', 'sdm12', 'hsdm17'
 
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
@@ -134,7 +136,7 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
 
 
 def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
-                         alphabets=VALID_PEPTIDE_MOLECULES):
+                         alphabets=MOLECULES_TO_COMPARE):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
@@ -417,7 +419,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                    "the provided fasta arguments, do fastas2 vs fastas "
                    "arguments")
 @click.option("--alphabets",
-              default=','.join(VALID_PEPTIDE_MOLECULES),
+              default=','.join(MOLECULES_TO_COMPARE),
               help="Which protein-coding alphabet to use for comparisons")
 @click.option("--ksize-min",
               default=2, type=click.INT,
