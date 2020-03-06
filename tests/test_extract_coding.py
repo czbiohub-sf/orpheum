@@ -149,6 +149,21 @@ def peptide_ksize(molecule):
     ksize = get_peptide_ksize(molecule)
     return ksize
 
+@pytest.fixture
+def single_alphabet_ksize_true_scores_path(data_folder):
+    true_scores_path = os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
+        "molecule-protein_ksize-7.csv")
+    return 'protein', 7, true_scores_path
+
+
+@pytest.fixture
+def single_alphabet_ksize_true_scores(single_alphabet_ksize_true_scores_path):
+    alphabet, ksize, true_scores_path = single_alphabet_ksize_true_scores_path
+    true_scores = pd.read_csv(true_scores_path)
+    return alphabet, ksize, true_scores
+
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
                      true_scores,
@@ -215,14 +230,19 @@ def test_maybe_write_json_summary_empty(peptide_bloom_filter_path, molecule,
     assert summary['jaccard_info']['count'] == 0
 
 
-def test_generate_coding_summary(reads, peptide_ksize, jaccard_threshold,
-                                 peptide_bloom_filter,
-                                 molecule, true_scores,
-                                 true_scores_path):
+def test_generate_coding_summary(reads, data_folder,
+                                 single_alphabet_ksize_true_scores):
     from khtools.extract_coding import generate_coding_summary
 
+    alphabet, ksize, true_scores = single_alphabet_ksize_true_scores
+    jaccard_threshold = 0.5
+
+    peptide_bloom_filter = os.path.join(
+        data_folder, 'bloom_filter_filename',
+        'Homo_sapiens.GRCh38.pep.subset.molecule-protein_ksize-7.bloomfilter.nodegraph')
+
     summary = generate_coding_summary(
-        true_scores, peptide_bloom_filter, molecule,
+        true_scores, peptide_bloom_filter, alphabet,
         peptide_ksize, jaccard_threshold)
     assert summary['input_files'] == [os.path.basename(reads)]
 
