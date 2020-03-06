@@ -1,3 +1,4 @@
+from collections import namedtuple
 import os
 import warnings
 
@@ -7,6 +8,12 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 import screed
+
+AlphabetKsizeScorepath = namedtuple("AlphabetKsizeScores",
+                                    ['alphabet', 'protein_ksize',
+                                     'score_path'])
+AlphabetKsizeScores = namedtuple("AlphabetKsizeScores",
+                                 ['alphabet', 'protein_ksize', 'scores'])
 
 
 @pytest.fixture
@@ -156,14 +163,14 @@ def single_alphabet_ksize_true_scores_path(data_folder):
         data_folder, "extract_coding",
         "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
         "molecule-protein_ksize-7.csv")
-    return 'protein', 7, true_scores_path
+    return AlphabetKsizeScorepath('protein', 7, true_scores_path)
 
 
 @pytest.fixture
 def single_alphabet_ksize_true_scores(single_alphabet_ksize_true_scores_path):
     alphabet, ksize, true_scores_path = single_alphabet_ksize_true_scores_path
     true_scores = pd.read_csv(true_scores_path)
-    return alphabet, ksize, true_scores
+    return AlphabetKsizeScores(alphabet, ksize, true_scores)
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
