@@ -15,8 +15,7 @@ from sourmash.logging import notify
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
 from khtools.sequence_encodings import amino_keto_ize, \
-    weak_strong_ize, purine_pyrimidize, dayhoffize, dayhoff_v2_ize, hpize, \
-    botvinnikize, VALID_PEPTIDE_MOLECULES
+    weak_strong_ize, purine_pyrimidize, encode_peptide, VALID_PEPTIDE_MOLECULES
 
 
 divergence_estimates = pd.Series({"Amniota": 312,
@@ -126,7 +125,7 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
 
 
 def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
-                         alphabets=MOLECULES_TO_COMPARE):
+                         alphabets=VALID_PEPTIDE_MOLECULES):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
@@ -352,11 +351,11 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
                 old_seqlist2 = seqlist2
                 seqlist2 = old_seqlist1
                 seqlist1 = old_seqlist2
-            n = len(seqlist1)
-            m = len(seqlist2)
-        else:
-            n = len(seqlist1)
-            m = len(seqlist1)
+    else:
+        seqlist2 = seqlist1
+
+    n = len(seqlist1)
+    m = len(seqlist2)
 
     n_comparisons = n * m
     t0 = time.time()
