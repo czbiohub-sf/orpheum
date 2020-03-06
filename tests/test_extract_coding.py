@@ -177,6 +177,11 @@ def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,
     # true string is contained in the output
     assert true_protein_coding_fasta_string in result.output
 
+    # Make sure "Writing extract_coding summary to" didn't get accidentally
+    # written to stdout instead of stderr
+    assert 'Writing extract_coding summary to' \
+           not in true_protein_coding_fasta_string
+
 
 def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
     from khtools.extract_coding import cli

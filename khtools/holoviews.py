@@ -83,7 +83,7 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
         Which log2 sketch sizes to look for similarity files for,
         default (10, 12, 14, 16)
     molecules : tuple of str
-        Which molecules to use, default both 'dna' and 'protein'
+        Which alphabets to use, default both 'dna' and 'protein'
     sketch_id_template : str
         String to use as a unique identifier for the sketch, e.g.
         'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
