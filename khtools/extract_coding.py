@@ -543,34 +543,36 @@ def maybe_write_json_summary(coding_scores, json_summary, filenames,
     return summary
 
 
-def generate_coding_summary(coding_scores, bloom_filter, molecule,
+def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
                             peptide_ksize, jaccard_threshold,
                             groupby='filename'):
-    n_coding_per_read = coding_scores.query(
-        'classification == "Coding"').groupby(groupby).read_id.value_counts()
-    coding_per_read_histogram = n_coding_per_read.groupby(level=-1).size()
-    coding_per_read_histogram_percentages = \
-        100 * coding_per_read_histogram / coding_per_read_histogram.sum()
+    coding_per_read_histogram_for_json, \
+        coding_per_read_histogram_percentages_for_json = \
+            get_n_translated_frames_per_read(
+                coding_scores, groupby)
+
     files = coding_scores.filename.unique().tolist()
 
-    # Initialize to all zeros
-    classification_value_counts = EMPTY_CODING_CATEGORIES
-    # Replace with observed sequences
-    classification_value_counts.update(
-        coding_scores.groupby(groupby).classification.value_counts().to_dict())
-
-    # Convert to series to make percentage calculation easy
-    classifications = pd.Series(classification_value_counts)
-
-    # Initialize to all zeros
-    classification_percentages = EMPTY_CODING_CATEGORIES
-    percentages_series = 100 * classifications / classifications.sum()
-    # Replace with observations
-    classification_percentages.update(percentages_series.to_dict())
+    classification_percentages, classification_value_counts = get_n_per_coding_classification(
+        coding_scores, groupby)
 
     # Get Jaccard distributions, count, min, max, mean, stddev, median
     jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
-        .astype(str).to_dict()
+        .to_dict()
+    summary = assemble_summary_dict(
+        bloom_filter_filename, classification_percentages,
+        classification_value_counts, coding_per_read_histogram_for_json,
+        coding_per_read_histogram_percentages_for_json, files, jaccard_info,
+        jaccard_threshold, molecule, peptide_ksize)
+    return summary
+
+
+def assemble_summary_dict(bloom_filter, classification_percentages,
+                          classification_value_counts,
+                          coding_per_read_histogram_for_json,
+                          coding_per_read_histogram_percentages_for_json,
+                          files, jaccard_info, jaccard_threshold, molecule,
+                          peptide_ksize):
     summary = {
         'input_files': files,
         'jaccard_info': jaccard_info,
@@ -579,15 +581,60 @@ def generate_coding_summary(coding_scores, bloom_filter, molecule,
         'classification_percentages':
             classification_percentages,
         'histogram_n_coding_frames_per_read':
-            coding_per_read_histogram.to_dict(),
+            coding_per_read_histogram_for_json,
         'histogram_n_coding_frames_per_read_percentages':
-            coding_per_read_histogram_percentages.to_dict(),
+            coding_per_read_histogram_percentages_for_json,
         'peptide_bloom_filter': bloom_filter,
         'peptide_alphabet': molecule,
         'peptide_ksize': peptide_ksize,
         'jaccard_threshold': jaccard_threshold,
     }
     return summary
+
+
+def get_n_per_coding_classification(coding_scores, groupby):
+    # Initialize to all zeros
+    classification_value_counts = EMPTY_CODING_CATEGORIES
+    # Replace with observed sequences
+    classification_value_counts.update(
+        coding_scores.groupby(groupby).classification.value_counts().to_dict())
+    # Convert to series to make percentage calculation easy
+    classifications = pd.Series(classification_value_counts)
+
+    # Initialize to all zeros
+    classification_percentages = EMPTY_CODING_CATEGORIES
+    percentages_series = 100 * classifications / classifications.sum()
+    # Replace with observations
+    classification_percentages.update(percentages_series.to_dict())
+    return classification_percentages, classification_value_counts
+
+
+def get_n_translated_frames_per_read(coding_scores, groupby='filename'):
+    """Of all coding sequences, get number of possible translations"""
+    predicted_coding = coding_scores.query('classification == "Coding"')
+    grouped = predicted_coding.groupby(groupby)
+
+    col = 'n_translated_frames'
+
+    n_coding_per_read = grouped.read_id.value_counts()
+    n_coding_per_read.name = col
+    n_coding_per_read_df = n_coding_per_read.to_frame()
+
+    n_translated_frames_grouped = n_coding_per_read_df.groupby('filename')
+
+    # Number of reading frames per read, per filename
+    coding_per_read_histogram = n_translated_frames_grouped[col].value_counts()
+
+    # per-filename counts
+    per_filename_counts = coding_per_read_histogram.groupby(level=0).sum()
+
+    coding_per_read_histogram_percentages = \
+        100 * coding_per_read_histogram / per_filename_counts
+    histogram_for_json = \
+        coding_per_read_histogram.to_dict()
+    percentages_for_json = \
+        coding_per_read_histogram_percentages.to_dict()
+    return histogram_for_json, percentages_for_json
 
 
 @click.command()
@@ -753,8 +800,11 @@ def cli(peptides,
     click.echo("\tDone!", err=True)
 
     if not peptides_are_bloom_filter:
-        maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
-                                        alphabet, save_peptide_bloom_filter)
+        peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
+            peptides, peptide_bloom_filter, alphabet,
+            save_peptide_bloom_filter)
+    else:
+        peptide_bloom_filter_filename = peptides
 
     dfs = []
     for reads_file in reads:
@@ -774,7 +824,7 @@ def cli(peptides,
 
     maybe_write_csv(coding_scores, csv)
     maybe_write_json_summary(coding_scores, json_summary, reads,
-                             bloom_filter=peptide_bloom_filter,
+                             bloom_filter=peptide_bloom_filter_filename,
                              molecule=alphabet, peptide_ksize=peptide_ksize,
                              jaccard_threshold=jaccard_threshold)
 
