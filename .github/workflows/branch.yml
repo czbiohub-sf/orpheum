@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       # PRs to the nf-core repo master branch are only ok if coming from the
