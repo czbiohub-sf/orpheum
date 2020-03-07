@@ -17,8 +17,8 @@ from sourmash.logging import notify
 from khtools.sequence_encodings import amino_keto_ize, \
     weak_strong_ize, purine_pyrimidize, encode_peptide
 
-MOLECULES_TO_COMPARE = 'peptide20', 'dayhoff6', 'botvinnik8', 'hp2', 'aa9', \
-                       'gbmr4', 'sdm12', 'hsdm17'
+MOLECULES_TO_COMPARE = 'peptide20', 'hsdm17', 'sdm12', 'aa9', 'botvinnik8', \
+                       'dayhoff6', 'gbmr4', 'hp2'
 
 divergence_estimates = pd.Series({"Amniota": 312,
                                   'Bilateria': 824,
@@ -84,10 +84,7 @@ def sanitize_id(value):
 
     Cribbed from https://stackoverflow.com/a/295466/1628971
     """
-    import re
     value = value.split()[0].replace('|', '__')
-    # value = re.sub('[^\w\s-]', '_', value).strip().lower()
-    # value = re.sub('[-\s]+', '-', value)
     return value
 
 
@@ -127,11 +124,11 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
             # If jaccard=0 at a small ksize, then all future jaccards will also
             # be 0 --> break and exit
             remaining_lines = [[id1, id2, k, 0] for k in
-                               range(ksize, max(ksizes)+1)]
+                               range(ksize, max(ksizes) + 1)]
             lines.extend(remaining_lines)
             break
     df = pd.DataFrame(lines, columns=COLUMNS)
-    df['molecule'] = molecule_name
+    df['alphabet'] = molecule_name
     return df
 
 
