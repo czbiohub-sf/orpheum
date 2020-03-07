@@ -33,4 +33,8 @@ jobs:
         shell: bash -l {0}
         run: |
           make coverage
-
+      - name: Send coverage to codecov.io
+        shell: bash -l {0}
+        run: |
+          pip install codecov
+          codecov
