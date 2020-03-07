@@ -21,14 +21,7 @@ jobs:
         - uses: actions/install-dependencies@v2
         - name: Install Dependencies with Python ${{ matrix.python_version }}
             run: |
-              conda create -n testenv --yes python=${matrix.python_version} pip
-              conda activate testenv
-              conda install -c bioconda -c conda-forge --yes --file conda_requirements.txt
-              pip install -r requirements.txt
-              pip install .
-        - name: Install Dependencies with Python ${{ matrix.python_version }}
-            run: |
-              conda create -n testenv --yes python=${matrix.python_version} pip
+              conda create -n testenv --yes python=${{ matrix.python_version }} pip
               conda activate testenv
               conda install -c bioconda -c conda-forge --yes --file conda_requirements.txt
               pip install -r requirements.txt
