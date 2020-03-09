@@ -21,10 +21,10 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
-      - name: Install Dependencies with Python ${{ matrix.python_version }}
+      - name: Install Dependencies with Python ${{ matrix.python-version }}
         shell: bash -l {0}
         run: |
-          conda env create -n testenv --file python=${{ matrix.python_version }}
+          conda env create -n testenv --file python=${{ matrix.python-version }}
           conda activate testenv
           conda install -c bioconda -c conda-forge --yes --file requirements_minimal.txt
           pip install .
