@@ -26,7 +26,6 @@ jobs:
         run: |
           conda env create -n testenv --file environment_no_versions.yml
           conda activate testenv
-#          conda install -c bioconda -c conda-forge --yes --file requirements_minimal.txt
           pip install .
       - name: Run tests with coverage
         shell: bash -l {0}
