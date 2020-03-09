@@ -24,8 +24,9 @@ jobs:
       - name: Install Dependencies with Python ${{ matrix.python-version }}
         shell: bash -l {0}
         run: |
-          conda env create -n testenv --file environment_no_versions.yml
+          conda create --yes -n testenv python=${{ matrix.python-version }} pip
           conda activate testenv
+          conda install --yes -c conda-forge -c bioconda requirements_minimal.txt
           pip install .
       - name: Run tests with coverage
         shell: bash -l {0}

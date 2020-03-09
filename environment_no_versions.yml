@@ -9,7 +9,6 @@ dependencies:
   - agate-excel
   - agate-sql
   - aplus
-  - appnope
   - arrow-cpp
   - astropy
   - atomicwrites
