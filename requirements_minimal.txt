@@ -1,0 +1,10 @@
+biopython
+pytest
+coverage
+click
+tqdm
+numpy
+pandas
+sourmash
+khmer>=3.0.0
+httmock
