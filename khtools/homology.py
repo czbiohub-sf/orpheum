@@ -83,12 +83,10 @@ class HomologyTable:
 
         id_to_species = pd.concat([id_to_species1, id_to_species2]).to_dict()
 
-        kmer_comparisons[
-            'species1'] = kmer_comparisons.id1.map(id_to_species)
-        kmer_comparisons[
-            'species2'] = kmer_comparisons.id2.map(id_to_species)
-        kmer_comparisons['species_species'] = kmer_comparisons.species1 + \
-                                              "_" + kmer_comparisons.species2
+        kmer_comparisons['species1'] = kmer_comparisons.id1.map(id_to_species)
+        kmer_comparisons['species2'] = kmer_comparisons.id2.map(id_to_species)
+        kmer_comparisons['species_species'] = \
+            kmer_comparisons.species1 + "_" + kmer_comparisons.species2
         cross_species = kmer_comparisons.query('species1 != species2')
         del kmer_comparisons
         return cross_species
