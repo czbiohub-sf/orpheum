@@ -9,6 +9,7 @@ dependencies:
   - coverage
   - click
   - ipykernel
+  - notebook
   - tqdm
   - numpy
   - sourmash

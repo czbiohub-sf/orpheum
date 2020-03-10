@@ -7,3 +7,5 @@ numpy
 pandas
 sourmash
 khmer
+notebook
+ipykernel
