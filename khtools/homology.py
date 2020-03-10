@@ -109,7 +109,7 @@ class HomologyTable:
         # orders of magnitude more non-homologous pairs than homologous pairs
         cross_species_metadata_subset_non_homologues = \
             cross_species_metadata.groupby(
-                ['id1', 'ksize', 'molecule'], as_index=False,
+                ['id1', 'ksize', 'alphabet'], as_index=False,
                 group_keys=False).apply(
                 lambda x: x.loc[x['is_homologue'].isnull()].sample(
                     10, random_state=random_state))

@@ -72,7 +72,7 @@ def test_kmer_comparison_table(nucleotide_seq1, nucleotide_seq2, ksizes):
                                  nucleotide_seq2,
                                  'nucleotide',
                                  ksizes=ksizes)
-    s = """id1,id2,ksize,jaccard,molecule
+    s = """id1,id2,ksize,jaccard,alphabet
 seq1,seq2,2,1.0,nucleotide
 seq1,seq2,3,0.8,nucleotide
 seq1,seq2,4,0.25,nucleotide
@@ -88,7 +88,7 @@ def test_compare_peptide_seqs(peptide_seq1, peptide_seq2, ksizes):
 
     test = compare_peptide_seqs(id_seq1, id_seq2, ksizes)
 
-    s = """id1,id2,ksize,jaccard,molecule
+    s = """id1,id2,ksize,jaccard,alphabet
 seq1,seq2,2,1.0,aa20
 seq1,seq2,3,0.8888888888888888,aa20
 seq1,seq2,4,0.75,aa20
@@ -125,7 +125,7 @@ def test_compare_nucleotide_seqs(nucleotide_seq1, nucleotide_seq2, ksizes):
 
     test = compare_nucleotide_seqs(id_seq1, id_seq2, ksizes)
 
-    s = """id1,id2,ksize,jaccard,molecule
+    s = """id1,id2,ksize,jaccard,alphabet
 seq1,seq2,2,1.0,purine_pyrimidine
 seq1,seq2,3,0.8,purine_pyrimidine
 seq1,seq2,4,0.25,purine_pyrimidine
