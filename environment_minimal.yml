@@ -1,0 +1,22 @@
+channels:
+  - bioconda
+  - conda-forge
+  - r
+  - defaults
+dependencies:
+  - biopython
+  - pytest
+  - coverage
+  - click
+  - tqdm
+  - numpy
+  - sourmash
+  - khmer
+  - httmock
+  - pandas
+  - pyarrow
+  - pip
+  - pip:
+    - khmer>=3
+
+
