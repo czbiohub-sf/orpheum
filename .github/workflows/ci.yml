@@ -26,7 +26,7 @@ jobs:
         run: |
           conda create --yes -n testenv python=${{ matrix.python-version }} pip
           conda activate testenv
-          conda install --yes -c conda-forge -c bioconda requirements_minimal.txt
+          conda install --yes -c conda-forge -c bioconda --file requirements_minimal.txt
           pip install .
       - name: Run tests with coverage
         shell: bash -l {0}
