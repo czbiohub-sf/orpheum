@@ -1,6 +1,4 @@
 biopython
-pytest
-coverage
 click
 tqdm
 numpy
