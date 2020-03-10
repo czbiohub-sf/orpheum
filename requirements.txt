@@ -4,5 +4,5 @@ tqdm
 numpy
 pandas
 sourmash
-khmer>=3.0.0
+khmer
 httmock
