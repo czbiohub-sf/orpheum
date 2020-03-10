@@ -8,3 +8,4 @@ pandas
 sourmash
 khmer
 httmock
+seaborn
