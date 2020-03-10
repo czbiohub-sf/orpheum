@@ -10,6 +10,7 @@ dependencies:
   - click
   - ipykernel
   - notebook
+  - joblib
   - tqdm
   - numpy
   - sourmash

@@ -9,3 +9,4 @@ sourmash
 khmer
 notebook
 ipykernel
+joblib
