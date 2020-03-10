@@ -10,3 +10,4 @@ khmer
 notebook
 ipykernel
 joblib
+seaborn
