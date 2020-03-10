@@ -17,6 +17,6 @@ dependencies:
   - pyarrow
   - pip
   - pip:
-    - khmer>=3
+    - khmer
 
 
