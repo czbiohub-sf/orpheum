@@ -5,8 +5,6 @@ channels:
   - defaults
 dependencies:
   - biopython
-  - pytest
-  - coverage
   - click
   - ipykernel
   - notebook
