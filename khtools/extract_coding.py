@@ -208,8 +208,7 @@ def get_peptide_db_meta(
             verbose=verbose)
         fraction_in_peptide_dbs[frame] = fraction_in_peptide_db
         kmers_in_peptide_dbs[frame] = n_kmers
-        encoded = encode_peptide(translation, molecule)
-        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(
+        is_kmer_low_complexity, _ = evaluate_is_kmer_low_complexity(
             encoded, peptide_ksize)
         kmer_capacities[frame] = is_kmer_low_complexity
 
@@ -315,7 +314,9 @@ def score_single_read(sequence,
 
     if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
-        return max(fraction_in_peptide_dbs.values()), max(kmers_in_peptide_dbs.values()), "Non-coding"
+        return max(
+            fraction_in_peptide_dbs.values()), max(
+            kmers_in_peptide_dbs.values()), "Non-coding"
 
     for frame, translation in translations.items():
         n_kmers = kmers_in_peptide_dbs[frame]
@@ -324,6 +325,7 @@ def score_single_read(sequence,
                               low_complexity_peptide_file_handle, translation)
             return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
                                     " encoding"
+
         fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
         if fraction_in_peptide_db > jaccard_threshold:
             if verbose:
