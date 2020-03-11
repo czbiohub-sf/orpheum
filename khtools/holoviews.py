@@ -27,7 +27,7 @@ COLOR_COLS = ['species', 'cell_label', ]
 
 PALETTES = dict(species='Set2', cell_label='tab20')
 
-SKETCH_ID_TEMPLATE = 'molecule-{molecule}_ksize-{ksize}_' \
+SKETCH_ID_TEMPLATE = 'alphabet-{alphabet}_ksize-{ksize}_' \
                      'log2sketchsize-{log2sketchsize}'
 
 N_NEIGHBORS = 5
@@ -68,9 +68,9 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
     Parameters
     ----------
     csv_template : str
-        format-string to insert molecule, ksize, and log2sketchsize values
+        format-string to insert alphabet, ksize, and log2sketchsize values
         into to get csv. e.g.:
-        'similarities_molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}.csv'
+        'similarities_molecule-{alphabet}_ksize-{ksize}_log2sketchsize-{log2sketchsize}.csv'
     metadata : pandas.DataFrame
         Sample-by-feature metadata encoding additional information about
         samples, such as species, cell type label, or tissue
@@ -86,7 +86,7 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
         Which alphabets to use, default both 'dna' and 'protein'
     sketch_id_template : str
         String to use as a unique identifier for the sketch, e.g.
-        'molecule-{molecule}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
+        'alphabet-{alphabet}_ksize-{ksize}_log2sketchsize-{log2sketchsize}'
     plaidplot : bool
         If true, make a clustered heatmap with the sides labeled with the
         color_cols
@@ -98,7 +98,7 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
     Returns
     -------
     graph_dict : dict of holoviews.Graph
-        (molecule, ksize, log2sketchsize) : holoviews.Graph mapping for all
+        (alphabet, ksize, log2sketchsize) : holoviews.Graph mapping for all
         similarity matrices found. To be used by 'draw_holoviews_graphs'
 
     """
@@ -127,7 +127,7 @@ def get_similarity_graphs(csv_template, metadata, figure_folder,
         if verbose:
             print(f"\tsimilarities.shape: {similarities.shape}")
 
-        title = f"molecule: {molecule}, ksize: {ksize}, " \
+        title = f"alphabet: {molecule}, ksize: {ksize}, " \
                 f"log2sketchsize: {log2sketchsize}"
 
         if plaidplot:
@@ -186,7 +186,7 @@ def draw_holoviews_graphs(graph_dict):
         opts.Nodes(**defaults))
 
     kdims = [
-        hv.Dimension(('molecule', "molecule"), default=molecule),
+        hv.Dimension(('alphabet', "alphabet"), default=molecule),
 
         hv.Dimension(('ksize', "k-mer size"), default=ksize),
         hv.Dimension(('log2_num_hashes', "$log_2$ num hashes"),

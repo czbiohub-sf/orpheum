@@ -3,6 +3,8 @@ extract_coding.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+from collections import namedtuple
+import itertools
 import json
 import sys
 import warnings
@@ -13,7 +15,7 @@ import numpy as np
 import pandas as pd
 import screed
 from sourmash._minhash import hash_murmur
-from khtools.sequence_encodings import encode_peptide
+from khtools.sequence_encodings import encode_peptide, ALPHABET_ALIASES
 from khtools.compare_kmer_content import kmerize
 from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
                                   maybe_save_peptide_bloom_filter,
@@ -30,21 +32,57 @@ DEFAULT_JACCARD_THRESHOLD = 0.5
 DEFAULT_HP_JACCARD_THRESHOLD = 0.8
 SEQTYPE_TO_ANNOUNCEMENT = {
     "noncoding_nucleotide":
-    "nucleotide sequence from reads WITHOUT matches to "
-    "protein-coding peptides",
+        "nucleotide sequence from reads WITHOUT matches to "
+        "protein-coding peptides",
     "coding_nucleotide":
-    "nucleotide sequence from reads WITH protein-coding translation"
-    " frame nucleotides",
+        "nucleotide sequence from reads WITH protein-coding translation"
+        " frame nucleotides",
     "low_complexity_nucleotide":
-    "nucleotide sequence from low complexity (low entropy) reads",
+        "nucleotide sequence from low complexity (low entropy) reads",
     "low_complexity_peptide":
-    "peptide sequence from low "
-    "complexity (low entropy) translated"
-    " reads"
+        "peptide sequence from low "
+        "complexity (low entropy) translated"
+        " reads"
 }
 SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
+
+LOW_COMPLEXITY_PER_ALIAS = [
+    list(
+        (alias,
+         f"Low complexity peptide in {alphabet} alphabet")
+        for alias in aliases) for alphabet,
+    aliases in ALPHABET_ALIASES.items()]
+LOW_COMPLEXITY_CATEGORIES = dict(
+    list(itertools.chain(*LOW_COMPLEXITY_PER_ALIAS)))
+
+
+PROTEIN_CODING_CATEGORIES = {
+    "too_short_peptide":
+        "All translations shorter than peptide k-mer size + 1",
+    "stop_codons": "All translation frames have stop codons",
+    "coding": "Coding",
+    'non_coding': 'Non-coding',
+    'low_complexity_nucleotide': "Low complexity nucleotide",
+    'too_short_nucleotide':
+        'Read length was shorter than 3 * peptide k-mer size'
+}
+
+# Some mild object-orientation
+SingleTranslationScore = namedtuple("SingleTranslationScore",
+                                    ['fraction_kmers_in_peptide_db',
+                                     'n_total_kmers'])
+LowComplexityScore = namedtuple("LowComplexityScore",
+                                ['is_low_complexity', 'n_total_kmers'])
+
+SingleReadScore = namedtuple(
+    "SingleReadScore",
+    ['max_fraction_kmers_in_peptide_db_across_six_frame_translations',
+     'max_n_kmers', 'special_case'])
+PercentagesCounts = namedtuple("PercentagesCounts", ['percentages', 'counts'])
+OutputFastasHandles = namedtuple('OutputFastasHandles',
+                                 ['fastas', 'file_handles'])
 
 
 def validate_jaccard(ctx, param, value):
@@ -128,8 +166,7 @@ def score_single_translation(translation,
         click.echo(kmers_in_peptide_db, err=True)
 
     fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
-
-    return fraction_in_peptide_db, n_kmers
+    return SingleTranslationScore(fraction_in_peptide_db, n_kmers)
 
 
 def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
@@ -178,16 +215,16 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
             kmers = kmerize(sequence, ksize)
         except ValueError:
             # k-mer size is larger than sequence
-            return None, None
+            return LowComplexityScore(None, None)
     n_kmers = len(kmers)
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
     is_low_complexity = n_kmers <= min_kmer_entropy
-    return is_low_complexity, n_kmers
+    return LowComplexityScore(is_low_complexity, n_kmers)
 
 
 def get_peptide_db_meta(
-        translations, peptide_bloom_filter, peptide_ksize, molecule, verbose):
+        translations, peptide_bloom_filter, peptide_ksize, alphabet, verbose):
     """Return list of fraction_in_peptide_dbs, kmers_in_peptide_dbs,
     kmer_complexities per translation
     """
@@ -198,13 +235,13 @@ def get_peptide_db_meta(
     for frame, translation in translations.items():
         # Convert back to string
         translation = str(translation)
-        encoded = encode_peptide(translation, molecule)
+        encoded = encode_peptide(translation, alphabet)
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
             encoded,
             peptide_bloom_filter,
             peptide_ksize,
-            molecule=molecule,
+            molecule=alphabet,
             verbose=verbose)
         fraction_in_peptide_dbs[frame] = fraction_in_peptide_db
         kmers_in_peptide_dbs[frame] = n_kmers
@@ -218,7 +255,7 @@ def get_peptide_db_meta(
 def score_single_read(sequence,
                       peptide_bloom_filter,
                       peptide_ksize,
-                      molecule='protein',
+                      alphabet='protein',
                       verbose=True,
                       jaccard_threshold=0.9,
                       description=None,
@@ -240,7 +277,7 @@ def score_single_read(sequence,
         Length of the peptide words in sequence. Must match the k-mer size used
         for the peptide_bloom_filter otherwise nothing will match, or only
         false positives will match.
-    molecule : str
+    alphabet : str
         One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
         encode the protein-coding space. Where "protein"|"peptide" is the
         original 20-letter amino acid encoding, Dayhoff ("dayhoff") is a lossy
@@ -258,7 +295,7 @@ def score_single_read(sequence,
         Whether or not to print a lot of stuff
     jaccard_threshold : float
         Value between 0 and 1. By default, the (empirically-chosen) "best"
-        threshold is chosen for each molecule. For "protein" and  "dayhoff",
+        threshold is chosen for each alphabet. For "protein" and  "dayhoff",
         the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
         so lossy it's more likely to match random sequence. These thresholds
         were determined empirically with a pre-chosen human RNA-seq dataset and
@@ -286,16 +323,23 @@ def score_single_read(sequence,
         why this sequence is or isn't protein-coding
     """
     # Convert to BioPython sequence object for translation
+    scoring_lines = []
     seq = Seq(sequence)
-
     # In case this is used from the Python API and the default threshold isn't
     # specified
-    jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
+    jaccard_threshold = get_jaccard_threshold(jaccard_threshold, alphabet)
 
     # Convert to BioPython sequence object for translation
     translations = six_frame_translation_no_stops(seq)
+
+    # For all translations, use the one with the maximum number of k-mers
+    # in the databse
+    max_n_kmers = 0
+    max_fraction_in_peptide_db = 0
     if len(translations) == 0:
-        return np.nan, np.nan, "No translation frames without stop codons"
+        scoring_lines.append(SingleReadScore(
+            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons']))
+        return scoring_lines
 
     translations = {
         frame: translation
@@ -303,39 +347,48 @@ def score_single_read(sequence,
         if len(translation) > peptide_ksize
     }
     if len(translations) == 0:
-        return np.nan, np.nan, "All translations shorter than peptide k-mer " \
-                               "size + 1"
+        scoring_lines.append(SingleReadScore(
+            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide']))
+        return scoring_lines
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
     (fraction_in_peptide_dbs,
      kmers_in_peptide_dbs,
      kmer_capacities) = get_peptide_db_meta(
-        translations, peptide_bloom_filter, peptide_ksize, molecule, verbose)
+        translations, peptide_bloom_filter, peptide_ksize, alphabet, verbose)
 
     if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
-        return max(
-            fraction_in_peptide_dbs.values()), max(
-            kmers_in_peptide_dbs.values()), "Non-coding"
+        scoring_lines.append(SingleReadScore(
+            max(fraction_in_peptide_dbs.values()),
+            max(kmers_in_peptide_dbs.values()),
+            PROTEIN_CODING_CATEGORIES['non_coding']))
+        return scoring_lines
 
     for frame, translation in translations.items():
         n_kmers = kmers_in_peptide_dbs[frame]
         if kmer_capacities[frame]:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            return np.nan, n_kmers, f"Low complexity peptide in {molecule}" \
-                                    " encoding"
-
-        fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
-        if fraction_in_peptide_db > jaccard_threshold:
-            if verbose:
-                click.echo(f"\t{translation} is above {jaccard_threshold}",
-                           err=True)
-            seqname = f'{description} translation_frame: {frame} ' \
-                      f'jaccard: {fraction_in_peptide_db}'
-            write_fasta(sys.stdout, seqname, translation)
-            maybe_write_fasta(seqname, coding_nucleotide_file_handle, sequence)
-            yield fraction_in_peptide_db, n_kmers, None
+            scoring_lines.append(SingleReadScore(
+                np.nan,
+                n_kmers,
+                LOW_COMPLEXITY_CATEGORIES[alphabet]))
+            return scoring_lines
+        else:
+            fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
+            if fraction_in_peptide_db > jaccard_threshold:
+                if verbose:
+                    click.echo(f"\t{translation} is above {jaccard_threshold}",
+                               err=True)
+                seqname = f'{description} translation_frame: {frame} ' \
+                          f'jaccard: {fraction_in_peptide_db}'
+                write_fasta(sys.stdout, seqname, translation)
+                maybe_write_fasta(
+                    seqname, coding_nucleotide_file_handle, sequence)
+                scoring_lines.append(
+                    SingleReadScore(fraction_in_peptide_db, n_kmers, None))
+    return scoring_lines
 
 
 def maybe_write_fasta(description, file_handle, sequence):
@@ -387,6 +440,9 @@ def score_reads(reads,
 
     # Concatenate all the lines into a single dataframe
     scoring_df = pd.DataFrame(scoring_lines, columns=SCORING_DF_COLUMNS)
+
+    # Add the reads that were used to generate these scores as a column
+    scoring_df['filename'] = reads
     return scoring_df
 
 
@@ -408,11 +464,11 @@ def maybe_score_single_read(description, fastas, file_handles,
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
     if is_fastp_low_complexity:
         n_kmers = np.nan
-        jaccard, n_kmers, special_case = too_short_or_low_complexity(
+        jaccard, n_kmers, special_case = check_nucleotide_content(
             description, fastas, n_kmers, sequence)
-        yield jaccard, n_kmers, special_case
+        scores = [SingleReadScore(jaccard, n_kmers, special_case)]
     else:
-        for jaccard, n_kmers, special_case in score_single_read(
+        scores = score_single_read(
             sequence,
             peptide_bloom_filter,
             peptide_ksize,
@@ -421,16 +477,23 @@ def maybe_score_single_read(description, fastas, file_handles,
             jaccard_threshold=jaccard_threshold,
             description=description,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
-            coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
+            coding_nucleotide_file_handle=file_handles[
+                'coding_nucleotide'],
             low_complexity_peptide_file_handle=file_handles[
-                'low_complexity_peptide']):
+                'low_complexity_peptide'])
+        for jaccard, n_kmers, special_case in scores:
             if verbose > 1:
                 click.echo(
                     f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
-            yield jaccard, n_kmers, special_case
+    return scores
 
 
-def too_short_or_low_complexity(description, fastas, n_kmers, sequence):
+def check_nucleotide_content(description, fastas, n_kmers, sequence):
+    """If passes, then this read can move on to checking protein translations
+
+    Evaluates if this reads' nucleotide content doesn't pass thresholds to be
+    checked for protein-coding-ness
+    """
     if n_kmers > 0:
         jaccard = np.nan
         special_case = "Low complexity nucleotide"
@@ -441,7 +504,7 @@ def too_short_or_low_complexity(description, fastas, n_kmers, sequence):
         n_kmers = np.nan
         special_case = 'Read length was shorter than 3 * peptide ' \
                        'k-mer size'
-    return jaccard, n_kmers, special_case
+    return SingleReadScore(jaccard, n_kmers, special_case)
 
 
 def maybe_close_files(file_handles):
@@ -476,7 +539,7 @@ def maybe_open_fastas(coding_nucleotide_fasta, low_complexity_nucleotide_fasta,
             file_handles[seqtype] = open_and_announce(fasta, seqtype)
         else:
             file_handles[seqtype] = None
-    return fastas, file_handles
+    return OutputFastasHandles(fastas, file_handles)
 
 
 def maybe_write_csv(coding_scores, csv):
@@ -485,38 +548,154 @@ def maybe_write_csv(coding_scores, csv):
         coding_scores.to_csv(csv, index=False)
 
 
-def maybe_write_json_summary(coding_scores, json_summary):
-    if json_summary:
-        n_coding_per_read = coding_scores.query(
-            'classification == "Coding"').read_id.value_counts()
-        coding_per_read_histogram = n_coding_per_read.value_counts()
-        coding_per_read_histogram_percentages = \
-            100 * coding_per_read_histogram / coding_per_read_histogram.sum()
+def maybe_write_json_summary(coding_scores, json_summary, filenames,
+                             bloom_filter, molecule, peptide_ksize,
+                             jaccard_threshold, groupby='filename'):
+    if not json_summary:
+        # Early exit if json_summary is not True
+        return
+    empty_coding_categories = make_empty_coding_categories(molecule)
 
-        files = coding_scores.filename.unique().tolist()
-
-        classification_value_counts = \
-            coding_scores.classification.value_counts()
-        classification_percentages = 100 * classification_value_counts / \
-            classification_value_counts.sum()
-
-        metadata = {
-            'input_files': files,
-            'jaccard_info':
-                coding_scores.jaccard_in_peptide_db.describe().to_dict(),
-            'classification_value_counts':
-                classification_value_counts.to_dict(),
-            'classification_percentages':
-                classification_percentages.to_dict(),
-            'histogram_n_coding_frames_per_read':
-                coding_per_read_histogram.to_dict(),
-            'histogram_n_coding_frames_per_read_percentages':
-                coding_per_read_histogram_percentages.to_dict()
+    if coding_scores.empty:
+        summary = {
+            'input_files': filenames,
+            'jaccard_info': {
+                "count": 0,
+                "mean": None,
+                "std": None,
+                "min": None,
+                "25%": None,
+                "50%": None,
+                "75%": None,
+                "max": None
+            },
+            'classification_value_counts': empty_coding_categories,
+            'classification_percentages': empty_coding_categories,
+            'histogram_n_coding_frames_per_read': {
+                "1": 0,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0,
+                "6": 0,
+            },
+            'histogram_n_coding_frames_per_read_percentages': {
+                "1": 0,
+                "2": 0,
+                "3": 0,
+                "4": 0,
+                "5": 0,
+                "6": 0,
+            },
         }
-        with open(json_summary, 'w') as f:
-            click.echo(f"Writing extract_coding summary to {json_summary}",
-                       err=True)
-            json.dump(metadata, fp=f)
+    else:
+        summary = generate_coding_summary(coding_scores, bloom_filter,
+                                          molecule, peptide_ksize,
+                                          jaccard_threshold)
+    with open(json_summary, 'w') as f:
+        click.echo(f"Writing extract_coding summary to {json_summary}",
+                   err=True)
+        json.dump(summary, fp=f)
+    return summary
+
+
+def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
+                            peptide_ksize, jaccard_threshold):
+    translation_frame_percentages, translation_frame_counts = \
+        get_n_translated_frames_per_read(
+            coding_scores)
+
+    files = coding_scores.filename.unique().tolist()
+
+    classification_percentages, classification_value_counts = \
+        get_n_per_coding_classification(coding_scores, molecule)
+
+    # Get Jaccard distributions, count, min, max, mean, stddev, median
+    jaccard_info = coding_scores.jaccard_in_peptide_db.describe() \
+        .to_dict()
+    summary = assemble_summary_dict(
+        bloom_filter_filename, classification_percentages,
+        classification_value_counts, translation_frame_counts,
+        translation_frame_percentages, files, jaccard_info,
+        jaccard_threshold, molecule, peptide_ksize)
+    return summary
+
+
+def make_empty_coding_categories(molecule):
+    coding_categories = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
+    molecule_low_complexity_key = LOW_COMPLEXITY_CATEGORIES[molecule]
+    coding_categories[molecule_low_complexity_key] = 0
+    return coding_categories
+
+
+def assemble_summary_dict(bloom_filter, classification_percentages,
+                          classification_value_counts,
+                          coding_per_read_histogram_for_json,
+                          coding_per_read_histogram_percentages_for_json,
+                          files, jaccard_info, jaccard_threshold, molecule,
+                          peptide_ksize):
+    summary = {
+        'input_files': files,
+        'jaccard_info': jaccard_info,
+        'classification_value_counts':
+            classification_value_counts,
+        'classification_percentages':
+            classification_percentages,
+        'histogram_n_coding_frames_per_read':
+            coding_per_read_histogram_for_json,
+        'histogram_n_coding_frames_per_read_percentages':
+            coding_per_read_histogram_percentages_for_json,
+        'peptide_bloom_filter': bloom_filter,
+        'peptide_alphabet': molecule,
+        'peptide_ksize': peptide_ksize,
+        'jaccard_threshold': jaccard_threshold,
+    }
+    return summary
+
+
+def get_n_per_coding_classification(coding_scores, molecule):
+    # Initialize to all zeros
+    counts = make_empty_coding_categories(molecule)
+    # Replace with observed sequences
+    counts.update(
+        coding_scores.classification.value_counts().to_dict())
+    # Convert to series to make percentage calculation easy
+    classifications = pd.Series(counts)
+
+    # Initialize to all zeros
+    percentages = make_empty_coding_categories(molecule)
+    percentages_series = 100 * classifications / classifications.sum()
+    # Replace with observations
+    percentages.update(percentages_series.to_dict())
+    return PercentagesCounts(percentages, counts)
+
+
+def get_n_translated_frames_per_read(coding_scores, col='n_translated_frames'):
+    """Of all coding sequences, get number of possible translations"""
+    predicted_coding = coding_scores.query('classification == "Coding"')
+
+    n_coding_per_read = predicted_coding.read_id.value_counts()
+    n_coding_per_read.index = n_coding_per_read.index.astype(str)
+
+    n_coding_per_read.name = col
+    n_coding_per_read_df = n_coding_per_read.to_frame()
+
+    # Number of reading frames per read, per filename
+    coding_per_read_histogram = n_coding_per_read_df[col].value_counts()
+    index = coding_per_read_histogram.index.astype(str)
+    coding_per_read_histogram.index = 'Number of reads with ' + index + \
+                                      " putative protein-coding translations"
+
+    # Total number of coding reads
+    total = coding_per_read_histogram.sum()
+
+    coding_per_read_histogram_percentages = \
+        100 * coding_per_read_histogram / total
+    histogram_for_json = \
+        coding_per_read_histogram.to_dict()
+    percentages_for_json = \
+        coding_per_read_histogram_percentages.to_dict()
+    return PercentagesCounts(percentages_for_json, histogram_for_json)
 
 
 @click.command()
@@ -525,16 +704,16 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option('--peptide-ksize',
               default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
-              " different alphabets are, "
-              f"protein: {DEFAULT_PROTEIN_KSIZE}"
-              f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
-              f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
+                   " different alphabets are, "
+                   f"protein: {DEFAULT_PROTEIN_KSIZE}"
+                   f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
+                   f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
 @click.option("--save-peptide-bloom-filter",
               is_flag=True,
               default=False,
               help="If specified, save the peptide bloom filter. "
-              "Default filename is the name of the fasta file plus a "
-              "suffix denoting the protein encoding and peptide ksize")
+                   "Default filename is the name of the fasta file plus a "
+                   "suffix denoting the protein encoding and peptide ksize")
 @click.option('--peptides-are-bloom-filter',
               is_flag=True,
               default=False,
@@ -542,20 +721,20 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option('--jaccard-threshold',
               default=None, type=click.FLOAT, callback=validate_jaccard,
               help="Minimum fraction of peptide k-mers from read in the "
-              "peptide database for this read to be called a "
-              f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
-              f" protein and dayhoff encodings, and "
-              f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
-              f"(hp) encoding")
-@click.option('--molecule',
+                   "peptide database for this read to be called a "
+                   f"'coding read'. Default: {DEFAULT_JACCARD_THRESHOLD} for"
+                   f" protein and dayhoff encodings, and "
+                   f"{DEFAULT_HP_JACCARD_THRESHOLD} for hydrophobic-polar "
+                   f"(hp) encoding")
+@click.option('--alphabet', '--encoding', '--molecule',
               default='protein',
               help="The type of amino acid encoding to use. Default is "
-              "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-              "used")
+                   "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+                   "used")
 @click.option('--csv',
               default=False,
               help='Name of csv file to write with all sequence reads and '
-              'their coding scores')
+                   'their coding scores')
 @click.option('--json-summary',
               default=False,
               help='Name of json file to write summarization of coding/'
@@ -567,10 +746,10 @@ def maybe_write_json_summary(coding_scores, json_summary):
               help="If specified, save the noncoding nucleotides to this file")
 @click.option("--low-complexity-nucleotide-fasta",
               help="If specified, save the low-complexity nucleotides to this"
-              " file")
+                   " file")
 @click.option("--low-complexity-peptide-fasta",
               help="If specified, save the low-complexity peptides to this "
-              "file")
+                   "file")
 @click.option('--tablesize', type=BASED_INT,
               default="1e8",
               help='Size of the bloom filter table to use')
@@ -580,8 +759,8 @@ def maybe_write_json_summary(coding_scores, json_summary):
 @click.option("--long-reads",
               is_flag=True,
               help="If set, then only considers reading frames starting with "
-              "start codon (ATG) and ending in a stop codon "
-              "(TAG, TAA, TGA)")
+                   "start codon (ATG) and ending in a stop codon "
+                   "(TAG, TAA, TGA)")
 @click.option("--verbose", is_flag=True, help="Print more output")
 def cli(peptides,
         reads,
@@ -589,7 +768,7 @@ def cli(peptides,
         save_peptide_bloom_filter=True,
         peptides_are_bloom_filter=False,
         jaccard_threshold=None,
-        molecule='protein',
+        alphabet='protein',
         csv=False,
         json_summary=False,
         coding_nucleotide_fasta=None,
@@ -626,12 +805,12 @@ def cli(peptides,
         Input ilfe of peptides is already a bloom filter
     jaccard_threshold : float
         Value between 0 and 1. By default, the (empirically-chosen) "best"
-        threshold is chosen for each molecule. For "protein" and  "dayhoff",
+        threshold is chosen for each alphabet. For "protein" and  "dayhoff",
         the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
         so lossy it's more likely to match random sequence. These thresholds
         were determined empirically with a pre-chosen human RNA-seq dataset and
         human peptides.
-    molecule : str
+    alphabet : str
         One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
         encode the protein-coding space. Where "protein"|"peptide" is the
         original 20-letter amino acid encoding, Dayhoff ("dayhoff") is a lossy
@@ -677,13 +856,16 @@ def cli(peptides,
         raise NotImplementedError("Not implemented! ... yet :)")
 
     peptide_bloom_filter = maybe_make_peptide_bloom_filter(
-        peptides, peptide_ksize, molecule, peptides_are_bloom_filter,
+        peptides, peptide_ksize, alphabet, peptides_are_bloom_filter,
         n_tables=n_tables, tablesize=tablesize)
     click.echo("\tDone!", err=True)
 
     if not peptides_are_bloom_filter:
-        maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter,
-                                        molecule, save_peptide_bloom_filter)
+        peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
+            peptides, peptide_bloom_filter, alphabet,
+            save_peptide_bloom_filter)
+    else:
+        peptide_bloom_filter_filename = peptides
 
     dfs = []
     for reads_file in reads:
@@ -691,19 +873,21 @@ def cli(peptides,
             reads_file,
             peptide_bloom_filter,
             jaccard_threshold=jaccard_threshold,
-            molecule=molecule,
+            molecule=alphabet,
             verbose=verbose,
             coding_nucleotide_fasta=coding_nucleotide_fasta,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
             low_complexity_peptide_fasta=low_complexity_peptide_fasta)
-        df['filename'] = reads_file
         dfs.append(df)
 
     coding_scores = pd.concat(dfs, ignore_index=True)
 
     maybe_write_csv(coding_scores, csv)
-    maybe_write_json_summary(coding_scores, json_summary)
+    maybe_write_json_summary(coding_scores, json_summary, reads,
+                             bloom_filter=peptide_bloom_filter_filename,
+                             molecule=alphabet, peptide_ksize=peptide_ksize,
+                             jaccard_threshold=jaccard_threshold)
 
 
 if __name__ == '__main__':

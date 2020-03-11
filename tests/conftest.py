@@ -37,7 +37,7 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
         return adversarial_peptide_fasta
 
 
-# Tie the molecule name to its default ksize to make sure we keep getting the
+# Tie the alphabet name to its default ksize to make sure we keep getting the
 # right sequences
 @pytest.fixture(params=[('protein', DEFAULT_PROTEIN_KSIZE),
                         ('dayhoff', DEFAULT_DAYHOFF_KSIZE),

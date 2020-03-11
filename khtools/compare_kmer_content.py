@@ -106,7 +106,7 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
         line = [id1, id2, ksize, jaccard]
         lines.append(line)
     df = pd.DataFrame(lines, columns=COLUMNS)
-    df['molecule'] = molecule_name
+    df['alphabet'] = molecule_name
     return df
 
 
