@@ -6,3 +6,6 @@ pandas
 sourmash
 khmer
 httmock
+seaborn
+scikit-learn
+networkx
