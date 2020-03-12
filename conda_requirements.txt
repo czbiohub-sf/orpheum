@@ -11,3 +11,4 @@ notebook
 ipykernel
 joblib
 seaborn
+networkx
