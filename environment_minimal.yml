@@ -15,6 +15,7 @@ dependencies:
   - pandas
   - pip
   - pyarrow
+  - scikit-learn
   - seaborn
   - sourmash
   - tqdm

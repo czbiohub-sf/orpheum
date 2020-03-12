@@ -11,4 +11,5 @@ notebook
 ipykernel
 joblib
 seaborn
+scikit-learn
 networkx
