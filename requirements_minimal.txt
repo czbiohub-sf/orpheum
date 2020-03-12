@@ -9,3 +9,5 @@ sourmash
 khmer
 httmock
 seaborn
+scikit-learn
+networks
