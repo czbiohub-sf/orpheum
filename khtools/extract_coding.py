@@ -333,8 +333,6 @@ def score_single_read(sequence,
 
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
-    max_n_kmers = 0
-    max_fraction_in_peptide_db = 0
     if len(translations) == 0:
         scoring_lines = [SingleReadScore(
             np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons'])]
