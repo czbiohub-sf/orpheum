@@ -149,7 +149,7 @@ def test_score_single_read(peptide_bloom_filter_single_read):
         sequence,
         peptide_bloom_filter_single_read,
         peptide_ksize=7,
-        molecule='protein',
+        alphabet='protein',
         verbose=True,
         jaccard_threshold=0.9,
         description=None,

@@ -323,7 +323,6 @@ def score_single_read(sequence,
         why this sequence is or isn't protein-coding
     """
     # Convert to BioPython sequence object for translation
-    scoring_lines = []
     seq = Seq(sequence)
     # In case this is used from the Python API and the default threshold isn't
     # specified
@@ -337,8 +336,8 @@ def score_single_read(sequence,
     max_n_kmers = 0
     max_fraction_in_peptide_db = 0
     if len(translations) == 0:
-        scoring_lines.append(SingleReadScore(
-            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons']))
+        scoring_lines = [SingleReadScore(
+            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['stop_codons'])]
         return scoring_lines
 
     translations = {
@@ -347,8 +346,8 @@ def score_single_read(sequence,
         if len(translation) > peptide_ksize
     }
     if len(translations) == 0:
-        scoring_lines.append(SingleReadScore(
-            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide']))
+        scoring_lines = [SingleReadScore(
+            np.nan, np.nan, PROTEIN_CODING_CATEGORIES['too_short_peptide'])]
         return scoring_lines
     # For all translations, use the one with the maximum number of k-mers
     # in the databse
@@ -359,12 +358,13 @@ def score_single_read(sequence,
 
     if max(fraction_in_peptide_dbs.values()) <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
-        scoring_lines.append(SingleReadScore(
+        scoring_lines = [SingleReadScore(
             max(fraction_in_peptide_dbs.values()),
             max(kmers_in_peptide_dbs.values()),
-            PROTEIN_CODING_CATEGORIES['non_coding']))
+            PROTEIN_CODING_CATEGORIES['non_coding'])]
         return scoring_lines
 
+    scoring_lines = []
     for frame, translation in translations.items():
         n_kmers = kmers_in_peptide_dbs[frame]
         if kmer_capacities[frame]:
@@ -429,7 +429,6 @@ def score_reads(reads,
                     molecule,
                     nucleotide_ksize, peptide_bloom_filter, peptide_ksize,
                     sequence, verbose):
-
                 line = get_coding_score_line(
                     description, jaccard,
                     jaccard_threshold, n_kmers,
