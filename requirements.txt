@@ -1,11 +1,11 @@
 biopython
 click
-tqdm
+httmock
+khmer
+networkx
 numpy
 pandas
-sourmash
-khmer
-httmock
-seaborn
 scikit-learn
-networkx
+seaborn
+sourmash
+tqdm
