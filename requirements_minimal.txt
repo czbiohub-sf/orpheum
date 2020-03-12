@@ -10,4 +10,4 @@ khmer
 httmock
 seaborn
 scikit-learn
-networks
+networkx
