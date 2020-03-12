@@ -6,19 +6,18 @@ channels:
 dependencies:
   - biopython
   - click
+  - httmock
   - ipykernel
-  - notebook
   - joblib
-  - tqdm
+  - networkx
+  - notebook
   - numpy
+  - pandas
+  - pip
+  - pyarrow
   - seaborn
   - sourmash
-  - khmer
-  - httmock
-  - pandas
-  - pyarrow
-  - pip
-  - networkx
+  - tqdm
   - pip:
     - khmer
 
