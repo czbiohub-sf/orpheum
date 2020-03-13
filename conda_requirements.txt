@@ -10,6 +10,7 @@ khmer
 notebook
 ipykernel
 joblib
+s3fs
 seaborn
 scikit-learn
 networkx

@@ -16,6 +16,7 @@ dependencies:
   - pip
   - pyarrow
   - scikit-learn
+  - s3fs
   - seaborn
   - sourmash
   - tqdm
