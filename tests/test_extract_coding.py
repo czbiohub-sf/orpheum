@@ -215,8 +215,8 @@ def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
         "--jaccard-threshold", "beyonce", peptide_fasta, reads
     ])
     assert result.exit_code == 2
-    error_message = 'Error: Invalid value for "--jaccard-threshold": beyonce' \
-                    ' is not a valid floating point value'
+    error_message = 'Error: Invalid value for \'--jaccard-threshold\':' \
+                    ' beyonce is not a valid floating point value'
     assert error_message in result.output
 
 
