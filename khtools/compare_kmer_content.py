@@ -196,8 +196,8 @@ def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype='protein'):
 
 
 def compare_args_unpack(args, ksizes, moltype):
-    """Helper function to unpack the arguments. Written to use in pool.imap as it
-    can only be given one argument."""
+    """Helper function to unpack the arguments. Written to use in pool.imap as
+    it can only be given one argument."""
     return compare_seqs(*args, ksizes=ksizes, moltype=moltype)
 
 
