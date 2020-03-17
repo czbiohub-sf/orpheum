@@ -45,7 +45,7 @@ def get_similarity_difference(
     similarity,
     groupby=(
         'ksize',
-        'molecule',
+        'alphabet',
         'num_hashes')):
     """Calculate difference in similarity from "true" aka maximum sampling
     similarity

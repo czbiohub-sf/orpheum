@@ -1,3 +1,4 @@
+import itertools
 from math import ceil, log
 
 DNA_ALPHABET = "A", "C", "G", "T"
@@ -327,15 +328,31 @@ VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
                           'gbmr4', \
                           'sdm12', 'hsdm17'
 
-VALID_PEPTIDE_MOLECULES = 'protein', 'peptide', \
-                          'protein20', 'peptide20', \
-                          'aa20', \
-                          'dayhoff', 'dayhoff6', \
-                          'botvinnik', 'botvinnik8', \
-                          'hydrophobic-polar', 'hp', 'hp2', \
-                          'aa9', \
-                          'gbmr4', \
-                          'sdm12', 'hsdm17'
+# Unambiguous, unique peptide alphabet names that include the alphabet size
+UNIQUE_VALID_PEPTIDE_MOLECULES = 'protein20', \
+                                 'dayhoff6', \
+                                 'botvinnik8', \
+                                 'hp2', \
+                                 'aa9', \
+                                 'gbmr4', \
+                                 'sdm12', \
+                                 'hsdm17'
+
+ALPHABET_ALIASES = {
+    # Canonical name: aliases
+    'protein20': ('peptide', 'protein', 'aa20', 'protein20'),
+    'dayhoff6': ('dayhoff', 'dayhoff6'),
+    'hp2': ('hydrophobic-polar', 'hp', 'hp2'),
+    'botvinnik8': ('botvinnik', 'botvinnik8'),
+    'aa9': ('aa9',),
+    'gbmr4': ('gbmr4',),
+    'sdm12': ('sdm12',),
+    'hsdm17': ('hsdm17',),
+}
+
+ALIAS_TO_ALPHABET = dict(itertools.chain(
+    *[list(dict.fromkeys(aliases, canonical_name).items())
+      for canonical_name, aliases in ALPHABET_ALIASES.items()]))
 
 ALPHABET_SIZES = {'protein': 20,
                   'peptide': 20,

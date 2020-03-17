@@ -13,7 +13,7 @@ from .extract_metadata import extract_cell_metadata
 
 keys_for_length = ('mins',)
 
-keys_for_values = ('ksize', 'molecule')
+keys_for_values = ('ksize', 'alphabet')
 
 keys_to_print = keys_for_length + keys_for_values
 
