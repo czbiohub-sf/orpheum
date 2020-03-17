@@ -78,9 +78,7 @@ COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
 
 
 def sanitize_id(value):
-    """
-    Normalizes string, converts to lowercase, removes non-alpha characters,
-    and converts spaces to hyphens.
+    """Takes first non-whitespace as ID, replaces pipes with underscore
 
     Cribbed from https://stackoverflow.com/a/295466/1628971
     """
@@ -210,21 +208,31 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
                             intermediate_csv=False,
                             intermediate_parquet=False,
                             no_final_concatenation=False):
-    """Returns similarities of all the combinations of signature at index in the
-    siglist with the rest of the indices starting at index + 1. Doesn't
-    redundantly calculate signatures with all the other indices prior to
-    index - 1
+    """Returns similarities of all combinations of seqlist1 seqlist2 at index
 
-    :param int index: generate masks from this image
-    :param boolean ignore_abundance
-        If the sketches are not abundance weighted, or ignore_abundance=True,
-        compute Jaccard similarity.
-
-        If the sketches are abundance weighted, calculate a distance metric
-        based on the cosine similarity.
-    :param boolean downsample by max_hash if True
-    :param siglist list of signatures
-
+    Parameters
+    ----------
+    index : int
+        generate masks from this image
+    seqlist1 : list
+        List of (id, seq) tuples
+    seqlist2 : list, optional (default None)
+        List of (id, seq) tuples. If None, then an all-by-all comparison of
+        sequences in seqlist1 is performed, as if seqlist1 was provided as
+        seqlist2.
+    ksizes : iterable of int
+        K-mer sizes to extract and compare the sequences on
+    moltype : str, optional (default "protein")
+        One of "protein" or "dna" -- for knowing which alphabets to use
+    verbose : boolean, default False
+    n_background : int, optional (default 100)
+        When paired_seqlist is True, how many random background sequences to
+        choose from seqlist2
+    paired_seqlists : bool, optional (default True)
+        If True, then seqlist1 and seqlist2 have sequences at the same index
+        that need to be compared, i.e. index 0 across the two. Best used when
+        seqlist1 and seqlist2 are lists of homologous protein sequences across
+        two different species
     intermediate_parquet : bool
         Write intermediate file of all comparisons at index i to an
         IO-efficient parquet format
@@ -232,9 +240,11 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         Write intermediate file of all comparisons at index i to an
         csv format
 
-    :return: list of similarities for the combinations of signature at index
-    with rest of the signatures from index+1
-
+    Returns
+    -------
+    comparison_df_list : list
+        list of pandas.DataFrame tables for the combinations of seqlist1 at
+        index, compared to seqlist2
     """
     startt = time.time()
     id1 = seqlist1[index][0]
@@ -292,9 +302,26 @@ def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
 
     Parameters
     ----------
-    index : object
+    index : int
+        Position in `seqlist1` and `seqlist2` to compare to one another, e.g.
+        when positions in `seqlist1` and `seqlist2` are known homologs of one
+        another
+    n_background: int
+        Since the pairs are assumed to be matched, we need a background of the
+        overall seq-seq similarity, so this assigns the number of random pairs
+        chosen in `seqlist2` to be compared to the sequence at `index`
+    seqlist2 : list
+        List of (id, seq) tuples
+    seqlist1 : list
+        List of (id, seq) tuples
+    verbose : bool
+        If True, then print the number of foreground and background pairs to
+        be created by this iterator
 
-
+    Returns
+    -------
+    seq_iterator : iterable
+        Generator of ((seq1, id1), (seq2, id2)) pairs
     """
     pairs_iterator = [(seqlist1[index], seqlist2[index])]
     random_seqlist2 = random.sample(seqlist2, n_background)
@@ -322,7 +349,9 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     seqlist1 : list
         List of (id, seq) tuples
     seqlist2 : list, optional
-        List of (id, seq) tuples
+        List of (id, seq) tuples. If None, then an all-by-all comparison of
+        sequences in seqlist1 is performed, as if seqlist1 was provided as
+        seqlist2.
     ksizes : iterable of int
         K-mer sizes to extract and compare the sequences on
     moltype : str
@@ -334,7 +363,9 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
         Number of jobs for multiprocessing
     paired_seqlists : bool
         If True, then seqlist1 and seqlist2 have sequences at the same index
-        that need to be compared, i.e. index 0 across the two
+        that need to be compared, i.e. index 0 across the two. Best used when
+        seqlist1 and seqlist2 are lists of homologous protein sequences across
+        two different species
     intermediate_parquet : bool
         Write intermediate file of all comparisons at index i to an
         IO-efficient parquet format
@@ -344,6 +375,16 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 
     Returns
     -------
+    kmer_comparisons : pandas.DataFrame
+        A table of seq1_id, seq2_id, ksize, alphabet encoding, jaccard
+        similarity
+
+    Raises
+    ------
+    ValueError:
+        If paired_seqlist=True and seqlist1 and seqlist2 are of different
+        lengths, as the comparison is done pairwise across both, as if the
+        'zip' operator was used.
 
     """
     if seqlist2 is not None:
