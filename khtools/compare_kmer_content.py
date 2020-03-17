@@ -281,7 +281,6 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
         end='\n')
 
     if intermediate_csv or intermediate_parquet:
-        # print(id1_sanitized)
         df = pd.concat(comparision_df_list)
         if intermediate_csv:
             df.to_csv(csv)
