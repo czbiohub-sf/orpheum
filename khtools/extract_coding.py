@@ -372,7 +372,6 @@ def score_single_read(sequence,
                 np.nan,
                 n_kmers,
                 LOW_COMPLEXITY_CATEGORIES[alphabet]))
-            return scoring_lines
         else:
             fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
             if fraction_in_peptide_db > jaccard_threshold:
