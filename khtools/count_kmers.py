@@ -58,7 +58,8 @@ def count_kmers_multiple_ksizes_encodings(
         filename,
         encodings=ENCODINGS_TO_COUNT,
         verbose=False,
-        unwanted_amino_acids=UNWANTED_AMINO_ACIDS):
+        unwanted_amino_acids=UNWANTED_AMINO_ACIDS,
+        pickle_file_prefix=None):
     encoding_ksize_n_kmers = {}
 
     for encoding in encodings:
@@ -72,13 +73,14 @@ def count_kmers_multiple_ksizes_encodings(
             if verbose:
                 print(f'\t\tn_kmers: {n_kmers}')
             encoding_ksize_n_kmers[(encoding, ksize)] = n_kmers
-
+            maybe_pickle_kmers(pickle_file_prefix, all_kmers, encoding, ksize)
             del all_kmers
 
     return encoding_ksize_n_kmers
 
 
-def maybe_pickle_kmers(encoding, ksize):
-    pickle_file = f'{pickle_folder}/Homo_sapiens.GRCh38.pep.all__kmers__molecule-{encoding}_ksize-{ksize}.pickle'
-    with open(filename, 'wb') as f:
-        pickle.dump(all_kmers, f)
+def maybe_pickle_kmers(pickle_file_prefix, all_kmers, encoding, ksize):
+    if pickle_file_prefix is not None:
+        pickle_file = f'{pickle_file_prefix}__molecule-{encoding}_ksize-{ksize}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(all_kmers, f)
