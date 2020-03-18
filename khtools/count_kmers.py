@@ -23,7 +23,7 @@ def count_kmers_single_alphabet_ksize(filename, ksize, alphabet,
     with screed.open(filename) as records:
         for record in tqdm(records):
             seq = record['sequence']
-            # No stop codons
+            # "*" = stop codon, and we don't want no stop codons
             if '*' in seq:
                 continue
 
