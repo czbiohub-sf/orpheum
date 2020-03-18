@@ -7,7 +7,7 @@ ENCODINGS_TO_COUNT = 'hydrophobic-polar', 'dayhoff', 'protein'
 # U = Selenocystine: https://en.wikipedia.org/wiki/Selenocysteine
 # X = Unknown
 UNWANTED_AMINO_ACIDS = "U", "X"
-
+STOP_CODON = "*"
 
 def remove_unwanted_kmers(kmers, unwanted):
     return {kmer for kmer in kmers if all(x not in kmer for x in unwanted)}
@@ -24,7 +24,7 @@ def count_kmers_single_alphabet_ksize(filename, ksize, alphabet,
         for record in tqdm(records):
             seq = record['sequence']
             # "*" = stop codon, and we don't want no stop codons
-            if '*' in seq:
+            if STOP_CODON in seq:
                 continue
 
             if "X" in seq:
