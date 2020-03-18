@@ -1,0 +1,26 @@
+channels:
+  - bioconda
+  - conda-forge
+  - r
+  - defaults
+dependencies:
+  - biopython
+  - click
+  - httmock
+  - ipykernel
+  - joblib
+  - networkx
+  - notebook
+  - numpy
+  - pandas
+  - pip
+  - pyarrow
+  - scikit-learn
+  - s3fs
+  - seaborn
+  - sourmash
+  - tqdm
+  - pip:
+    - khmer
+
+
