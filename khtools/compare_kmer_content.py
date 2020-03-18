@@ -1,3 +1,4 @@
+from collections import Counter
 from functools import partial
 import itertools
 import multiprocessing
@@ -88,21 +89,21 @@ def sanitize_id(value):
 
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
-    return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
+    return Counter(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
 
 
 def jaccardize(set1, set2):
-    """Compute jaccard index of two sets"""
+    """Compute jaccard index of two sets or collections.Counter objects"""
     denominator = min(len(set1), len(set2))
     if denominator > 0:
-        return len(set1.intersection(set2)) / denominator
+        return len(set1 & set2) / denominator
     else:
         return denominator
 
 
 def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
-    kmers1 = set(seq1[i:i + ksize] for i in range(len(seq1) - ksize + 1))
-    kmers2 = set(seq2[i:i + ksize] for i in range(len(seq2) - ksize + 1))
+    kmers1 = kmerize(seq1, ksize)
+    kmers2 = kmerize(seq2, ksize)
     jaccard = jaccardize(kmers1, kmers2)
     if debug:
         print("len(kmers1):", len(kmers1))

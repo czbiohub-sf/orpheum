@@ -1,3 +1,4 @@
+from collections import Counter
 from tqdm import tqdm
 
 from .sequence_encodings import encode_peptide
@@ -17,7 +18,7 @@ def remove_unwanted_kmers(kmers, unwanted):
 
 def count_kmers_single_alphabet_ksize(filename, ksize, alphabet,
                                       verbose=False):
-    all_kmers = set()
+    all_kmers = Counter()
 
     n_seqs_with_unknown = 0
     n_seqs_with_selenocysteine = 0
