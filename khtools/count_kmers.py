@@ -6,7 +6,9 @@ from .compare_kmer_content import kmerize
 ENCODINGS_TO_COUNT = 'hydrophobic-polar', 'dayhoff', 'protein'
 # U = Selenocystine: https://en.wikipedia.org/wiki/Selenocysteine
 # X = Unknown
-UNWANTED_AMINO_ACIDS = "U", "X"
+SELENOCYSTEINE = "U"
+UNKNOWN = "X"
+UNWANTED_AMINO_ACIDS = SELENOCYSTEINE, UNKNOWN
 STOP_CODON = "*"
 
 def remove_unwanted_kmers(kmers, unwanted):
@@ -17,8 +19,8 @@ def count_kmers_single_alphabet_ksize(filename, ksize, alphabet,
                                       verbose=False):
     all_kmers = set()
 
-    n_seqs_with_x = 0
-    n_seqs_with_u = 0
+    n_seqs_with_unknown = 0
+    n_seqs_with_selenocysteine = 0
 
     with screed.open(filename) as records:
         for record in tqdm(records):
@@ -27,10 +29,10 @@ def count_kmers_single_alphabet_ksize(filename, ksize, alphabet,
             if STOP_CODON in seq:
                 continue
 
-            if "X" in seq:
-                n_seqs_with_x += 1
-            if "U" in seq:
-                n_seqs_with_u += 1
+            if UNKNOWN in seq:
+                n_seqs_with_unknown += 1
+            if SELENOCYSTEINE in seq:
+                n_seqs_with_selenocysteine += 1
 
             encoded = encode_peptide(seq, alphabet)
 
