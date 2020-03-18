@@ -384,10 +384,11 @@ def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
         "--jaccard-threshold", "3.14", peptide_fasta, reads
     ])
     assert result.exit_code == 2
-    error_message = 'Error: Invalid value for "--jaccard-threshold": ' \
-                    '--jaccard-threshold needs to be a number between 0 ' \
-                    'and 1, but 3.14 was provided'
-    assert error_message in result.output
+    error_messages = ['Error: Invalid value for ', '--jaccard-threshold',
+                      ': --jaccard-threshold needs to be a number between 0 '
+                      'and 1, but 3.14 was provided']
+    for error_message in error_messages:
+        assert error_message in result.output
 
 
 def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
@@ -398,9 +399,10 @@ def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
         "--jaccard-threshold", "beyonce", peptide_fasta, reads
     ])
     assert result.exit_code == 2
-    error_message = 'Error: Invalid value for "--jaccard-threshold": beyonce' \
-                    ' is not a valid floating point value'
-    assert error_message in result.output
+    error_messages = ['Error: Invalid value for ', '--jaccard-threshold',
+                      ': beyonce is not a valid floating point value']
+    for error_message in error_messages:
+        assert error_message in result.output
 
 
 def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, molecule,
@@ -486,9 +488,9 @@ def test_cli_low_complexity_nucleotide(tmpdir, reads, peptide_fasta):
 
 
 def test_cli_low_complexity_peptide(
-    tmpdir,
-    reads,
-    peptide_fasta):
+        tmpdir,
+        reads,
+        peptide_fasta):
     from khtools.extract_coding import cli
 
     low_complexity_peptide_fasta = os.path.join(tmpdir,
