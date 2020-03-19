@@ -232,7 +232,8 @@ def score_single_read(sequence,
                       description=None,
                       noncoding_file_handle=None,
                       coding_nucleotide_file_handle=None,
-                      low_complexity_peptide_file_handle=None):
+                      low_complexity_peptide_file_handle=None,
+                      write_all_reading_frames=False):
     """Predict whether a nucleotide sequence could be protein-coding
 
     Parameters
@@ -351,7 +352,8 @@ def score_single_read(sequence,
         if max_fraction_in_peptide_db == fraction_in_peptide_db:
             # Update n_kmers if this is the best translation frame
             max_n_kmers = n_kmers
-        if fraction_in_peptide_db > jaccard_threshold:
+        above_threshold = fraction_in_peptide_db > jaccard_threshold
+        if above_threshold or write_all_reading_frames:
             if verbose:
                 click.echo(f"\t{translation} is above {jaccard_threshold}",
                            err=True)
@@ -379,7 +381,8 @@ def score_reads(reads,
                 coding_nucleotide_fasta=None,
                 noncoding_nucleotide_fasta=None,
                 low_complexity_nucleotide_fasta=None,
-                low_complexity_peptide_fasta=None):
+                low_complexity_peptide_fasta=None,
+                write_all_reading_frames=False):
     """Assign a coding score to each read. Where the magic happens."""
     jaccard_threshold = get_jaccard_threshold(jaccard_threshold, molecule)
     peptide_ksize = peptide_bloom_filter.ksize()
@@ -401,7 +404,8 @@ def score_reads(reads,
             jaccard, n_kmers, special_case = maybe_score_single_read(
                 description, fastas, file_handles, jaccard_threshold, molecule,
                 nucleotide_ksize, peptide_bloom_filter, peptide_ksize,
-                sequence, verbose)
+                sequence, verbose=verbose,
+                write_all_reading_frames=write_all_reading_frames)
 
             line = get_coding_score_line(description, jaccard,
                                          jaccard_threshold, n_kmers,
@@ -430,7 +434,7 @@ def get_jaccard_threshold(jaccard_threshold, molecule):
 def maybe_score_single_read(description, fastas, file_handles,
                             jaccard_threshold, molecule, nucleotide_ksize,
                             peptide_bloom_filter, peptide_ksize, sequence,
-                            verbose):
+                            verbose, write_all_reading_frames):
     """Check if read is low complexity/too short, otherwise score it"""
     # Check if nucleotide sequence is low complexity
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
@@ -450,7 +454,8 @@ def maybe_score_single_read(description, fastas, file_handles,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
             coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
             low_complexity_peptide_file_handle=file_handles[
-                'low_complexity_peptide'])
+                'low_complexity_peptide'],
+            write_all_reading_frames=write_all_reading_frames)
 
         if verbose > 1:
             click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
@@ -746,6 +751,7 @@ def cli(peptides,
         low_complexity_peptide_fasta=None,
         tablesize=DEFAULT_MAX_TABLESIZE, n_tables=DEFAULT_N_TABLES,
         long_reads=False,
+        write_all_reading_frames=False,
         verbose=False):
     """Writes coding peptides from reads to standard output
 
@@ -847,7 +853,8 @@ def cli(peptides,
             coding_nucleotide_fasta=coding_nucleotide_fasta,
             noncoding_nucleotide_fasta=noncoding_nucleotide_fasta,
             low_complexity_nucleotide_fasta=low_complexity_nucleotide_fasta,
-            low_complexity_peptide_fasta=low_complexity_peptide_fasta)
+            low_complexity_peptide_fasta=low_complexity_peptide_fasta,
+            write_all_reading_frames=write_all_reading_frames)
         dfs.append(df)
 
     coding_scores = pd.concat(dfs, ignore_index=True)
