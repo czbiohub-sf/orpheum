@@ -48,14 +48,14 @@ SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
 ]
 
-LOW_COMPLEXITY_PER_ALIAS = [
+PROTEIN_ALPHABET_TOO_FEW_KMERS_PER_ALIAS = [
     list(
         (alias,
-         f"Low complexity peptide in {alphabet} alphabet")
+         f"Too few k-mers in {alphabet} alphabet")
         for alias in aliases) for alphabet,
     aliases in ALPHABET_ALIASES.items()]
-LOW_COMPLEXITY_CATEGORIES = dict(
-    list(itertools.chain(*LOW_COMPLEXITY_PER_ALIAS)))
+TOO_FEW_KMERS_CATEGORIES = dict(
+    list(itertools.chain(*PROTEIN_ALPHABET_TOO_FEW_KMERS_PER_ALIAS)))
 
 
 PROTEIN_CODING_CATEGORIES = {
@@ -346,7 +346,7 @@ def score_single_read(sequence,
         if is_kmer_low_complexity:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
-            category = LOW_COMPLEXITY_CATEGORIES[alphabet]
+            category = TOO_FEW_KMERS_CATEGORIES[alphabet]
             return SingleReadScore(np.nan, n_kmers, category)
 
         fraction_in_peptide_db, n_kmers = score_single_translation(
@@ -608,7 +608,7 @@ def generate_coding_summary(coding_scores, bloom_filter_filename, molecule,
 
 def make_empty_coding_categories(molecule):
     coding_categories = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
-    molecule_low_complexity_key = LOW_COMPLEXITY_CATEGORIES[molecule]
+    molecule_low_complexity_key = TOO_FEW_KMERS_CATEGORIES[molecule]
     coding_categories[molecule_low_complexity_key] = 0
     return coding_categories
 
