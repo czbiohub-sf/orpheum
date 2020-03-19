@@ -462,33 +462,30 @@ def maybe_score_single_read(description, fastas, file_handles,
                             verbose, write_all_reading_frames):
     """Check if read is low complexity/too short, otherwise score it"""
     # Check if nucleotide sequence is low complexity
-    is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
-    if is_fastp_low_complexity:
-        n_kmers = np.nan
-        jaccard, n_kmers, special_case = check_valid_nucleotide_content(
-            description, fastas, n_kmers, sequence)
-    else:
-        jaccard, n_kmers, special_case = score_single_read(
-            sequence,
-            peptide_bloom_filter,
-            peptide_ksize,
-            molecule,
-            verbose,
-            jaccard_threshold=jaccard_threshold,
-            description=description,
-            noncoding_file_handle=file_handles['noncoding_nucleotide'],
-            low_complexity_nucleotide_handle=file_handles['low_complexity_nucleotide'],
-            coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
-            low_complexity_peptide_file_handle=file_handles[
-                'low_complexity_peptide'],
-            write_all_reading_frames=write_all_reading_frames)
 
-        if verbose > 1:
-            click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
+    noncoding_nucleotide = file_handles['low_complexity_nucleotide']
+    jaccard, n_kmers, special_case = score_single_read(
+        sequence,
+        peptide_bloom_filter,
+        peptide_ksize,
+        molecule,
+        verbose,
+        jaccard_threshold=jaccard_threshold,
+        description=description,
+        noncoding_file_handle=file_handles['noncoding_nucleotide'],
+        low_complexity_nucleotide_handle=noncoding_nucleotide,
+        coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
+        low_complexity_peptide_file_handle=file_handles[
+            'low_complexity_peptide'],
+        write_all_reading_frames=write_all_reading_frames)
+
+    if verbose > 1:
+        click.echo(f"Jaccard: {jaccard}, n_kmers = {n_kmers}", err=True)
     return SingleReadScore(jaccard, n_kmers, special_case)
 
 
-def check_invalid_nucleotide_content(description, low_complexity_nucleotide_handle,
+def check_invalid_nucleotide_content(description,
+                                     low_complexity_nucleotide_handle,
                                      peptide_ksize, sequence):
     """If passes, then this read can move on to checking protein translations
 
