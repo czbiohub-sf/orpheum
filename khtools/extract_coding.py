@@ -195,9 +195,9 @@ def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
     return complexity < complexity_threshold
 
 
-def compute_fastp_complexity(seq):
-    n_different_consecutively = sum(1 for i in range(len(seq) - 1)
-                                    if seq[i] != seq[i + 1])
+def compute_fastp_complexity(seq, step=1):
+    n_different_consecutively = sum(1 for i in range(len(seq) - step)
+                                    if seq[i] != seq[i + step])
     complexity = n_different_consecutively / len(seq)
     return complexity
 
