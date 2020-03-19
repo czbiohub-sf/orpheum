@@ -1,24 +1,24 @@
 import logging
 
 import pandas as pd
-import seaborn as sns
 from tqdm import tqdm
 
 from .compare_kmer_content import compare_all_seqs
 from .ensembl import get_sequence, get_rna_sequence_from_protein_id
-
 
 # Create a logger
 logging.basicConfig(format='%(name)s - %(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
-
 QUANTITATIVE_KEYWORDS = {'Gene-order conservation score', 'alignment coverage',
                          'dN with', 'dS with', '%id'}
 ORTHOLOGY_ORDER = ['No homology', 'ortholog_one2one', 'ortholog_one2many',
                    'ortholog_many2many']
-ORTHOLOGY_PALETTE = dict(zip(ORTHOLOGY_ORDER, ['grey'] + sns.color_palette()))
+
+# Colors from seaborn's default color_palette()
+ORTHOLOGY_PALETTE = dict(zip(ORTHOLOGY_ORDER, ['grey', '#1f77b4', '#ff7f0e',
+                                               '#2ca02c', ]))
 
 
 class HomologyTable:
@@ -83,12 +83,10 @@ class HomologyTable:
 
         id_to_species = pd.concat([id_to_species1, id_to_species2]).to_dict()
 
-        kmer_comparisons[
-            'species1'] = kmer_comparisons.id1.map(id_to_species)
-        kmer_comparisons[
-            'species2'] = kmer_comparisons.id2.map(id_to_species)
-        kmer_comparisons['species_species'] = kmer_comparisons.species1 + \
-            "_" + kmer_comparisons.species2
+        kmer_comparisons['species1'] = kmer_comparisons.id1.map(id_to_species)
+        kmer_comparisons['species2'] = kmer_comparisons.id2.map(id_to_species)
+        kmer_comparisons['species_species'] = \
+            kmer_comparisons.species1 + "_" + kmer_comparisons.species2
         cross_species = kmer_comparisons.query('species1 != species2')
         del kmer_comparisons
         return cross_species

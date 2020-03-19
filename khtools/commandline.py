@@ -10,6 +10,7 @@ from functools import partial
 import click
 
 # Within-module imports
+from khtools.compare_kmer_content import cli as compare_kmers
 from khtools.extract_coding import cli as extract_coding
 from khtools.bloom_filter import cli as bloom_filter
 
@@ -31,8 +32,9 @@ def cli():
     pass
 
 
-cli.add_command(extract_coding, name='extract-coding')
+cli.add_command(compare_kmers, name='compare-kmers')
 cli.add_command(bloom_filter, name='bloom-filter')
+cli.add_command(extract_coding, name='extract-coding')
 
 if __name__ == "__main__":
     cli()

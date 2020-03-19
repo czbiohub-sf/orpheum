@@ -1,7 +1,7 @@
 Kmer-hashing tools
 ================================
-
-[![image](https://img.shields.io/travis/czbiohub/kh-tools.svg)](https://travis-ci.com/czbiohub/kh-tools)
+![Tests](https://github.com/czbiohub/kh-tools/workflows/Pytest/badge.svg)
+![Linting](https://github.com/czbiohub/kh-tools/workflows/Lint%20with%20flake8/badge.svg)
 [![codecov](https://codecov.io/gh/czbiohub/kh-tools/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/kh-tools)
 
 What is khtools?

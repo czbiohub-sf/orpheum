@@ -1,16 +1,11 @@
 biopython
-pytest
-coverage
 click
 tqdm
 numpy
 pandas
 sourmash
 khmer
-notebook
-ipykernel
-joblib
-s3fs
+httmock
 seaborn
 scikit-learn
 networkx
