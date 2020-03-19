@@ -36,12 +36,25 @@ def low_complexity_seq():
            "CACACCCCCAACACCC"
 
 
-@pytest.fixture(params=['seq', 'low_complexity_seq'])
-def type_seq(request, seq, low_complexity_seq):
+@pytest.fixture
+def low_complexity_seq_step2():
+    return "ATATATATATATATATATATATATATATATATATATATATATATATATATATATATATAT"
+
+
+@pytest.fixture(params=['seq', 'low_complexity_seq',
+                        'low_complexity_seq_step2'])
+def type_seq(request, seq, low_complexity_seq, low_complexity_seq_step2):
     if request.param == 'seq':
         return request.param, seq
     elif request.param == 'low_complexity_seq':
         return request.param, low_complexity_seq
+    elif request.param == 'low_complexity_seq_step2':
+        return request.param, low_complexity_seq_step2
+
+
+@pytest.fixture(params=[1, 2])
+def fastp_complexity_step(request):
+    return request.param
 
 
 def test_three_frame_translation(seq):
@@ -55,15 +68,25 @@ def test_three_frame_translation(seq):
     assert test == true
 
 
-def test_compute_fastp_low_complexity(type_seq):
+def test_compute_fastp_low_complexity(type_seq, fastp_complexity_step):
     from khtools.extract_coding import compute_fastp_complexity
 
     seqtype, seq = type_seq
-    test = compute_fastp_complexity(seq)
-    if seqtype == 'seq':
-        assert test == 0.746268656716418
-    elif seqtype == 'low_complexity_seq':
-        assert test == 0.2631578947368421
+    test = compute_fastp_complexity(seq, step=fastp_complexity_step)
+    if fastp_complexity_step == 1:
+        if seqtype == 'seq':
+            assert test == 0.746268656716418
+        elif seqtype == 'low_complexity_seq':
+            assert test == 0.2631578947368421
+        elif seqtype == 'low_complexity_seq_step2':
+            assert test == 0.9833333333333333
+    elif fastp_complexity_step == 2:
+        if seqtype == 'seq':
+            assert test == 0.7164179104477612
+        elif seqtype == 'low_complexity_seq':
+            assert test == 0.21052631578947367
+        elif seqtype == 'low_complexity_seq_step2':
+            assert test == 0
 
 
 def test_evaluate_is_fastp_low_complexity(type_seq):
