@@ -108,10 +108,16 @@ def fastp_complexity_step(request):
 
 
 @pytest.fixture
-def uniprot_opisthokonta_bloom_filter(data_folder):
+def uniprot_opisthokonta_bloom_filter_path(data_folder):
     return os.path.join(
         data_folder, 'extract_coding',
         'uniprot-reviewed_yes+taxonomy_2759__molecule-protein.bloomfilter')
+
+
+@pytest.fixture
+def uniprot_opisthokonta_bloom_filter(uniprot_opisthokonta_bloom_filter_path):
+    from khtools.bloom_filter import load_nodegraph
+    return load_nodegraph(uniprot_opisthokonta_bloom_filter_path)
 
 
 def test_three_frame_translation(seq):
