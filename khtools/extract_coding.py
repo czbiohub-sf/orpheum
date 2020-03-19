@@ -368,8 +368,9 @@ def score_single_read(sequence,
             if verbose:
                 click.echo(f"\t{translation} is above {jaccard_threshold}",
                            err=True)
-            seqname = f'{description} translation_frame: {frame} ' \
-                      f'jaccard: {fraction_in_peptide_db}'
+            seqname = f'{description} translation_frame={frame} ' \
+                      f'jaccard={fraction_in_peptide_db} n_kmers={n_kmers} ' \
+                      f'translation_length={length}'
             write_fasta(sys.stdout, seqname, translation)
             maybe_write_fasta(seqname, coding_nucleotide_file_handle, sequence)
 
