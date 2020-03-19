@@ -169,7 +169,7 @@ def score_single_translation(translation,
     return SingleTranslationScore(fraction_in_peptide_db, n_kmers)
 
 
-def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
+def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.7, step=1):
     """Use fastp's definition of complexity
 
     By this definition, low complexity sequence is defined by consecutive runs
@@ -191,7 +191,7 @@ def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.3):
     is_low_complexity : bool
         Whether or not the sequence passes the complexity threshold
     """
-    complexity = compute_fastp_complexity(seq)
+    complexity = compute_fastp_complexity(seq, step=step)
     return complexity < complexity_threshold
 
 

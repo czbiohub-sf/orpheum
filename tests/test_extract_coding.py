@@ -89,18 +89,32 @@ def test_compute_fastp_low_complexity(type_seq, fastp_complexity_step):
             assert test == 0
 
 
-def test_evaluate_is_fastp_low_complexity(type_seq):
+def test_evaluate_is_fastp_low_complexity(type_seq, fastp_complexity_step):
     from khtools.extract_coding import evaluate_is_fastp_low_complexity
 
     seqtype, seq = type_seq
 
-    test = evaluate_is_fastp_low_complexity(seq)
-    if seqtype == 'seq':
-        # regular sequence is not low complexity
-        assert not test
-    elif seqtype == 'low_complexity_seq':
-        # low complexity sequence should evaluate to low complexity!
-        assert test
+    test = evaluate_is_fastp_low_complexity(seq, step=fastp_complexity_step)
+    if fastp_complexity_step == 1:
+        if seqtype == 'seq':
+            # regular sequence is not low complexity
+            assert not test
+        elif seqtype == 'low_complexity_seq':
+            # low complexity sequence should evaluate to low complexity!
+            assert test
+        elif seqtype == 'low_complexity_seq_step2':
+            # This sequence isn't low complexity when step=1
+            assert not test
+    if fastp_complexity_step == 2:
+        if seqtype == 'seq':
+            # regular sequence is not low complexity
+            assert not test
+        elif seqtype == 'low_complexity_seq':
+            # This sequence is low complexity pretty much no matter what
+            assert test
+        elif seqtype == 'low_complexity_seq_step2':
+            # Yes, this sequence is low complexity  when the stepsize is 2
+            assert test
 
 
 def test_three_frame_translation_no_stops(seq):
