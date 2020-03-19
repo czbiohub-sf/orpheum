@@ -41,6 +41,56 @@ def low_complexity_seq_step2():
     return "ATATATATATATATATATATATATATATATATATATATATATATATATATATATATATAT"
 
 
+@pytest.fixture
+def low_complexity_seq_in_peptid_space():
+    # Shouts to Colleen Stoyas and the Spinocerebellar Ataxia type 7 Patients
+    return "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG"
+
+
+@pytest.fixture
+def seq_too_short():
+    return 'GGAGAAGCCATCATAACTGCAGACC'
+
+
+@pytest.fixture
+def low_complexity_seq_step2():
+    return "ATATATATATATATATATATATATATATATATATATATATATATATATATATATATATAT"
+
+
+@pytest.fixture
+def coding_seq():
+    # Correct translation: SFAVHTHRENPAQPGAVTGSATV
+    # Gene: ASPDH in Macaque
+    return "GTAACAGTAGCAGAGCCGGTGACAGCGCCAGGCTGGGCTGGGTTCTCTCTGTGGGTGTGCACGGCAAAGCTG"
+
+
+@pytest.fixture
+def noncoding_seq():
+    return "GAACGCCGTGAGGGAGAGGAGAGAGAGGGGGGGAGAGGAGGGGAGCGGAGGGGAGAGGGGGGAGTGAGAA"
+
+
+@pytest.fixture
+def seq_all_stop_codons():
+    # All translation frames have stop codons
+    return 'TTAAGTTCTAGTCTGTGAGCACTTGTAGTTCAATAATCGTCATCTTCATCAGAGTCCATTACTTTTCTTCTGTTG'
+
+
+@pytest.fixture(params=['coding_seq', 'noncoding_seq', 'low_complexity_seq',
+                        'low_complexity_seq_step2', 'seq_all_stop_codons'])
+def seqs_to_score(request, low_complexity_seq, low_complexity_seq_step2,
+                  coding_seq, noncoding_seq, seq_all_stop_codons):
+    if request.param == 'coding_seq':
+        return request.param, coding_seq
+    elif request.param == 'noncoding_seq':
+        return request.param, noncoding_seq
+    elif request.param == 'low_complexity_seq':
+        return request.param, low_complexity_seq
+    elif request.param == 'low_complexity_seq_step2':
+        return request.param, low_complexity_seq_step2
+    elif request.param == 'seq_all_stop_codons':
+        return request.param, seq_all_stop_codons
+
+
 @pytest.fixture(params=['seq', 'low_complexity_seq',
                         'low_complexity_seq_step2'])
 def type_seq(request, seq, low_complexity_seq, low_complexity_seq_step2):
@@ -57,6 +107,13 @@ def fastp_complexity_step(request):
     return request.param
 
 
+@pytest.fixture
+def uniprot_opisthokonta_bloom_filter(data_folder):
+    return os.path.join(
+        data_folder, 'extract_coding',
+        'uniprot-reviewed_yes+taxonomy_2759__molecule-protein.bloomfilter')
+
+
 def test_three_frame_translation(seq):
     from khtools.extract_coding import three_frame_translation
 
@@ -66,6 +123,76 @@ def test_three_frame_translation(seq):
         'LA*Y*HQ*Y*ENRNITVNPVL'
     ]
     assert test == true
+
+@pytest.fixture
+def reads(data_folder):
+    return os.path.join(
+        data_folder,
+        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
+
+
+@pytest.fixture
+def empty_fasta(data_folder):
+    return os.path.join(
+        data_folder, 'empty_fasta.fasta')
+
+
+@pytest.fixture
+def true_scores_path(data_folder, molecule, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
+        f"subsampled_n22__molecule-{molecule}_ksize-"
+        f"{peptide_ksize}.csv")
+
+
+@pytest.fixture
+def true_scores(true_scores_path):
+    return pd.read_csv(true_scores_path)
+
+
+@pytest.fixture
+def true_protein_coding_fasta_path(data_folder):
+    return os.path.join(data_folder, "extract_coding",
+                        "true_protein_coding.fasta")
+
+
+@pytest.fixture
+def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
+    with open(true_protein_coding_fasta_path) as f:
+        return f.read()
+
+
+@pytest.fixture
+def jaccard_threshold(molecule):
+    from khtools.extract_coding import get_jaccard_threshold
+    threshold = get_jaccard_threshold(None, molecule)
+    return threshold
+
+
+@pytest.fixture
+def peptide_ksize(molecule):
+    from khtools.bloom_filter import get_peptide_ksize
+
+    ksize = get_peptide_ksize(molecule)
+    return ksize
+
+
+@pytest.fixture
+def single_alphabet_ksize_true_scores_path(data_folder):
+    true_scores_path = os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
+        "molecule-protein_ksize-7.csv")
+    return AlphabetKsizeScorepath('protein', 7, true_scores_path)
+
+
+@pytest.fixture
+def single_alphabet_ksize_true_scores(single_alphabet_ksize_true_scores_path):
+    alphabet, ksize, true_scores_path = single_alphabet_ksize_true_scores_path
+    true_scores = pd.read_csv(true_scores_path)
+    return AlphabetKsizeScores(alphabet, ksize, true_scores)
+
 
 
 def test_compute_fastp_low_complexity(type_seq, fastp_complexity_step):
@@ -140,74 +267,13 @@ def test_six_frame_translation_no_stops(seq):
     assert test == true
 
 
-@pytest.fixture
-def reads(data_folder):
-    return os.path.join(
-        data_folder,
-        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
 
+def test_score_single_read(seqs_to_score, uniprot_opisthokonta_bloom_filter):
+    from khtools.extract_coding import score_single_read
 
-@pytest.fixture
-def empty_fasta(data_folder):
-    return os.path.join(
-        data_folder, 'empty_fasta.fasta')
-
-
-@pytest.fixture
-def true_scores_path(data_folder, molecule, peptide_ksize):
-    return os.path.join(
-        data_folder, "extract_coding",
-        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
-        f"subsampled_n22__molecule-{molecule}_ksize-"
-        f"{peptide_ksize}.csv")
-
-
-@pytest.fixture
-def true_scores(true_scores_path):
-    return pd.read_csv(true_scores_path)
-
-
-@pytest.fixture
-def true_protein_coding_fasta_path(data_folder):
-    return os.path.join(data_folder, "extract_coding",
-                        "true_protein_coding.fasta")
-
-
-@pytest.fixture
-def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
-    with open(true_protein_coding_fasta_path) as f:
-        return f.read()
-
-
-@pytest.fixture
-def jaccard_threshold(molecule):
-    from khtools.extract_coding import get_jaccard_threshold
-    threshold = get_jaccard_threshold(None, molecule)
-    return threshold
-
-
-@pytest.fixture
-def peptide_ksize(molecule):
-    from khtools.bloom_filter import get_peptide_ksize
-
-    ksize = get_peptide_ksize(molecule)
-    return ksize
-
-
-@pytest.fixture
-def single_alphabet_ksize_true_scores_path(data_folder):
-    true_scores_path = os.path.join(
-        data_folder, "extract_coding",
-        "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
-        "molecule-protein_ksize-7.csv")
-    return AlphabetKsizeScorepath('protein', 7, true_scores_path)
-
-
-@pytest.fixture
-def single_alphabet_ksize_true_scores(single_alphabet_ksize_true_scores_path):
-    alphabet, ksize, true_scores_path = single_alphabet_ksize_true_scores_path
-    true_scores = pd.read_csv(true_scores_path)
-    return AlphabetKsizeScores(alphabet, ksize, true_scores)
+    seqtype, seq = seqs_to_score
+    score = score_single_read(seq, uniprot_opisthokonta_bloom_filter,
+                              peptide_ksize=7, alphabet='protein')
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
@@ -313,7 +379,7 @@ def test_get_n_translated_frames_per_read():
 
 def test_get_n_per_coding_classification(molecule):
     from khtools.extract_coding import get_n_per_coding_classification, \
-        LOW_COMPLEXITY_CATEGORIES
+        TOO_FEW_KMERS_CATEGORIES
     from khtools.sequence_encodings import ALIAS_TO_ALPHABET
 
     data = [
@@ -323,7 +389,7 @@ def test_get_n_per_coding_classification(molecule):
         ['read4', 'Non-coding'],
         ['read5', 'Low complexity nucleotide'],
         ['read6', 'Read length was shorter than 3 * peptide k-mer size'],
-        ['read7', LOW_COMPLEXITY_CATEGORIES[molecule]],
+        ['read7', TOO_FEW_KMERS_CATEGORIES[molecule]],
     ]
     df = pd.DataFrame(data, columns=['read_id', 'classification'])
 
