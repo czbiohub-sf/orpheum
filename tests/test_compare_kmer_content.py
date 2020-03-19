@@ -57,6 +57,15 @@ def test_kmerize(nucleotide_seq1, ksize):
     assert test == true
 
 
+def test_kmerize_with_position(nucleotide_seq1, ksize):
+    from khtools.compare_kmer_content import kmerize_with_position
+
+    test = kmerize_with_position(nucleotide_seq1, ksize)
+    true = {'ACA': [4], 'ATT': [1], 'GAT': [0], 'TAC': [3], 'TTA': [2]}
+    assert test == true
+
+
+
 def test_jaccardize(nucleotide_seq1):
     from khtools.compare_kmer_content import jaccardize
 

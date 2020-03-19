@@ -1,5 +1,6 @@
 from collections import namedtuple
 import os
+import re
 import warnings
 
 from Bio.Seq import Seq
@@ -42,7 +43,7 @@ def low_complexity_seq_step2():
 
 
 @pytest.fixture
-def low_complexity_seq_in_peptid_space():
+def low_complexity_seq_in_peptide_space():
     # Shouts to Colleen Stoyas and the Spinocerebellar Ataxia type 7 Patients
     return "CAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAGCAG"
 
@@ -58,10 +59,17 @@ def low_complexity_seq_step2():
 
 
 @pytest.fixture
-def coding_seq():
+def coding_seq1():
     # Correct translation: SFAVHTHRENPAQPGAVTGSATV
     # Gene: ASPDH in Macaque
     return "GTAACAGTAGCAGAGCCGGTGACAGCGCCAGGCTGGGCTGGGTTCTCTCTGTGGGTGTGCACGGCAAAGCTG"
+
+
+@pytest.fixture
+def coding_seq2():
+    # Correct translation: EEIAAGKCRRPAVKQFHDSKIK
+    # Gene: RPL16a in Macaque
+    return "ATTTGATCTTGGAGTCGTGGAACTGCTTGACAGCTGGCCGGCGGCACTTGCCAGCTGCAATCTCTTCC"
 
 
 @pytest.fixture
@@ -75,18 +83,24 @@ def seq_all_stop_codons():
     return 'TTAAGTTCTAGTCTGTGAGCACTTGTAGTTCAATAATCGTCATCTTCATCAGAGTCCATTACTTTTCTTCTGTTG'
 
 
-@pytest.fixture(params=['coding_seq', 'noncoding_seq', 'low_complexity_seq',
+@pytest.fixture(params=['coding_seq1', 'coding_seq2',
+                        'noncoding_seq', 'low_complexity_seq',
+                        'low_complexity_seq_in_peptide_space',
                         'low_complexity_seq_step2', 'seq_all_stop_codons'])
-def seqs_to_score(request, low_complexity_seq, low_complexity_seq_step2,
-                  coding_seq, noncoding_seq, seq_all_stop_codons):
-    if request.param == 'coding_seq':
-        return request.param, coding_seq
+def seq_to_score(request, low_complexity_seq, low_complexity_seq_step2,
+                 coding_seq1, coding_seq2, noncoding_seq, seq_all_stop_codons):
+    if request.param == 'coding_seq1':
+        return request.param, coding_seq1
+    if request.param == 'coding_seq2':
+        return request.param, coding_seq2
     elif request.param == 'noncoding_seq':
         return request.param, noncoding_seq
     elif request.param == 'low_complexity_seq':
         return request.param, low_complexity_seq
     elif request.param == 'low_complexity_seq_step2':
         return request.param, low_complexity_seq_step2
+    elif request.param == 'low_complexity_seq_in_peptide_space':
+        return request.param, low_complexity_seq_in_peptide_space
     elif request.param == 'seq_all_stop_codons':
         return request.param, seq_all_stop_codons
 
@@ -111,7 +125,7 @@ def fastp_complexity_step(request):
 def uniprot_opisthokonta_bloom_filter_path(data_folder):
     return os.path.join(
         data_folder, 'extract_coding',
-        'uniprot-reviewed_yes+taxonomy_2759__molecule-protein.bloomfilter')
+        'uniprot-reviewed_yes+taxonomy_2759.fasta.alphabet-protein_ksize-8.bloomfilter.nodegraph')
 
 
 @pytest.fixture
@@ -273,13 +287,45 @@ def test_six_frame_translation_no_stops(seq):
     assert test == true
 
 
-
-def test_score_single_read(seqs_to_score, uniprot_opisthokonta_bloom_filter):
+def test_score_single_read(capsys, seq_to_score,
+                           uniprot_opisthokonta_bloom_filter):
     from khtools.extract_coding import score_single_read
 
-    seqtype, seq = seqs_to_score
+    seqtype, seq = seq_to_score
     score = score_single_read(seq, uniprot_opisthokonta_bloom_filter,
-                              peptide_ksize=7, alphabet='protein')
+                              peptide_ksize=8, alphabet='protein',
+                              description=seqtype)
+    # --- Check fasta output --- #
+    captured = capsys.readouterr()
+    standard_output = captured.out
+    seqtypes_without_translations = ('noncoding_seq', 'low_complexity_seq',
+                                     'low_complexity_seq_step2',
+                                     'seq_all_stop_codons')
+    true_translations = []
+    if seqtype == 'coding_seq1':
+        true_translations = ['SFAVHTHRENPAQPGAVTGSATV']
+        category = 'Coding'
+    elif seqtype == 'coding_seq2':
+        true_translations = ['EEIAAGKCRRPAVKQFHDSKIK']
+        category = 'Coding'
+    elif seqtype in seqtypes_without_translations:
+        true_translations = []
+        # stdout should be empty
+        assert standard_output == ''
+        if seqtype == 'noncoding_seq':
+            category = 'Non-coding'
+        elif seqtype in ('low_complexity_seq', 'low_complexity_seq_step2'):
+            category = 'Non-coding'
+        elif seqtype == 'low_complexity_seq_in_peptide_space':
+            category = f"Too few k-mers in protein alphabet"
+
+    stdout_lines = standard_output.splitlines()
+    test_n_translations = sum(1 for line in stdout_lines if '>' in line)
+    assert test_n_translations == len(true_translations)
+    for translation in true_translations:
+        assert translation in standard_output
+
+    assert score.special_case == category
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,

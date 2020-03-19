@@ -149,7 +149,7 @@ def score_single_translation(translation,
                              molecule='protein',
                              verbose=True):
     encoded = encode_peptide(translation, molecule)
-    kmers = list(set(kmerize(str(encoded), peptide_ksize)))
+    kmers = kmerize(str(encoded), peptide_ksize)
     hashes = [hash_murmur(kmer) for kmer in kmers]
     n_kmers = len(kmers)
     n_kmers_in_peptide_db = sum(1 for h in hashes
@@ -169,7 +169,8 @@ def score_single_translation(translation,
     return SingleTranslationScore(fraction_in_peptide_db, n_kmers)
 
 
-def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.7, step=1):
+def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.7,
+                                     steps=[1, 2]):
     """Use fastp's definition of complexity
 
     By this definition, low complexity sequence is defined by consecutive runs
@@ -191,8 +192,11 @@ def evaluate_is_fastp_low_complexity(seq, complexity_threshold=0.7, step=1):
     is_low_complexity : bool
         Whether or not the sequence passes the complexity threshold
     """
-    complexity = compute_fastp_complexity(seq, step=step)
-    return complexity < complexity_threshold
+    for step in steps:
+        complexity = compute_fastp_complexity(seq, step=step)
+        if complexity < complexity_threshold:
+            return True
+    return False
 
 
 def compute_fastp_complexity(seq, step=1):
@@ -232,6 +236,7 @@ def score_single_read(sequence,
                       description=None,
                       noncoding_file_handle=None,
                       coding_nucleotide_file_handle=None,
+                      low_complexity_nucleotide_handle=None,
                       low_complexity_peptide_file_handle=None,
                       write_all_reading_frames=False,
                       min_length_ksize_multipler=3):
@@ -295,6 +300,11 @@ def score_single_read(sequence,
         Additional message to write in the output csv describing the reason
         why this sequence is or isn't protein-coding
     """
+    nucleotide_score = check_invalid_nucleotide_content(
+        description, low_complexity_nucleotide_handle, peptide_ksize, sequence)
+    if nucleotide_score.special_case is not None:
+        return nucleotide_score
+
     # Convert to BioPython sequence object for translation
     seq = Seq(sequence)
 
@@ -340,10 +350,10 @@ def score_single_read(sequence,
         # Maybe reencode to dayhoff/hp space
         encoded = encode_peptide(translation, alphabet)
 
-        is_kmer_low_complexity, n_kmers = evaluate_too_few_kmers(
+        too_few_kmers, n_kmers = evaluate_too_few_kmers(
             encoded, peptide_ksize)
 
-        if is_kmer_low_complexity:
+        if too_few_kmers:
             maybe_write_fasta(description + f" translation_frame: {frame}",
                               low_complexity_peptide_file_handle, translation)
             category = TOO_FEW_KMERS_CATEGORIES[alphabet]
@@ -376,7 +386,10 @@ def score_single_read(sequence,
 
     if max_fraction_in_peptide_db <= jaccard_threshold:
         maybe_write_fasta(description, noncoding_file_handle, sequence)
-    return SingleReadScore(max_fraction_in_peptide_db, max_n_kmers, None)
+        category = PROTEIN_CODING_CATEGORIES["non_coding"]
+    else:
+        category = PROTEIN_CODING_CATEGORIES["coding"]
+    return SingleReadScore(max_fraction_in_peptide_db, max_n_kmers, category)
 
 
 def maybe_write_fasta(description, file_handle, sequence):
@@ -452,7 +465,7 @@ def maybe_score_single_read(description, fastas, file_handles,
     is_fastp_low_complexity = evaluate_is_fastp_low_complexity(sequence)
     if is_fastp_low_complexity:
         n_kmers = np.nan
-        jaccard, n_kmers, special_case = check_nucleotide_content(
+        jaccard, n_kmers, special_case = check_valid_nucleotide_content(
             description, fastas, n_kmers, sequence)
     else:
         jaccard, n_kmers, special_case = score_single_read(
@@ -464,6 +477,7 @@ def maybe_score_single_read(description, fastas, file_handles,
             jaccard_threshold=jaccard_threshold,
             description=description,
             noncoding_file_handle=file_handles['noncoding_nucleotide'],
+            low_complexity_nucleotide_handle=file_handles['low_complexity_nucleotide'],
             coding_nucleotide_file_handle=file_handles['coding_nucleotide'],
             low_complexity_peptide_file_handle=file_handles[
                 'low_complexity_peptide'],
@@ -474,22 +488,29 @@ def maybe_score_single_read(description, fastas, file_handles,
     return SingleReadScore(jaccard, n_kmers, special_case)
 
 
-def check_nucleotide_content(description, fastas, n_kmers, sequence):
+def check_invalid_nucleotide_content(description, low_complexity_nucleotide_handle,
+                                     peptide_ksize, sequence):
     """If passes, then this read can move on to checking protein translations
 
     Evaluates if this reads' nucleotide content doesn't pass thresholds to be
     checked for protein-coding-ness
     """
-    if n_kmers > 0:
+    is_fastp_low_complexity = evaluate_is_fastp_low_complexity(
+        sequence, complexity_threshold=0.5)
+    if is_fastp_low_complexity:
         jaccard = np.nan
-        special_case = "Low complexity nucleotide"
-        maybe_write_fasta(description, fastas['low_complexity_nucleotide'],
+        n_kmers = np.nan
+        special_case = PROTEIN_CODING_CATEGORIES['low_complexity_nucleotide']
+        maybe_write_fasta(description, low_complexity_nucleotide_handle,
                           sequence)
+    elif len(sequence) < 3 * peptide_ksize:
+        jaccard = np.nan
+        n_kmers = np.nan
+        special_case = PROTEIN_CODING_CATEGORIES['too_short_nucleotide']
     else:
         jaccard = np.nan
         n_kmers = np.nan
-        special_case = 'Read length was shorter than 3 * peptide ' \
-                       'k-mer size'
+        special_case = None
     return SingleReadScore(jaccard, n_kmers, special_case)
 
 
