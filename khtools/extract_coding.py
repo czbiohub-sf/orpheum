@@ -322,7 +322,17 @@ def score_single_read(sequence,
             np.nan,
             PROTEIN_CODING_CATEGORIES['too_short_peptide'])
 
+    min_translation_length = peptide_ksize * 2
+
     for frame, translation in translations.items():
+        # Check translation length
+        length = len(translation)
+        if length < min_translation_length:
+            return SingleReadScore(
+                np.nan,
+                np.nan,
+                PROTEIN_CODING_CATEGORIES['too_short_peptide'])
+
         # Convert back to string
         translation = str(translation)
 
