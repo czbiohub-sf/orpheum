@@ -202,8 +202,8 @@ def compute_fastp_complexity(seq, step=1):
     return complexity
 
 
-def evaluate_is_kmer_low_complexity(sequence, ksize):
-    """Check if sequence is low complexity, i.e. mostly repetitive
+def evaluate_too_few_kmers(sequence, ksize, ksize_multipler=1.5):
+    """Check if sequence has too few k-mers to be complex
 
     By this definition, the sequence is not complex if its number of unique
     k-mers is smaller than half the number of expected k-mers
@@ -217,9 +217,9 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
             # k-mer size is larger than sequence
             return LowComplexityScore(None, None)
     n_kmers = len(kmers)
-    n_possible_kmers_on_sequence = len(sequence) - ksize + 1
-    min_kmer_entropy = n_possible_kmers_on_sequence / 2
-    is_low_complexity = n_kmers <= min_kmer_entropy
+    min_n_kmers = len(sequence) - (ksize * ksize_multipler)
+
+    is_low_complexity = n_kmers <= min_n_kmers
     return LowComplexityScore(is_low_complexity, n_kmers)
 
 
@@ -233,7 +233,8 @@ def score_single_read(sequence,
                       noncoding_file_handle=None,
                       coding_nucleotide_file_handle=None,
                       low_complexity_peptide_file_handle=None,
-                      write_all_reading_frames=False):
+                      write_all_reading_frames=False,
+                      min_length_ksize_multipler=3):
     """Predict whether a nucleotide sequence could be protein-coding
 
     Parameters
@@ -322,7 +323,7 @@ def score_single_read(sequence,
             np.nan,
             PROTEIN_CODING_CATEGORIES['too_short_peptide'])
 
-    min_translation_length = peptide_ksize * 2
+    min_translation_length = peptide_ksize * min_length_ksize_multipler
 
     for frame, translation in translations.items():
         # Check translation length
@@ -339,7 +340,7 @@ def score_single_read(sequence,
         # Maybe reencode to dayhoff/hp space
         encoded = encode_peptide(translation, alphabet)
 
-        is_kmer_low_complexity, n_kmers = evaluate_is_kmer_low_complexity(
+        is_kmer_low_complexity, n_kmers = evaluate_too_few_kmers(
             encoded, peptide_ksize)
 
         if is_kmer_low_complexity:
