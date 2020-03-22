@@ -66,7 +66,8 @@ PROTEIN_CODING_CATEGORIES = {
     'non_coding': 'Non-coding',
     'low_complexity_nucleotide': "Low complexity nucleotide",
     'too_short_nucleotide':
-        'Read length was shorter than 3 * peptide k-mer size'
+        'Read length was shorter than 3 * peptide k-mer size',
+    'nucleotide_has_n': "Nucleotide sequence contains ambiguous 'N' characters"
 }
 
 # Some mild object-orientation
@@ -490,22 +491,27 @@ def check_invalid_nucleotide_content(description,
     Evaluates if this reads' nucleotide content doesn't pass thresholds to be
     checked for protein-coding-ness
     """
-    is_fastp_low_complexity = evaluate_is_fastp_low_complexity(
-        sequence, complexity_threshold=0.5)
-    if is_fastp_low_complexity:
+    if "N" in sequence:
         jaccard = np.nan
         n_kmers = np.nan
-        special_case = PROTEIN_CODING_CATEGORIES['low_complexity_nucleotide']
-        maybe_write_fasta(description, low_complexity_nucleotide_handle,
-                          sequence)
-    elif len(sequence) < 3 * peptide_ksize:
-        jaccard = np.nan
-        n_kmers = np.nan
-        special_case = PROTEIN_CODING_CATEGORIES['too_short_nucleotide']
+        special_case = PROTEIN_CODING_CATEGORIES['nucleotide_has_n']
     else:
-        jaccard = np.nan
-        n_kmers = np.nan
-        special_case = None
+        is_fastp_low_complexity = evaluate_is_fastp_low_complexity(
+            sequence, complexity_threshold=0.5)
+        if is_fastp_low_complexity:
+            jaccard = np.nan
+            n_kmers = np.nan
+            special_case = PROTEIN_CODING_CATEGORIES['low_complexity_nucleotide']
+            maybe_write_fasta(description, low_complexity_nucleotide_handle,
+                              sequence)
+        elif len(sequence) < 3 * peptide_ksize:
+            jaccard = np.nan
+            n_kmers = np.nan
+            special_case = PROTEIN_CODING_CATEGORIES['too_short_nucleotide']
+        else:
+            jaccard = np.nan
+            n_kmers = np.nan
+            special_case = None
     return SingleReadScore(jaccard, n_kmers, special_case)
 
 
