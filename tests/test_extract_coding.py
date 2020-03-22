@@ -88,7 +88,8 @@ def seq_all_stop_codons():
                         'low_complexity_seq_in_peptide_space',
                         'low_complexity_seq_step2', 'seq_all_stop_codons'])
 def seq_to_score(request, low_complexity_seq, low_complexity_seq_step2,
-                 coding_seq1, coding_seq2, noncoding_seq, seq_all_stop_codons):
+                 coding_seq1, coding_seq2, low_complexity_seq_in_peptide_space,
+                 noncoding_seq, seq_all_stop_codons):
     if request.param == 'coding_seq1':
         return request.param, coding_seq1
     if request.param == 'coding_seq2':
