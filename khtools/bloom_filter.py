@@ -21,7 +21,8 @@ DEFAULT_DAYHOFF_KSIZE = 12
 DEFAULT_HP_KSIZE = 31
 
 
-def per_translation_false_positive_rate(n_kmers_in_translation, n_total_kmers=1e7,
+def per_translation_false_positive_rate(n_kmers_in_translation,
+                                        n_total_kmers=1e7,
                                         n_hash_functions=DEFAULT_N_TABLES,
                                         tablesize=DEFAULT_MAX_TABLESIZE):
     exponent = - n_hash_functions * n_total_kmers / tablesize
