@@ -429,22 +429,24 @@ def test_get_n_per_coding_classification(molecule):
     ]
     df = pd.DataFrame(data, columns=['read_id', 'classification'])
 
-    test_counts, test_percentages = get_n_per_coding_classification(df,
+    test_percentages, test_counts = get_n_per_coding_classification(df,
                                                                     molecule)
     canonical_molecule = ALIAS_TO_ALPHABET[molecule]
-    true_counts = {
+    true_percentages = {
         'All translations shorter than peptide k-mer size + 1': 14.285714285714286,
         'All translation frames have stop codons': 14.285714285714286,
         'Coding': 14.285714285714286, 'Non-coding': 14.285714285714286,
         'Low complexity nucleotide': 14.285714285714286,
         'Read length was shorter than 3 * peptide k-mer size': 14.285714285714286,
-        f'Low complexity peptide in {canonical_molecule} alphabet': 14.285714285714286}
-    true_percentages = {
+        f'Too few k-mers in {canonical_molecule} alphabet': 14.285714285714286}
+    true_counts = {
         'All translations shorter than peptide k-mer size + 1': 1,
-        'All translation frames have stop codons': 1, 'Coding': 1,
-        'Non-coding': 1, 'Low complexity nucleotide': 1,
+        'All translation frames have stop codons': 1,
+        'Coding': 1,
+        'Non-coding': 1,
+        'Low complexity nucleotide': 1,
         'Read length was shorter than 3 * peptide k-mer size': 1,
-        f'Low complexity peptide in {canonical_molecule} alphabet': 1}
+        f'Too few k-mers in {canonical_molecule} alphabet': 1}
     assert test_counts == true_counts
     assert test_percentages == true_percentages
 
