@@ -144,6 +144,7 @@ def test_three_frame_translation(seq):
     ]
     assert test == true
 
+
 @pytest.fixture
 def reads(data_folder):
     return os.path.join(
@@ -169,18 +170,6 @@ def true_scores_path(data_folder, molecule, peptide_ksize):
 @pytest.fixture
 def true_scores(true_scores_path):
     return pd.read_csv(true_scores_path)
-
-
-@pytest.fixture
-def true_protein_coding_fasta_path(data_folder):
-    return os.path.join(data_folder, "extract_coding",
-                        "true_protein_coding.fasta")
-
-
-@pytest.fixture
-def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
-    with open(true_protein_coding_fasta_path) as f:
-        return f.read()
 
 
 @pytest.fixture
