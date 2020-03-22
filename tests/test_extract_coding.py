@@ -204,7 +204,6 @@ def single_alphabet_ksize_true_scores(single_alphabet_ksize_true_scores_path):
     return AlphabetKsizeScores(alphabet, ksize, true_scores)
 
 
-
 def test_compute_fastp_low_complexity(type_seq, fastp_complexity_step):
     from khtools.extract_coding import compute_fastp_complexity
 
@@ -279,7 +278,11 @@ def test_score_single_read(capsys, seq_to_score,
     standard_output = captured.out
     seqtypes_without_translations = ('noncoding_seq', 'low_complexity_seq',
                                      'low_complexity_seq_step2',
+                                     'seq_all_stop_codons',
+                                     'low_complexity_seq_in_peptide_space',
                                      'seq_all_stop_codons')
+    low_complexity_nucleotide_seqs = ('noncoding_seq', 'low_complexity_seq',
+                                      'low_complexity_seq_step2')
     true_translations = []
     if seqtype == 'coding_seq1':
         true_translations = ['SFAVHTHRENPAQPGAVTGSATV']
@@ -291,10 +294,14 @@ def test_score_single_read(capsys, seq_to_score,
         true_translations = []
         # stdout should be empty
         assert standard_output == ''
-        if seqtype in ('noncoding_seq', 'low_complexity_seq', 'low_complexity_seq_step2'):
+        # Assign the coding detection category
+        if seqtype in low_complexity_nucleotide_seqs:
             category = 'Low complexity nucleotide'
         elif seqtype == 'low_complexity_seq_in_peptide_space':
-            category = f"Too few k-mers in protein alphabet"
+            category = "Too few k-mers in protein20 alphabet"
+        elif seqtype == 'seq_all_stop_codons':
+            category = 'All translation frames have stop codons'
+
 
     stdout_lines = standard_output.splitlines()
     test_n_translations = sum(1 for line in stdout_lines if '>' in line)
