@@ -66,6 +66,7 @@ def per_read_false_positive_coding_rate(read_length, peptide_ksize,
 
 
 def load_nodegraph(*args, **kwargs):
+    """Wrapper to load khmer-style bloom filter called a 'nodegraph'"""
     try:
         # khmer 2.1.1
         return khmer.load_nodegraph(*args, **kwargs)
@@ -175,7 +176,7 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
         click.echo(
             f"Creating peptide bloom filter with file: {peptides}\n"
-            f"Using ksize: {peptide_ksize} and molecule: {molecule} "
+            f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
             f"...",
             err=True)
         peptide_bloom_filter = make_peptide_bloom_filter(
@@ -193,13 +194,14 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
             filename = save_peptide_bloom_filter
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
-            suffix = f'.molecule-{molecule}_ksize-{ksize}.bloomfilter.' \
+            suffix = f'.alphabet-{molecule}_ksize-{ksize}.bloomfilter.' \
                      f'nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
         click.echo(f"Writing peptide bloom filter to {filename}", err=True)
         peptide_bloom_filter.save(filename)
         click.echo("\tDone!", err=True)
+        return filename
 
 
 @click.command()
@@ -211,22 +213,22 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               f"protein: {DEFAULT_PROTEIN_KSIZE}"
               f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
               f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
-@click.option('--molecule',
+@click.option('--alphabet', '--molecule',
               default='protein',
-              help="The type of amino acid encoding to use. Default is "
-              "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-              "used")
+              help="The type of amino acid alphabet/encoding to use. Default "
+                   "is 'protein', but 'dayhoff' or 'hydrophobic-polar' can "
+                   "be used")
 @click.option('--save-as',
               default=None,
               help='If provided, save peptide bloom filter as this filename. '
-              'Otherwise, add ksize and molecule name to input filename.')
+              'Otherwise, add ksize and alphabet name to input filename.')
 @click.option('--tablesize', type=BASED_INT,
               default="1e8",
               help='Size of the bloom filter table to use')
 @click.option('--n-tables', type=int,
               default=DEFAULT_N_TABLES,
               help='Size of the bloom filter table to use')
-def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
+def cli(peptides, peptide_ksize=None, alphabet='protein', save_as=None,
         tablesize=DEFAULT_MAX_TABLESIZE, n_tables=DEFAULT_N_TABLES):
     """Make a peptide bloom filter for your peptides
 
@@ -248,9 +250,9 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
 
     """
     # \b above prevents rewrapping of paragraph
-    peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
+    peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                     molecule,
+                                                     alphabet,
                                                      n_tables=n_tables,
                                                      tablesize=tablesize)
     click.echo("\tDone!", err=True)
@@ -259,11 +261,11 @@ def cli(peptides, peptide_ksize=None, molecule='protein', save_as=None,
     maybe_save_peptide_bloom_filter(
         peptides,
         peptide_bloom_filter,
-        molecule,
+        alphabet,
         save_peptide_bloom_filter=save_peptide_bloom_filter)
 
 
-def get_peptide_ksize(molecule, peptide_ksize):
+def get_peptide_ksize(molecule, peptide_ksize=None):
     if peptide_ksize is None:
         try:
             peptide_ksize = BEST_KSIZES[molecule]

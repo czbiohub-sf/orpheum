@@ -37,7 +37,7 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
         return adversarial_peptide_fasta
 
 
-# Tie the molecule name to its default ksize to make sure we keep getting the
+# Tie the alphabet name to its default ksize to make sure we keep getting the
 # right sequences
 @pytest.fixture(params=[('protein', DEFAULT_PROTEIN_KSIZE),
                         ('dayhoff', DEFAULT_DAYHOFF_KSIZE),
@@ -101,3 +101,15 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
                                                  tablesize=1e6)
         bloom_filter.save(peptide_bloom_filter_path)
         return bloom_filter
+
+
+@pytest.fixture
+def true_protein_coding_fasta_path(data_folder):
+    return os.path.join(data_folder, "extract_coding",
+                        "true_protein_coding.fasta")
+
+
+@pytest.fixture
+def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
+    with open(true_protein_coding_fasta_path) as f:
+        return f.read()

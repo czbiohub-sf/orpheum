@@ -29,8 +29,13 @@ setup(
     author="Olga Botvinnik",
     author_email='olga.botvinnik@czbiohub.org',
     url='https://github.com/czbiohub/khtools',
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*",
-                                    "tests.*", "test_*"]),
+    packages=find_packages(
+        exclude=[
+            "tests",
+            "*.tests",
+            "*.tests.*",
+            "tests.*",
+            "test_*"]),
     include_package_data=True,
     install_requires=requirements,
     license="MIT",
@@ -42,14 +47,11 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     entry_points={
-        'console_scripts': [
-            'khtools = khtools.commandline:cli'
-        ]
-    },
+        'console_scripts': ['khtools = khtools.commandline:cli']},
     test_suite='tests',
-    tests_require=test_requirements
-)
+    tests_require=test_requirements)
