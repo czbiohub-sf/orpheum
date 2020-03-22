@@ -239,7 +239,7 @@ def score_single_read(sequence,
                       low_complexity_nucleotide_handle=None,
                       low_complexity_peptide_file_handle=None,
                       write_all_reading_frames=False,
-                      min_length_ksize_multipler=3):
+                      min_translation_length=20):
     """Predict whether a nucleotide sequence could be protein-coding
 
     Parameters
@@ -332,8 +332,6 @@ def score_single_read(sequence,
             np.nan,
             np.nan,
             PROTEIN_CODING_CATEGORIES['too_short_peptide'])
-
-    min_translation_length = peptide_ksize * min_length_ksize_multipler
 
     for frame, translation in translations.items():
         # Check translation length
