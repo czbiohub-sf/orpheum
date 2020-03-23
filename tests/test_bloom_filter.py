@@ -3,6 +3,25 @@ import numpy as np
 import pytest
 
 
+def test_per_translation_false_positive_rate():
+    from khtools.bloom_filter import per_translation_false_positive_rate
+
+    n_kmers_in_translation = 14
+    n_total_kmers = 4e7
+    test = per_translation_false_positive_rate(n_kmers_in_translation,
+                                               n_total_kmers)
+    assert test == 3.275785921922898e-06
+
+
+def test_per_read_false_positive_coding_rate():
+    from khtools.bloom_filter import per_read_false_positive_coding_rate
+
+    read_length = 60
+    peptide_ksize = 7
+    test = per_read_false_positive_coding_rate(read_length, peptide_ksize)
+    assert test == 3.884682410293139e-05
+
+
 def test_make_peptide_bloom_filter(variable_peptide_fasta,
                                    molecule, peptide_ksize):
     from khtools.bloom_filter import make_peptide_bloom_filter
