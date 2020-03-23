@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import partial
 import itertools
 import multiprocessing
@@ -89,6 +90,16 @@ def sanitize_id(value):
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
     return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
+
+
+def kmerize_with_position(seq, ksize):
+    """Return the set of unique k-mers from the sequence"""
+    kmer_positions = defaultdict(list)
+
+    for i in range(len(seq) - ksize + 1):
+        kmer = seq[i:i + ksize]
+        kmer_positions[kmer].append(i)
+    return kmer_positions
 
 
 def jaccardize(set1, set2):

@@ -16,6 +16,10 @@ lint:
 	# E126 continuation line over-indented for hanging indent
 	# E127 continuation line over-indented for visual indent
 	flake8 --exclude docs,tests --ignore=E127,E126 khtools
+	# stop the build if there are Python syntax errors or undefined names
+    flake8 . --count --exclude docs,tests --select=E9,F63,F7,F82 --show-source --statistics
+    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    flake8 . --count --exclude docs,tests --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 conda_install:
 	conda install --file conda_requirements.txt

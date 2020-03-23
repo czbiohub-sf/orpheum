@@ -104,9 +104,9 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
 
 
 @pytest.fixture
-def true_protein_coding_fasta_path(data_folder):
+def true_protein_coding_fasta_path(data_folder, molecule):
     return os.path.join(data_folder, "extract_coding",
-                        "true_protein_coding.fasta")
+                        f"true_protein_coding_{molecule}.fasta")
 
 
 @pytest.fixture
