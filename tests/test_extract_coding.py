@@ -451,6 +451,7 @@ def test_get_n_per_coding_classification(molecule):
         ['read5', 'Low complexity nucleotide'],
         ['read6', 'Read length was shorter than 3 * peptide k-mer size'],
         ['read7', TOO_FEW_KMERS_CATEGORIES[molecule]],
+        ['read8', "Nucleotide sequence contains ambiguous 'N' characters"]
     ]
     df = pd.DataFrame(data, columns=['read_id', 'classification'])
 
@@ -458,12 +459,14 @@ def test_get_n_per_coding_classification(molecule):
                                                                     molecule)
     canonical_molecule = ALIAS_TO_ALPHABET[molecule]
     true_percentages = {
-        'All translations shorter than peptide k-mer size + 1': 14.285714285714286,
-        'All translation frames have stop codons': 14.285714285714286,
-        'Coding': 14.285714285714286, 'Non-coding': 14.285714285714286,
-        'Low complexity nucleotide': 14.285714285714286,
-        'Read length was shorter than 3 * peptide k-mer size': 14.285714285714286,
-        f'Too few k-mers in {canonical_molecule} alphabet': 14.285714285714286}
+        'All translations shorter than peptide k-mer size + 1': 12.5,
+        'All translation frames have stop codons': 12.5,
+        'Coding': 12.5, 'Non-coding': 12.5,
+        'Low complexity nucleotide': 12.5,
+        'Read length was shorter than 3 * peptide k-mer size': 12.5,
+        f'Too few k-mers in {canonical_molecule} alphabet': 12.5,
+        "Nucleotide sequence contains ambiguous 'N' characters": 12.5,
+    }
     true_counts = {
         'All translations shorter than peptide k-mer size + 1': 1,
         'All translation frames have stop codons': 1,
@@ -471,7 +474,9 @@ def test_get_n_per_coding_classification(molecule):
         'Non-coding': 1,
         'Low complexity nucleotide': 1,
         'Read length was shorter than 3 * peptide k-mer size': 1,
-        f'Too few k-mers in {canonical_molecule} alphabet': 1}
+        f'Too few k-mers in {canonical_molecule} alphabet': 1,
+        "Nucleotide sequence contains ambiguous 'N' characters": 1,
+    }
     assert test_counts == true_counts
     assert test_percentages == true_percentages
 
