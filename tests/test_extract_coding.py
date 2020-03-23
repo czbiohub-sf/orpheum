@@ -289,7 +289,7 @@ def test_score_single_read(capsys, seq_to_score,
                                      'low_complexity_seq_step2',
                                      'seq_all_stop_codons',
                                      'low_complexity_seq_in_peptide_space',
-                                     'seq_all_stop_codons')
+                                     'seq_all_stop_codons', 'seq_with_n')
     low_complexity_nucleotide_seqs = ('noncoding_seq', 'low_complexity_seq',
                                       'low_complexity_seq_step2')
     true_translations = []
@@ -325,7 +325,8 @@ def test_score_single_read(capsys, seq_to_score,
             category = "Too few k-mers in protein20 alphabet"
         elif seqtype == 'seq_all_stop_codons':
             category = 'All translation frames have stop codons'
-
+        elif seqtype == 'seq_with_n':
+            category = "Nucleotide sequence contains ambiguous 'N' characters"
 
     stdout_lines = standard_output.splitlines()
     test_n_translations = sum(1 for line in stdout_lines if '>' in line)
