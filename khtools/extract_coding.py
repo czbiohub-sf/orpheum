@@ -501,7 +501,8 @@ def check_invalid_nucleotide_content(description,
         if is_fastp_low_complexity:
             jaccard = np.nan
             n_kmers = np.nan
-            special_case = PROTEIN_CODING_CATEGORIES['low_complexity_nucleotide']
+            special_case = \
+                PROTEIN_CODING_CATEGORIES['low_complexity_nucleotide']
             maybe_write_fasta(description, low_complexity_nucleotide_handle,
                               sequence)
         elif len(sequence) < 3 * peptide_ksize:
