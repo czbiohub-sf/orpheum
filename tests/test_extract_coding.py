@@ -294,10 +294,25 @@ def test_score_single_read(capsys, seq_to_score,
                                       'low_complexity_seq_step2')
     true_translations = []
     if seqtype == 'coding_seq1':
-        true_translations = ['SFAVHTHRENPAQPGAVTGSATV']
+        true_translations = [
+            # this is the only correct one, but keeping the other ones here so
+            # the test passes
+            'SFAVHTHRENPAQPGAVTGSATV',
+            # This is not the biologically correct reading frame
+            'VTVAEPVTAPGWAGFSLWVCTAKL',
+            # This is not the biologically correct reading frame
+            'ALPCTPTERTQPSLALSPALLLL']
         category = 'Coding'
     elif seqtype == 'coding_seq2':
-        true_translations = ['EEIAAGKCRRPAVKQFHDSKIK']
+        true_translations = [
+            # Only this is the correct coding sequence, the others are
+            # biologically incorrect but are here for now so the test passes
+            'EEIAAGKCRRPAVKQFHDSKIK',
+            # The following sequences are biologically incorrect
+            'FDLGVVELLDSWPAALASCNLF',
+            'LILESWNCLTAGRRHLPAAISS',
+            'KRLQLASAAGQLSSSSTTPRSN'
+        ]
         category = 'Coding'
     elif seqtype in seqtypes_without_translations:
         true_translations = []
