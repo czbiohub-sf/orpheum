@@ -32,6 +32,12 @@ def seq():
 
 
 @pytest.fixture
+def seq_with_n():
+    return "CGCAGATGTAGAAAATTTCCGCCAGAGGGTAGGCCCACTGACCCAGGATCTGAAGGNNNGCANC" \
+           "ANGCAGAAGTTC"
+
+
+@pytest.fixture
 def low_complexity_seq():
     return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA" \
            "CACACCCCCAACACCC"
@@ -86,10 +92,11 @@ def seq_all_stop_codons():
 @pytest.fixture(params=['coding_seq1', 'coding_seq2',
                         'noncoding_seq', 'low_complexity_seq',
                         'low_complexity_seq_in_peptide_space',
-                        'low_complexity_seq_step2', 'seq_all_stop_codons'])
+                        'low_complexity_seq_step2', 'seq_all_stop_codons',
+                        'seq_with_n'])
 def seq_to_score(request, low_complexity_seq, low_complexity_seq_step2,
                  coding_seq1, coding_seq2, low_complexity_seq_in_peptide_space,
-                 noncoding_seq, seq_all_stop_codons):
+                 noncoding_seq, seq_all_stop_codons, seq_with_n):
     if request.param == 'coding_seq1':
         return request.param, coding_seq1
     if request.param == 'coding_seq2':
@@ -104,6 +111,8 @@ def seq_to_score(request, low_complexity_seq, low_complexity_seq_step2,
         return request.param, low_complexity_seq_in_peptide_space
     elif request.param == 'seq_all_stop_codons':
         return request.param, seq_all_stop_codons
+    elif request.param == 'seq_with_n':
+        return request.param, seq_with_n
 
 
 @pytest.fixture(params=['seq', 'low_complexity_seq',
