@@ -1,21 +1,10 @@
-import click
 import json
+
+import click
 import pandas as pd
+from khtools.constants_extract_coding import (
+    LOW_COMPLEXITY_CATEGORIES, PROTEIN_CODING_CATEGORIES)
 
-LOW_COMPLEXITY_CATEGORIES = dict(
-    list(itertools.chain(*LOW_COMPLEXITY_PER_ALIAS)))
-
-
-PROTEIN_CODING_CATEGORIES = {
-    "too_short_peptide":
-        "All translations shorter than peptide k-mer size + 1",
-    "stop_codons": "All translation frames have stop codons",
-    "coding": "Coding",
-    'non_coding': 'Non-coding',
-    'low_complexity_nucleotide': "Low complexity nucleotide",
-    'too_short_nucleotide':
-        'Read length was shorter than 3 * peptide k-mer size'
-}
 
 class AssembleSaveSummary:
 
