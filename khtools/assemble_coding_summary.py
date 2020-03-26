@@ -60,7 +60,7 @@ class AssembleSaveSummary:
                 "Writing extract_coding summary to {}".format(
                     self.json_summary),
                 err=True)
-            json.dump(summary, fp=f)
+            json.dumps(summary, fp=f)
         return summary
 
     def make_empty_coding_categories(self):
