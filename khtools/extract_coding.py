@@ -88,18 +88,6 @@ class ExtractCoding:
                 err=True)
         return open(filename, 'w')
 
-    def set_jaccard_threshold(self):
-        if self.jaccard_threshold is None:
-            if self.alphabet == 'hp' or self.alphabet == 'hydrophobic-polar':
-                self.jaccard_threshold = \
-                    constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
-            else:
-                self.jaccard_threshold = \
-                    constants_ec.DEFAULT_JACCARD_THRESHOLD
-
-    def get_jaccard_threshold(self):
-        return self.jaccard_threshold
-
     def maybe_open_fastas(self):
         self.fastas = {
             "noncoding_nucleotide": self.noncoding_nucleotide_fasta,
@@ -119,6 +107,38 @@ class ExtractCoding:
         for file_handle in self.file_handles.values():
             if file_handle is not None:
                 file_handle.close()
+
+    def set_jaccard_threshold(self):
+        if self.jaccard_threshold is None:
+            if self.alphabet == 'hp' or self.alphabet == 'hydrophobic-polar':
+                self.jaccard_threshold = \
+                    constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
+            else:
+                self.jaccard_threshold = \
+                    constants_ec.DEFAULT_JACCARD_THRESHOLD
+
+    def get_jaccard_threshold(self):
+        return self.jaccard_threshold
+
+    def evaluate_is_kmer_low_complexity(self, sequence):
+        """Check if sequence is low complexity, i.e. mostly repetitive
+
+        By this definition, the sequence is not complex if its number of unique
+        k-mers is smaller than half the number of expected k-mers
+        """
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
+            # Ignore Biopython warning of seq objects being strings now
+            try:
+                kmers = kmerize(sequence, self.peptide_ksize)
+            except ValueError:
+                # k-mer size is larger than sequence
+                return None, None
+        n_kmers = len(kmers)
+        n_possible_kmers_on_sequence = len(sequence) - self.peptide_ksize + 1
+        min_kmer_entropy = n_possible_kmers_on_sequence / 2
+        is_low_complexity = n_kmers <= min_kmer_entropy
+        return is_low_complexity
 
     def score_single_translation(self, translation):
         """Score a single translation based on
@@ -145,42 +165,6 @@ class ExtractCoding:
         fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
         return fraction_in_peptide_db, n_kmers
-
-    @staticmethod
-    def evaluate_is_fastp_low_complexity(self, seq):
-        """Use fastp's definition of complexity
-
-        By this definition, low complexity sequence
-        is defined by consecutive runs
-        of same base in a row, e.g.
-        CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACCCCCAACAC
-        is low complexity. The threshold is 0.3 as used in the fastp prpject:
-        https://github.com/OpenGene/fastp
-        """
-        n_different_consecutively = sum(1 for i in range(len(seq) - 1)
-                                        if seq[i] != seq[i + 1])
-        complexity = n_different_consecutively / len(seq)
-        return complexity < constants_ec.COMPLEXITY_THRESHOLD
-
-    def evaluate_is_kmer_low_complexity(self, sequence):
-        """Check if sequence is low complexity, i.e. mostly repetitive
-
-        By this definition, the sequence is not complex if its number of unique
-        k-mers is smaller than half the number of expected k-mers
-        """
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore')
-            # Ignore Biopython warning of seq objects being strings now
-            try:
-                kmers = kmerize(sequence, self.peptide_ksize)
-            except ValueError:
-                # k-mer size is larger than sequence
-                return None, None
-        n_kmers = len(kmers)
-        n_possible_kmers_on_sequence = len(sequence) - self.peptide_ksize + 1
-        min_kmer_entropy = n_possible_kmers_on_sequence / 2
-        is_low_complexity = n_kmers <= min_kmer_entropy
-        return is_low_complexity
 
     def get_peptide_meta(self, translations):
         """Return a dictionary fraction_in_peptide_dbs, kmers_in_peptide_dbs,
@@ -288,20 +272,6 @@ class ExtractCoding:
                             None))
         return scoring_lines
 
-    def get_coding_score_line(
-            self,
-            description,
-            jaccard,
-            n_kmers,
-            special_case):
-        if special_case is not None:
-            line = [description, jaccard, n_kmers, special_case]
-        elif jaccard > self.jaccard_threshold:
-            line = [description, jaccard, n_kmers, 'Coding']
-        else:
-            line = [description, jaccard, n_kmers, 'Non-coding']
-        return line
-
     def check_nucleotide_content(self, description, n_kmers, sequence):
         """If passes, then this read can move on to checking protein translations
 
@@ -322,6 +292,21 @@ class ExtractCoding:
             special_case = 'Read length was shorter than 3 * peptide ' \
                            'k-mer size'
         return constants_ec.SingleReadScore(jaccard, n_kmers, special_case)
+
+    def evaluate_is_fastp_low_complexity(self, seq):
+        """Use fastp's definition of complexity
+
+        By this definition, low complexity sequence
+        is defined by consecutive runs
+        of same base in a row, e.g.
+        CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACCCCCAACAC
+        is low complexity. The threshold is 0.3 as used in the fastp prpject:
+        https://github.com/OpenGene/fastp
+        """
+        n_different_consecutively = sum(1 for i in range(len(seq) - 1)
+                                        if seq[i] != seq[i + 1])
+        complexity = n_different_consecutively / len(seq)
+        return complexity < constants_ec.COMPLEXITY_THRESHOLD
 
     def maybe_score_single_read(self, description, sequence):
         """Check if read is low complexity/too short, otherwise score it"""
@@ -344,6 +329,20 @@ class ExtractCoding:
                         "Jaccard: {}, n_kmers = {}".format(jaccard, n_kmers),
                         err=True)
         return scores
+
+    def get_coding_score_line(
+            self,
+            description,
+            jaccard,
+            n_kmers,
+            special_case):
+        if special_case is not None:
+            line = [description, jaccard, n_kmers, special_case]
+        elif jaccard > self.jaccard_threshold:
+            line = [description, jaccard, n_kmers, 'Coding']
+        else:
+            line = [description, jaccard, n_kmers, 'Non-coding']
+        return line
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
@@ -379,7 +378,7 @@ class ExtractCoding:
         dfs = []
         for reads_file in self.reads:
             self.maybe_open_fastas()
-            df = self.score_reads(reads_file)
+            df = self.score_reads_per_file(reads_file)
             self.maybe_close_fastas()
             dfs.append(df)
         self.coding_scores = pd.concat(dfs, ignore_index=True)
