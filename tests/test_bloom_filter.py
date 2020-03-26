@@ -93,7 +93,8 @@ def test_cli_options(peptide_fasta, molecule, peptide_ksize):
 
 
 def test_get_peptide_ksize_default(molecule):
-    from khtools.bloom_filter import get_peptide_ksize, \
+    from khtools.bloom_filter import get_peptide_ksize
+    from khtools.constants_bloom_filter import \
         DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
 
     test = get_peptide_ksize(molecule, peptide_ksize=None)
