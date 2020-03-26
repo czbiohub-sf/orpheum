@@ -1,3 +1,5 @@
+import click
+
 # khmer Nodegraph features
 DEFAULT_N_TABLES = 4
 DEFAULT_MAX_TABLESIZE = int(1e8)
