@@ -1,6 +1,7 @@
 import os
 
 import pytest
+import warnings
 """
 conftest.py contains fixtures or functions-turned-variables that can be
 used in any test
