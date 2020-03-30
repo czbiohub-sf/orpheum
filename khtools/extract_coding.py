@@ -27,6 +27,16 @@ from khtools.translate_single_seq import TranslateSingleSeq
 # import.
 
 
+def get_jaccard_threshold(jaccard_threshold, alphabet):
+    if jaccard_threshold is None:
+        if alphabet == 'hp' or alphabet == 'hydrophobic-polar':
+            jaccard_threshold = \
+                constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
+        else:
+            jaccard_threshold = \
+                constants_ec.DEFAULT_JACCARD_THRESHOLD
+
+
 def validate_jaccard(ctx, param, value):
     """Ensure Jaccard threshold is between 0 and 1"""
     if value is None:
@@ -108,17 +118,9 @@ class ExtractCoding:
             if file_handle is not None:
                 file_handle.close()
 
-    def set_jaccard_threshold(self):
-        if self.jaccard_threshold is None:
-            if self.alphabet == 'hp' or self.alphabet == 'hydrophobic-polar':
-                self.jaccard_threshold = \
-                    constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
-            else:
-                self.jaccard_threshold = \
-                    constants_ec.DEFAULT_JACCARD_THRESHOLD
-
     def get_jaccard_threshold(self):
-        return self.jaccard_threshold
+        return get_jaccard_threshold(
+            self.jaccard_threshold, self.alphabet)
 
     def evaluate_is_kmer_low_complexity(self, sequence):
         """Check if sequence is low complexity, i.e. mostly repetitive
@@ -396,7 +398,7 @@ class ExtractCoding:
     help="K-mer size of the peptide sequence to use. Defaults for"
          " different alphabets are, "
          "protein: {}".format(constants_bf.DEFAULT_PROTEIN_KSIZE) +
-         ", dayhoff: {}".format(constants_bf.EFAULT_DAYHOFF_KSIZE) +
+         ", dayhoff: {}".format(constants_bf.DEFAULT_DAYHOFF_KSIZE) +
          " hydrophobic-polar: {}".format(constants_bf.DEFAULT_HP_KSIZE))
 @click.option("--save-peptide-bloom-filter",
               is_flag=True,
@@ -549,7 +551,7 @@ def cli(peptides,
     extract_coding_obj.set_coding_scores_all_files()
     coding_scores = extract_coding_obj.get_coding_scores_all_files()
     assemble_summary_obj = AssembleSaveSummary(
-        coding_scores, csv, json_summary,
+        coding_scores, reads, csv, json_summary,
         extract_coding_obj.peptide_bloom_filter_filename,
         alphabet,
         extract_coding_obj.peptide_ksize, extract_coding_obj.jaccard_threshold)

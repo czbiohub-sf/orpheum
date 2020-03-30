@@ -2,7 +2,6 @@ from collections import namedtuple
 import os
 import warnings
 
-from Bio.Seq import Seq
 from click.testing import CliRunner
 import pandas as pd
 import pandas.util.testing as pdt
@@ -17,20 +16,6 @@ AlphabetKsizeScores = namedtuple("AlphabetKsizeScores",
 
 
 @pytest.fixture
-def seq():
-    s = 'CGCTTGCTTAATACTGACATCAATAATATTAGGAAAATCGCAATATAACTGTAAATCCTGTTCTGTC'
-    with warnings.catch_warnings():
-        # Ignore The following warning because we don't use Bio.Alphabet
-        # explicitly:
-        # PendingDeprecationWarning: We intend to remove or replace
-        # Bio.Alphabet in 2020, ideally avoid using it explicitly in your
-        # code. Please get in touch if you will be adversely affected by this.
-        # https://github.com/biopython/biopython/issues/2046
-        warnings.simplefilter("ignore")
-        return Seq(s)
-
-
-@pytest.fixture
 def low_complexity_seq():
     return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA" \
            "CACACCCCCAACACCC"
@@ -42,17 +27,6 @@ def type_seq(request, seq, low_complexity_seq):
         return request.param, seq
     elif request.param == 'low_complexity_seq':
         return request.param, low_complexity_seq
-
-
-def test_three_frame_translation(seq):
-    from khtools.extract_coding import three_frame_translation
-
-    test = [str(x) for x in three_frame_translation(seq)]
-    true = [
-        'RLLNTDINNIRKIAI*L*ILFC', 'ACLILTSIILGKSQYNCKSCSV',
-        'LA*Y*HQ*Y*ENRNITVNPVL'
-    ]
-    assert test == true
 
 
 def test_compute_fastp_low_complexity(type_seq):
@@ -78,36 +52,6 @@ def test_evaluate_is_fastp_low_complexity(type_seq):
     elif seqtype == 'low_complexity_seq':
         # low complexity sequence should evaluate to low complexity!
         assert test
-
-
-def test_three_frame_translation_no_stops(seq):
-    from khtools.extract_coding import three_frame_translation_no_stops
-
-    test = {
-        k: str(v)
-        for k, v in three_frame_translation_no_stops(seq).items()
-    }
-    true = {2: 'ACLILTSIILGKSQYNCKSCSV'}
-    assert test == true
-
-
-def test_six_frame_translation_no_stops(seq):
-    from khtools.extract_coding import six_frame_translation_no_stops
-
-    test = {k: str(v) for k, v in six_frame_translation_no_stops(seq).items()}
-    true = {
-        2: 'ACLILTSIILGKSQYNCKSCSV',
-        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
-        -3: 'QNRIYSYIAIFLILLMSVLSK'
-    }
-    assert test == true
-
-
-@pytest.fixture
-def reads(data_folder):
-    return os.path.join(
-        data_folder,
-        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
 
 
 @pytest.fixture
@@ -140,37 +84,6 @@ def true_protein_coding_fasta_path(data_folder):
 def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
     with open(true_protein_coding_fasta_path) as f:
         return f.read()
-
-
-@pytest.fixture
-def jaccard_threshold(molecule):
-    from khtools.extract_coding import get_jaccard_threshold
-    threshold = get_jaccard_threshold(None, molecule)
-    return threshold
-
-
-@pytest.fixture
-def peptide_ksize(molecule):
-    from khtools.bloom_filter import get_peptide_ksize
-
-    ksize = get_peptide_ksize(molecule)
-    return ksize
-
-
-@pytest.fixture
-def single_alphabet_ksize_true_scores_path(data_folder):
-    true_scores_path = os.path.join(
-        data_folder, "extract_coding",
-        "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
-        "molecule-protein_ksize-7.csv")
-    return AlphabetKsizeScorepath('protein', 7, true_scores_path)
-
-
-@pytest.fixture
-def single_alphabet_ksize_true_scores(single_alphabet_ksize_true_scores_path):
-    alphabet, ksize, true_scores_path = single_alphabet_ksize_true_scores_path
-    true_scores = pd.read_csv(true_scores_path)
-    return AlphabetKsizeScores(alphabet, ksize, true_scores)
 
 
 def test_score_reads(capsys, tmpdir, reads, peptide_bloom_filter, molecule,
@@ -220,140 +133,6 @@ def get_fasta_record_names(fasta_path):
         name = record['name']
         names.append(name)
     return set(names)
-
-
-def test_maybe_write_json_summary_empty(peptide_bloom_filter_path, molecule,
-                                        peptide_ksize):
-    from khtools.extract_coding import maybe_write_json_summary, \
-        DEFAULT_JACCARD_THRESHOLD
-
-    coding_scores = pd.DataFrame(columns=['read_id', 'jaccard_in_peptide_db',
-                                          'n_kmers', 'classification',
-                                          'filename'])
-    summary = maybe_write_json_summary(
-        coding_scores, json_summary=True, filenames=['nonexistent.fa'],
-        bloom_filter=peptide_bloom_filter_path, molecule=molecule,
-        peptide_ksize=peptide_ksize,
-        jaccard_threshold=DEFAULT_JACCARD_THRESHOLD)
-    assert summary['input_files'] == ['nonexistent.fa']
-    assert summary['jaccard_info']['count'] == 0
-
-
-def test_get_n_translated_frames_per_read():
-    from khtools.extract_coding import get_n_translated_frames_per_read
-
-    # Make fake dataframe with "read_id" and "classification" columns only
-    # for testing
-    data = {
-        'read_id':
-            ['read0', 'read0', 'read0', 'read0', 'read0', 'read0',
-             'read1', 'read1', 'read1', 'read1', 'read1',
-             'read2', 'read2', 'read2', 'read2',
-             'read3', 'read3', 'read3',
-             'read4', 'read4',
-             'read5', 'read5',
-             'read6', 'read7', 'read8', 'read9', 'read10'],
-    }
-    df = pd.DataFrame(data)
-    df['classification'] = "Coding"
-
-    percentages, histogram = get_n_translated_frames_per_read(df)
-    assert histogram == {
-        'Number of reads with 1 putative protein-coding translations': 5,
-        'Number of reads with 2 putative protein-coding translations': 2,
-        'Number of reads with 6 putative protein-coding translations': 1,
-        'Number of reads with 5 putative protein-coding translations': 1,
-        'Number of reads with 4 putative protein-coding translations': 1,
-        'Number of reads with 3 putative protein-coding translations': 1}
-    assert percentages == {
-        'Number of reads with 1 putative protein-coding translations': 45.45454545454545,
-        'Number of reads with 2 putative protein-coding translations': 18.181818181818183,
-        'Number of reads with 6 putative protein-coding translations': 9.090909090909092,
-        'Number of reads with 5 putative protein-coding translations': 9.090909090909092,
-        'Number of reads with 4 putative protein-coding translations': 9.090909090909092,
-        'Number of reads with 3 putative protein-coding translations': 9.090909090909092}
-
-
-def test_get_n_per_coding_classification(molecule):
-    from khtools.extract_coding import get_n_per_coding_classification, \
-        LOW_COMPLEXITY_CATEGORIES
-    from khtools.sequence_encodings import ALIAS_TO_ALPHABET
-
-    data = [
-        ['read1', 'All translations shorter than peptide k-mer size + 1'],
-        ['read2', 'All translation frames have stop codons'],
-        ['read3', 'Coding'],
-        ['read4', 'Non-coding'],
-        ['read5', 'Low complexity nucleotide'],
-        ['read6', 'Read length was shorter than 3 * peptide k-mer size'],
-        ['read7', LOW_COMPLEXITY_CATEGORIES[molecule]],
-    ]
-    df = pd.DataFrame(data, columns=['read_id', 'classification'])
-
-    test_counts, test_percentages = get_n_per_coding_classification(df,
-                                                                    molecule)
-    canonical_molecule = ALIAS_TO_ALPHABET[molecule]
-    true_counts = {
-        'All translations shorter than peptide k-mer size + 1': 14.285714285714286,
-        'All translation frames have stop codons': 14.285714285714286,
-        'Coding': 14.285714285714286, 'Non-coding': 14.285714285714286,
-        'Low complexity nucleotide': 14.285714285714286,
-        'Read length was shorter than 3 * peptide k-mer size': 14.285714285714286,
-        f'Low complexity peptide in {canonical_molecule} alphabet': 14.285714285714286}
-    true_percentages = {
-        'All translations shorter than peptide k-mer size + 1': 1,
-        'All translation frames have stop codons': 1, 'Coding': 1,
-        'Non-coding': 1, 'Low complexity nucleotide': 1,
-        'Read length was shorter than 3 * peptide k-mer size': 1,
-        f'Low complexity peptide in {canonical_molecule} alphabet': 1}
-    assert test_counts == true_counts
-    assert test_percentages == true_percentages
-
-
-def test_generate_coding_summary(reads, data_folder,
-                                 single_alphabet_ksize_true_scores):
-    from khtools.extract_coding import generate_coding_summary
-
-    alphabet, ksize, true_scores = single_alphabet_ksize_true_scores
-    jaccard_threshold = 0.5
-    ksize = 7
-
-    peptide_bloom_filter = 'bloom_filter.nodegraph'
-
-    test_summary = generate_coding_summary(
-        true_scores, peptide_bloom_filter, alphabet,
-        peptide_ksize=ksize, jaccard_threshold=jaccard_threshold)
-
-    true_summary = {
-        'input_files': [
-            'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
-        'jaccard_info': {'count': 17.0, 'mean': 0.2186899269511726,
-                         'std': 0.37622482326071616, 'min': 0.0,
-                         '25%': 0.0, '50%': 0.0625, '75%': 0.125,
-                         'max': 1.0},
-        'classification_value_counts': {
-            'All translations shorter than peptide k-mer size + 1': 0,
-            'All translation frames have stop codons': 3,
-            'Coding': 3, 'Non-coding': 14,
-            'Low complexity nucleotide': 0,
-            'Read length was shorter than 3 * peptide k-mer size': 2,
-            'Low complexity peptide in protein20 alphabet': 1},
-        'classification_percentages': {
-            'All translations shorter than peptide k-mer size + 1': 0.0,
-            'All translation frames have stop codons': 13.043478260869565,
-            'Coding': 13.043478260869565,
-            'Non-coding': 60.869565217391305,
-            'Low complexity nucleotide': 0.0,
-            'Read length was shorter than 3 * peptide k-mer size': 8.695652173913043,
-            'Low complexity peptide in protein20 alphabet': 4.3478260869565215},
-        'histogram_n_coding_frames_per_read': {
-            'Number of reads with 1 putative protein-coding translations': 3},
-        'histogram_n_coding_frames_per_read_percentages': {
-            'Number of reads with 1 putative protein-coding translations': 100.0},
-        'peptide_bloom_filter': 'bloom_filter.nodegraph',
-        'peptide_alphabet': 'protein', 'peptide_ksize': 7,
-        'jaccard_threshold': 0.5}
-    assert test_summary == true_summary
 
 
 def test_cli_peptide_fasta(reads, peptide_fasta, molecule, peptide_ksize,

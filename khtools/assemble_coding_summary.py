@@ -9,10 +9,10 @@ from khtools.constants_extract_coding import (
 class AssembleSaveSummary:
 
     def __init__(
-            self, coding_scores, csv, json_summary,
+            self, filenames, csv, json_summary,
             peptide_bloom_filter_filename,
             alphabet, peptide_ksize, jaccard_threshold):
-        self.coding_scores = coding_scores
+        self.filenames = filenames
         self.csv = csv
         self.json_summary = json_summary
         self.peptide_bloom_filter_filename = peptide_bloom_filter_filename
@@ -20,22 +20,29 @@ class AssembleSaveSummary:
         self.peptide_ksize = peptide_ksize
         self.jaccard_threshold = jaccard_threshold
 
-    def maybe_write_csv(self):
+    def maybe_write_csv(self, coding_scores):
         if self.csv:
             click.echo(
                 "Writing coding scores of reads to {}".format(self.csv),
                 err=True)
-            self.coding_scores.to_csv(self.csv, index=False)
+            coding_scores.to_csv(self.csv, index=False)
 
-    def maybe_write_json_summary(self):
+    def make_empty_coding_categories(self):
+        coding_categories = dict.fromkeys(
+            PROTEIN_CODING_CATEGORIES.values(), 0)
+        molecule_low_complexity_key = LOW_COMPLEXITY_CATEGORIES[self.alphabet]
+        coding_categories[molecule_low_complexity_key] = 0
+        return coding_categories
+
+    def maybe_write_json_summary(self, coding_scores):
         if not self.json_summary:
             # Early exit if json_summary is not True
             return
         empty_coding_categories = self.make_empty_coding_categories()
 
-        if self.coding_scores.empty:
+        if coding_scores.empty:
             summary = {
-                'input_files': self.reads,
+                'input_files': self.filenames,
                 'jaccard_info': {
                     "count": 0,
                     "mean": None,
@@ -54,21 +61,14 @@ class AssembleSaveSummary:
                     str(i): 0 for i in range(6)},
             }
         else:
-            summary = self.generate_coding_summary()
+            summary = self.generate_coding_summary(coding_scores)
         with open(self.json_summary, 'w') as f:
             click.echo(
                 "Writing extract_coding summary to {}".format(
                     self.json_summary),
                 err=True)
-            json.dumps(summary, fp=f)
+            json.dump(summary, fp=f)
         return summary
-
-    def make_empty_coding_categories(self):
-        coding_categories = dict.fromkeys(
-            PROTEIN_CODING_CATEGORIES.values(), 0)
-        molecule_low_complexity_key = LOW_COMPLEXITY_CATEGORIES[self.alphabet]
-        coding_categories[molecule_low_complexity_key] = 0
-        return coding_categories
 
     def generate_coding_summary(self, coding_scores):
         translation_frame_percentages, translation_frame_counts = \
@@ -80,8 +80,7 @@ class AssembleSaveSummary:
             self.get_n_per_coding_classification(coding_scores)
 
         # Get Jaccard distributions, count, min, max, mean, stddev, median
-        jaccard_info = self.coding_scores.jaccard_in_peptide_db.describe() \
-            .to_dict()
+        jaccard_info = coding_scores.jaccard_in_peptide_db.describe().to_dict()
         summary = {
             'input_files': files,
             'jaccard_info': jaccard_info,
@@ -90,9 +89,9 @@ class AssembleSaveSummary:
             'classification_percentages':
                 classification_percentages,
             'histogram_n_coding_frames_per_read':
-                classification_value_counts,
-            'histogram_n_coding_frames_per_read_percentages':
                 translation_frame_counts,
+            'histogram_n_coding_frames_per_read_percentages':
+                translation_frame_percentages,
             'peptide_bloom_filter': self.peptide_bloom_filter_filename,
             'peptide_alphabet': self.alphabet,
             'peptide_ksize': self.peptide_ksize,
