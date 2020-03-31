@@ -103,6 +103,7 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
         return bloom_filter
 
 
+@pytest.fixture
 def peptide_bloom_filter_single_read():
     data = os.path.join(os.path.abspath(os.path.dirname(__file__)), './data')
     fasta = os.path.join(
