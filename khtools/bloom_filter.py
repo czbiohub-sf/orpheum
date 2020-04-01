@@ -1,3 +1,4 @@
+import logging
 import math
 import os
 
@@ -11,6 +12,9 @@ from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide, BEST_KSIZES, \
     ALPHABET_SIZES
 import khtools.constants_bloom_filter as constants_bf
+from khtools.log_utils import get_logger
+
+logger = get_logger(__file__)
 
 
 def per_translation_false_positive_rate(
@@ -128,10 +132,9 @@ def maybe_make_peptide_bloom_filter(
         n_tables=constants_bf.DEFAULT_N_TABLES,
         tablesize=constants_bf.DEFAULT_MAX_TABLESIZE):
     if peptides_are_bloom_filter:
-        click.echo(
+        logger.info(
             f"Loading existing bloom filter from {peptides} and "
-            f"making sure the ksizes match",
-            err=True)
+            f"making sure the ksizes match")
         peptide_bloom_filter = load_nodegraph(peptides)
         if peptide_ksize is not None:
             try:
@@ -143,11 +146,10 @@ def maybe_make_peptide_bloom_filter(
                                  f"equal")
     else:
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-        click.echo(
+        logger.info(
             f"Creating peptide bloom filter with file: {peptides}\n"
             f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
-            f"...",
-            err=True)
+            f"...")
         peptide_bloom_filter = make_peptide_bloom_filter(
             peptides, peptide_ksize, molecule=molecule,
             n_tables=n_tables, tablesize=tablesize)
@@ -167,9 +169,9 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
                      f'nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
-        click.echo(f"Writing peptide bloom filter to {filename}", err=True)
+        logger.info(f"Writing peptide bloom filter to {filename}")
         peptide_bloom_filter.save(filename)
-        click.echo("\tDone!", err=True)
+        logger.info("\tDone!")
         return filename
 
 
@@ -227,7 +229,7 @@ def cli(peptides, peptide_ksize=None, alphabet='protein',
                                                      alphabet,
                                                      n_tables=n_tables,
                                                      tablesize=tablesize)
-    click.echo("\tDone!", err=True)
+    logger.info("\tDone!")
 
     save_peptide_bloom_filter = save_as if save_as is not None else True
     maybe_save_peptide_bloom_filter(

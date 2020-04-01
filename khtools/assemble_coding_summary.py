@@ -4,6 +4,9 @@ import click
 import pandas as pd
 from khtools.constants_extract_coding import (
     LOW_COMPLEXITY_CATEGORIES, PROTEIN_CODING_CATEGORIES)
+from khtools.log_utils import get_logger
+
+logger = get_logger(__file__)
 
 
 class AssembleSaveSummary:

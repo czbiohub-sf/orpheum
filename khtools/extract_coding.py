@@ -13,6 +13,7 @@ import pandas as pd
 import screed
 from tqdm import tqdm
 from sourmash._minhash import hash_murmur
+from khtools.log_utils import get_logger
 from khtools.sequence_encodings import encode_peptide
 from khtools.compare_kmer_content import kmerize
 from khtools.assemble_coding_summary import AssembleSaveSummary
@@ -25,6 +26,7 @@ from khtools.translate_single_seq import TranslateSingleSeq
 # Import modified 'os' module with LC_LANG set so click doesn't complain.
 # The '# noqa: F401' line prevents the linter from complaining about the unused
 # import.
+logger = get_logger(__file__)
 
 
 def get_jaccard_threshold(jaccard_threshold, alphabet):
@@ -35,6 +37,7 @@ def get_jaccard_threshold(jaccard_threshold, alphabet):
         else:
             jaccard_threshold = \
                 constants_ec.DEFAULT_JACCARD_THRESHOLD
+    return jaccard_threshold
 
 
 def validate_jaccard(ctx, param, value):
@@ -52,6 +55,61 @@ def validate_jaccard(ctx, param, value):
             ' between 0 and 1, but was provided'.format(value))
 
 
+def evaluate_is_fastp_low_complexity(seq):
+    """Use fastp's definition of complexity
+    By this definition, low complexity sequence is defined by consecutive runs
+    of same base in a row, e.g.
+    CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACCCCCAACAC
+    is low complexity. The threshold is 0.3 as used in the fastp prpject:
+    https://github.com/OpenGene/fastp
+    Parameters
+    ----------
+    seq : str
+        Sequence to compute complexity on
+    complexity_threshold : float, defaault 0.3
+        Value between 0 and 1. The default is 0.3 because that is the default
+        in the command line program fastp
+    Returns
+    -------
+    is_low_complexity : bool
+        Whether or not the sequence passes the complexity threshold
+    """
+    complexity = compute_fastp_complexity(seq)
+    return complexity < constants_ec.COMPLEXITY_THRESHOLD
+
+
+def compute_fastp_complexity(seq):
+    n_different_consecutively = sum(1 for i in range(len(seq) - 1)
+                                    if seq[i] != seq[i + 1])
+    complexity = n_different_consecutively / len(seq)
+    return complexity
+
+
+def evaluate_is_kmer_low_complexity(sequence, ksize):
+    """Check if sequence is low complexity, i.e. mostly repetitive
+    By this definition, the sequence is not complex if its number of unique
+    k-mers is smaller than half the number of expected k-mers
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore')
+        # Ignore Biopython warning of seq objects being strings now
+        try:
+            kmers = kmerize(sequence, ksize)
+        except ValueError:
+            # k-mer size is larger than sequence
+            return None, None
+    n_kmers = len(kmers)
+    n_possible_kmers_on_sequence = len(sequence) - ksize + 1
+    min_kmer_entropy = n_possible_kmers_on_sequence / 2
+    is_low_complexity = n_kmers <= min_kmer_entropy
+    return is_low_complexity, n_kmers
+
+
+def write_fasta(file_handle, description, sequence):
+    print(file_handle)
+    file_handle.write(">{}\n{}\n".format(description, sequence))
+
+
 class ExtractCoding:
 
     def __init__(self, args):
@@ -61,7 +119,8 @@ class ExtractCoding:
             setattr(self, key, args[key])
         if self.long_reads:
             raise NotImplementedError("Not implemented! ... yet :)")
-        self.set_jaccard_threshold()
+        self.jaccard_threshold = get_jaccard_threshold(
+            self.jaccard_threshold, self.alphabet)
         self.peptide_bloom_filter = maybe_make_peptide_bloom_filter(
             self.peptides,
             self.peptide_ksize,
@@ -69,7 +128,8 @@ class ExtractCoding:
             self.peptides_are_bloom_filter,
             n_tables=self.n_tables,
             tablesize=self.tablesize)
-        click.echo("\tDone making peptide_bloom_filter!", err=True)
+        self.verbose = True
+        logger.info("\tDone making peptide_bloom_filter!")
 
         if not self.peptides_are_bloom_filter:
             self.peptide_bloom_filter_filename = \
@@ -86,16 +146,14 @@ class ExtractCoding:
     def maybe_write_fasta(self, description, file_handle, sequence):
         """Write fasta to file handle if it is not None"""
         if file_handle is not None:
-            file_handle.write(
-                ">{}\n{}\n".format(description, sequence))
+            write_fasta(file_handle, description, sequence)
 
     def open_and_announce(self, filename, seqtype):
         """Return an opened file handle to write and announce"""
         if self.verbose:
             announcement = constants_ec.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
-            click.echo(
-                "Writing {} to {}".format(announcement, filename),
-                err=True)
+            logger.info(
+                "Writing {} to {}".format(announcement, filename))
         return open(filename, 'w')
 
     def maybe_open_fastas(self):
@@ -122,26 +180,6 @@ class ExtractCoding:
         return get_jaccard_threshold(
             self.jaccard_threshold, self.alphabet)
 
-    def evaluate_is_kmer_low_complexity(self, sequence):
-        """Check if sequence is low complexity, i.e. mostly repetitive
-
-        By this definition, the sequence is not complex if its number of unique
-        k-mers is smaller than half the number of expected k-mers
-        """
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore')
-            # Ignore Biopython warning of seq objects being strings now
-            try:
-                kmers = kmerize(sequence, self.peptide_ksize)
-            except ValueError:
-                # k-mer size is larger than sequence
-                return None, None
-        n_kmers = len(kmers)
-        n_possible_kmers_on_sequence = len(sequence) - self.peptide_ksize + 1
-        min_kmer_entropy = n_possible_kmers_on_sequence / 2
-        is_low_complexity = n_kmers <= min_kmer_entropy
-        return is_low_complexity
-
     def score_single_translation(self, translation):
         """Score a single translation based on
         fraction of kmers in peptide bloom filter"""
@@ -153,16 +191,16 @@ class ExtractCoding:
             1 for h in hashes
             if self.peptide_bloom_filter.get(h) > 0)
         if self.verbose:
-            click.echo("\ttranslation: \t".format(encoded), err=True)
-            click.echo("\tkmers:", ' '.join(kmers), err=True)
+            logger.info("\ttranslation: \t".format(encoded))
+            logger.info("\tkmers:", ' '.join(kmers))
 
         if self.verbose:
             kmers_in_peptide_db = {
                 (k, h): self.peptide_bloom_filter.get(h)
                 for k, h in zip(kmers, hashes)}
             # Print keys (kmers) only
-            click.echo("\tK-mers in peptide database:", err=True)
-            click.echo(kmers_in_peptide_db, err=True)
+            logger.info("\tK-mers in peptide database:")
+            logger.info(kmers_in_peptide_db)
 
         fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
@@ -186,7 +224,7 @@ class ExtractCoding:
             kmers_in_peptide_dbs[frame] = n_kmers
 
             kmer_capacities[frame] = \
-                self.evaluate_is_kmer_low_complexity(encoded)
+                evaluate_is_kmer_low_complexity(encoded, self.peptide_ksize)
 
         return fraction_in_peptide_dbs, kmers_in_peptide_dbs, kmer_capacities
 
@@ -250,16 +288,15 @@ class ExtractCoding:
                 fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
                 if fraction_in_peptide_db > self.jaccard_threshold:
                     if self.verbose:
-                        click.echo(
+                        logger.info(
                             "\t{} is above {}".format(
                                 translation,
-                                self.jaccard_threshold),
-                            err=True)
+                                self.jaccard_threshold))
                     seqname = \
                         '{} translation_frame: {} '.format(
                             description, frame) + \
                         'jaccard: {}'.format(fraction_in_peptide_db)
-                    self.maybe_write_fasta(
+                    write_fasta(
                         sys.stdout,
                         seqname,
                         translation)
@@ -286,7 +323,7 @@ class ExtractCoding:
             special_case = "Low complexity nucleotide"
             self.maybe_write_fasta(
                 description,
-                self.fastas['low_complexity_nucleotide'],
+                self.file_handles['low_complexity_nucleotide'],
                 sequence)
         else:
             jaccard = np.nan
@@ -295,26 +332,11 @@ class ExtractCoding:
                            'k-mer size'
         return constants_ec.SingleReadScore(jaccard, n_kmers, special_case)
 
-    def evaluate_is_fastp_low_complexity(self, seq):
-        """Use fastp's definition of complexity
-
-        By this definition, low complexity sequence
-        is defined by consecutive runs
-        of same base in a row, e.g.
-        CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCACACACCCCCAACAC
-        is low complexity. The threshold is 0.3 as used in the fastp prpject:
-        https://github.com/OpenGene/fastp
-        """
-        n_different_consecutively = sum(1 for i in range(len(seq) - 1)
-                                        if seq[i] != seq[i + 1])
-        complexity = n_different_consecutively / len(seq)
-        return complexity < constants_ec.COMPLEXITY_THRESHOLD
-
     def maybe_score_single_read(self, description, sequence):
         """Check if read is low complexity/too short, otherwise score it"""
         # Check if nucleotide sequence is low complexity
         is_fastp_low_complexity = \
-            self.evaluate_is_fastp_low_complexity(sequence)
+            evaluate_is_fastp_low_complexity(sequence)
         if is_fastp_low_complexity:
             n_kmers = np.nan
             jaccard, n_kmers, special_case = self.check_nucleotide_content(
@@ -322,14 +344,11 @@ class ExtractCoding:
             scores = [
                 constants_ec.SingleReadScore(jaccard, n_kmers, special_case)]
         else:
-            scores = self.check_peptide_content(
-                sequence,
-                description=description)
+            scores = self.check_peptide_content(description, sequence)
             for jaccard, n_kmers, special_case in scores:
                 if self.verbose:
-                    click.echo(
-                        "Jaccard: {}, n_kmers = {}".format(jaccard, n_kmers),
-                        err=True)
+                    logger.info(
+                        "Jaccard: {}, n_kmers = {}".format(jaccard, n_kmers))
         return scores
 
     def get_coding_score_line(
@@ -362,8 +381,8 @@ class ExtractCoding:
                         description, sequence):
                     line = self.get_coding_score_line(
                         description,
-                        single_score_of_read.jaccard,
-                        single_score_of_read.n_kmers,
+                        single_score_of_read.max_fraction_kmers_in_peptide_db_across_six_frame_translations,
+                        single_score_of_read.max_n_kmers,
                         single_score_of_read.special_case)
                     scoring_lines.append(line)
 
@@ -546,17 +565,17 @@ def cli(peptides,
         Outputs a fasta-formatted sequence of translated peptides
     """
     # \b above prevents re-wrapping of paragraphs
-
     extract_coding_obj = ExtractCoding(locals())
     extract_coding_obj.set_coding_scores_all_files()
     coding_scores = extract_coding_obj.get_coding_scores_all_files()
     assemble_summary_obj = AssembleSaveSummary(
-        coding_scores, reads, csv, json_summary,
+        reads, csv, json_summary,
         extract_coding_obj.peptide_bloom_filter_filename,
         alphabet,
-        extract_coding_obj.peptide_ksize, extract_coding_obj.jaccard_threshold)
-    assemble_summary_obj.maybe_write_csv()
-    assemble_summary_obj.maybe_write_json_summary()
+        extract_coding_obj.peptide_ksize,
+        extract_coding_obj.jaccard_threshold)
+    assemble_summary_obj.maybe_write_csv(coding_scores)
+    assemble_summary_obj.maybe_write_json_summary(coding_scores)
 
 
 if __name__ == '__main__':
