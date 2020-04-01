@@ -5,11 +5,11 @@ SRR306838.20767303 Ibis_Run100924_C3PO:6:104:6864:5062/1,0.0,16.0,Non-coding,SRR
 SRR306838.12582274 Ibis_Run100924_C3PO:6:62:11779:17975/1,0.0,16.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.13334230 Ibis_Run100924_C3PO:6:66:16579:20350/1,0.0,12.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1,1.0,18.0,Coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.6813354 Ibis_Run100924_C3PO:6:32:10591:13073/1,0.05882352941176471,17.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.23113368 Ibis_Run100924_C3PO:6:114:13840:18459/1,0.0,14.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+SRR306838.6813354 Ibis_Run100924_C3PO:6:32:10591:13073/1,0.058823529411764705,17.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+SRR306838.23113368 Ibis_Run100924_C3PO:6:114:13840:18459/1,0.0,15.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.10872941 Ibis_Run100924_C3PO:6:53:6164:10522/1,0.0625,16.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.6192120 Ibis_Run100924_C3PO:6:29:5833:11991/1,0.125,16.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
-SRR306838.21295280 Ibis_Run100924_C3PO:6:106:2590:13965/1,0.05882352941176471,17.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+SRR306838.21295280 Ibis_Run100924_C3PO:6:106:2590:13965/1,0.058823529411764705,17.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.21201208 Ibis_Run100924_C3PO:6:106:2763:5109/1,,,All translation frames have stop codons,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.18327923 Ibis_Run100924_C3PO:6:92:9077:13885/1,0.0625,16.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1,1.0,16.0,Coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
@@ -21,4 +21,9 @@ SRR306838.20124664 Ibis_Run100924_C3PO:6:101:4701:5309/1,0.1111111111111111,18.0
 SRR306838.16841308 Ibis_Run100924_C3PO:6:85:6205:5805/1,0.17647058823529413,17.0,Non-coding,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.1531 Ibis_Run100924_C3PO:6:1:15718:1062/1,,,Read length was shorter than 3 * peptide k-mer size,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.2318 Ibis_Run100924_C3PO:6:1:15779:1141/1,,,Read length was shorter than 3 * peptide k-mer size,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein20 alphabet,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein20 alphabet,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein20 alphabet,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein20 alphabet,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
+adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein20 alphabet,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 adversarial_low_complexity_peptide,,1.0,Low complexity peptide in protein20 alphabet,SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq

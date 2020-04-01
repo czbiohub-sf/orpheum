@@ -1,12 +1,14 @@
-from collections import namedtuple
 import os
-import warnings
+import subprocess
 
-from click.testing import CliRunner
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 import screed
+
+KHTOOLS = "khtools"
+EXTRACT_CODING = "extract-coding"
+CMD = KHTOOLS + " " + EXTRACT_CODING
 
 
 @pytest.fixture
@@ -48,8 +50,8 @@ def true_scores_path(data_folder, alphabet, peptide_ksize):
     return os.path.join(
         data_folder, "extract_coding",
         "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
-        f"subsampled_n22__alphabet-{alphabet}_ksize-"
-        f"{peptide_ksize}.csv")
+        "subsampled_n22__alphabet-{}_ksize-".format(alphabet) +
+        "{}.csv".format(peptide_ksize))
 
 
 @pytest.fixture
@@ -79,17 +81,17 @@ def get_fasta_record_names(fasta_path):
 
 def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
                            true_protein_coding_fasta_string):
-    from khtools.extract_coding import cli
+    proc = subprocess.Popen(
+        CMD + " --peptide-ksize {}".format(peptide_ksize) +
+        " --alphabet " + alphabet + " {} {}".format(peptide_fasta, reads),
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, '--alphabet', alphabet,
-        peptide_fasta, reads
-    ])
-    assert result.exit_code == 0
-    # CliRunner jams together the stderr and stdout so just check if the
+    assert proc.returncode == 0
     # true string is contained in the output
-    assert true_protein_coding_fasta_string in result.output
+    assert true_protein_coding_fasta_string in str(stdout, 'UTF-8')
 
     # Make sure "Writing extract_coding summary to" didn't get accidentally
     # written to stdout instead of stderr
@@ -98,62 +100,67 @@ def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
 
 
 def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
-    from khtools.extract_coding import cli
-
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--jaccard-threshold", "3.14", peptide_fasta, reads
-    ])
-    assert result.exit_code == 2
-    error_messages = ['Error: Invalid value for ', '--jaccard-threshold',
-                      ': --jaccard-threshold needs to be a number between 0 '
-                      'and 1, but 3.14 was provided']
-    for error_message in error_messages:
-        assert error_message in result.output
+    proc = subprocess.Popen(
+        [KHTOOLS,
+         EXTRACT_CODING,
+         "--jaccard-threshold",
+         "3.14",
+         peptide_fasta, reads],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    assert proc.returncode == 2
+    error_message = 'Error: Invalid value for "--jaccard-threshold": --jaccard-threshold needs to be a number between 0 and 1, but was provided'
+    assert error_message in str(stdout, 'UTF-8')
 
 
 def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
-    from khtools.extract_coding import cli
-
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--jaccard-threshold", "beyonce", peptide_fasta, reads
-    ])
-    assert result.exit_code == 2
-    error_messages = ['Error: Invalid value for ', '--jaccard-threshold',
-                      ': beyonce is not a valid floating point value']
-    for error_message in error_messages:
-        assert error_message in result.output
+    proc = subprocess.Popen(
+        [KHTOOLS,
+         EXTRACT_CODING,
+         "--jaccard-threshold",
+         "beyonce",
+         peptide_fasta, reads],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    stdout, stderr = proc.communicate()
+    assert proc.returncode == 2
+    error_message = 'Error: Invalid value for "--jaccard-threshold": beyonce is not a valid floating point value'
+    assert error_message in str(stdout, 'UTF-8')
 
 
 def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, alphabet,
                                   peptide_ksize,
                                   true_protein_coding_fasta_string):
-    from khtools.extract_coding import cli
-
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, "--peptides-are-bloom-filter",
-        '--alphabet', alphabet, peptide_bloom_filter_path, reads
-    ])
-    assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
+    proc = subprocess.Popen(
+        CMD + " --peptide-ksize" +
+        " {} ".format(peptide_ksize) +
+        "--peptides-are-bloom-filter --alphabet {} ".format(alphabet) +
+        "{} {}".format(peptide_bloom_filter_path, reads),
+        shell=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    assert proc.returncode == 0
+    assert true_protein_coding_fasta_string in str(stdout, 'UTF-8')
 
 
 def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
                  peptide_ksize, true_protein_coding_fasta_string, true_scores):
-    from khtools.extract_coding import cli
 
     csv = os.path.join(tmpdir, 'coding_scores.csv')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, "--csv", csv,
-        "--peptides-are-bloom-filter", '--alphabet', alphabet,
-        peptide_bloom_filter_path, reads
-    ])
-    assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
+    proc = subprocess.Popen(
+        CMD +
+        " --peptide-ksize {} ".format(peptide_ksize) +
+        "--csv " + csv + " --peptides-are-bloom-filter " +
+        "--alphabet " + alphabet + " {} {}".format(
+            peptide_bloom_filter_path, reads),
+        shell=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
+    assert proc.returncode == 0
+    assert true_protein_coding_fasta_string in str(stdout, 'UTF-8')
     assert os.path.exists(csv)
 
     # the CLI adds the filename to the scoring dataframe
@@ -161,50 +168,49 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
     true['filename'] = reads
 
     test_scores = pd.read_csv(csv)
+    print(test_scores)
     pdt.assert_equal(test_scores, true)
 
 
 def test_cli_coding_nucleotide_fasta(tmpdir, reads, peptide_fasta):
-    from khtools.extract_coding import cli
-
     coding_nucleotide_fasta = os.path.join(tmpdir, 'coding_nucleotides.fasta')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--coding-nucleotide-fasta", coding_nucleotide_fasta,
-        peptide_fasta, reads
-    ])
-    assert result.exit_code == 0
+    result = subprocess.Popen(
+        CMD +
+        " --coding-nucleotide-fasta" +
+        " {} {} {}".format(coding_nucleotide_fasta, peptide_fasta, reads),
+        shell=True)
+    stdout, stderr = result.communicate()
+    assert result.returncode == 0
     assert os.path.exists(coding_nucleotide_fasta)
 
 
 def test_cli_noncoding_fasta(tmpdir, reads, peptide_fasta):
-    from khtools.extract_coding import cli
-
     noncoding_nucleotide_fasta = os.path.join(tmpdir,
                                               'noncoding_nucleotides.fasta')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--noncoding-nucleotide-fasta", noncoding_nucleotide_fasta,
-        peptide_fasta, reads
-    ])
-    assert result.exit_code == 0
+    result = subprocess.Popen(
+        CMD +
+        " --noncoding-nucleotide-fasta" +
+        " {} {} {}".format(noncoding_nucleotide_fasta, peptide_fasta, reads),
+        shell=True)
+    stdout, stderr = result.communicate()
+    assert result.returncode == 0
     assert os.path.exists(noncoding_nucleotide_fasta)
 
 
 def test_cli_low_complexity_nucleotide(tmpdir, reads, peptide_fasta):
-    from khtools.extract_coding import cli
-
     low_complexity_nucleotide_fasta = os.path.join(
         tmpdir, 'low_complexity_nucleotide.fasta')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--low-complexity-nucleotide-fasta", low_complexity_nucleotide_fasta,
-        peptide_fasta, reads
-    ])
-    assert result.exit_code == 0
+    result = subprocess.Popen(
+        CMD +
+        " --low-complexity-nucleotide-fasta" +
+        " {} {} {}".format(
+            low_complexity_nucleotide_fasta, peptide_fasta, reads),
+        shell=True)
+    stdout, stderr = result.communicate()
+    assert result.returncode == 0
     assert os.path.exists(low_complexity_nucleotide_fasta)
 
 
@@ -212,44 +218,38 @@ def test_cli_low_complexity_peptide(
         tmpdir,
         reads,
         peptide_fasta):
-    from khtools.extract_coding import cli
-
     low_complexity_peptide_fasta = os.path.join(tmpdir,
                                                 'low_complexity_peptide.fasta')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--low-complexity-peptide-fasta", low_complexity_peptide_fasta,
-        peptide_fasta, reads
-    ])
-    assert result.exit_code == 0
+    result = subprocess.Popen(
+        CMD + " --low-complexity-peptide-fasta" +
+        " {} {} {}".format(low_complexity_peptide_fasta, peptide_fasta, reads),
+        shell=True)
+    stdout, stderr = result.communicate()
+    assert result.returncode == 0
     assert os.path.exists(low_complexity_peptide_fasta)
 
 
 def test_cli_json_summary(tmpdir, reads, peptide_fasta):
-    from khtools.extract_coding import cli
-
     json_summary = os.path.join(tmpdir, 'coding_summary.json')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--json-summary", json_summary,
-        peptide_fasta, reads
-    ])
-    print(result)
-    assert result.exit_code == 0
+    result = subprocess.Popen(
+        CMD + " --json-summary" + " {} {} {}".format(
+            json_summary, peptide_fasta, reads),
+        shell=True)
+    stdout, stderr = result.communicate()
+    assert result.returncode == 0
     assert os.path.exists(json_summary)
 
 
 def test_cli_empty_fasta_json_summary(tmpdir, empty_fasta, peptide_fasta):
-    from khtools.extract_coding import cli
 
     json_summary = os.path.join(tmpdir, 'coding_summary.json')
 
-    runner = CliRunner()
-    result = runner.invoke(cli, [
-        "--json-summary", json_summary,
-        peptide_fasta, empty_fasta
-    ])
-    assert result.exit_code == 0
+    result = subprocess.Popen(
+        CMD + " --json-summary" + " {} {} {}".format(
+            json_summary, peptide_fasta, empty_fasta),
+        shell=True)
+    stdout, stderr = result.communicate()
+    assert result.returncode == 0
     assert os.path.exists(json_summary)

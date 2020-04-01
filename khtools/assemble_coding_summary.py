@@ -1,6 +1,5 @@
 import json
 
-import click
 import pandas as pd
 from khtools.constants_extract_coding import (
     LOW_COMPLEXITY_CATEGORIES, PROTEIN_CODING_CATEGORIES)
@@ -25,9 +24,8 @@ class AssembleSaveSummary:
 
     def maybe_write_csv(self, coding_scores):
         if self.csv:
-            click.echo(
-                "Writing coding scores of reads to {}".format(self.csv),
-                err=True)
+            logger.info(
+                "Writing coding scores of reads to {}".format(self.csv))
             coding_scores.to_csv(self.csv, index=False)
 
     def make_empty_coding_categories(self):
@@ -66,10 +64,9 @@ class AssembleSaveSummary:
         else:
             summary = self.generate_coding_summary(coding_scores)
         with open(self.json_summary, 'w') as f:
-            click.echo(
+            logger.info(
                 "Writing extract_coding summary to {}".format(
-                    self.json_summary),
-                err=True)
+                    self.json_summary))
             json.dump(summary, fp=f)
         return summary
 

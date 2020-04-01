@@ -102,11 +102,10 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
     n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     min_kmer_entropy = n_possible_kmers_on_sequence / 2
     is_low_complexity = n_kmers <= min_kmer_entropy
-    return is_low_complexity, n_kmers
+    return is_low_complexity
 
 
 def write_fasta(file_handle, description, sequence):
-    print(file_handle)
     file_handle.write(">{}\n{}\n".format(description, sequence))
 
 
@@ -230,10 +229,8 @@ class ExtractCoding:
 
     def check_peptide_content(self, description, sequence):
         """Predict whether a nucleotide sequence could be protein-coding"""
-
         translations = TranslateSingleSeq(
             Seq(sequence), self.verbose).six_frame_translation_no_stops()
-
         if len(translations) == 0:
             scoring_lines = [constants_ec.SingleReadScore(
                 np.nan,
@@ -260,7 +257,6 @@ class ExtractCoding:
         (fraction_in_peptide_dbs,
          kmers_in_peptide_dbs,
          kmer_capacities) = self.get_peptide_meta(translations)
-
         if max(fraction_in_peptide_dbs.values()) <= self.jaccard_threshold:
             self.maybe_write_fasta(
                 description,
@@ -375,7 +371,7 @@ class ExtractCoding:
                 description = record['name']
                 sequence = record['sequence']
                 if self.verbose:
-                    print(description)
+                    logger.info(description)
 
                 for single_score_of_read in self.maybe_score_single_read(
                         description, sequence):

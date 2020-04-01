@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from khtools.sequence_encodings import ALPHABET_ALIASES
 
-DEFAULT_JACCARD_THRESHOLD = 0.5
+DEFAULT_JACCARD_THRESHOLD = 0.9
 DEFAULT_HP_JACCARD_THRESHOLD = 0.8
 SEQTYPE_TO_ANNOUNCEMENT = {
     "noncoding_nucleotide":
