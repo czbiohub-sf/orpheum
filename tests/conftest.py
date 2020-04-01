@@ -26,14 +26,6 @@ def jaccard_threshold(alphabet):
 
 
 @pytest.fixture
-def peptide_ksize(molecule):
-    from khtools.bloom_filter import get_peptide_ksize
-
-    ksize = get_peptide_ksize(molecule)
-    return ksize
-
-
-@pytest.fixture
 def seq():
     from Bio.Seq import Seq
     s = 'CGCTTGCTTAATACTGACATCAATAATATTAGGAAAATCGCAATATAACTGTAAATCCTGTTCTGTC'

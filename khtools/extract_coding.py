@@ -377,7 +377,7 @@ class ExtractCoding:
                         description, sequence):
                     line = self.get_coding_score_line(
                         description,
-                        single_score_of_read.max_fraction_kmers_in_peptide_db_across_six_frame_translations,
+                        single_score_of_read.max_fraction_kmers_in_peptide_db,
                         single_score_of_read.max_n_kmers,
                         single_score_of_read.special_case)
                     scoring_lines.append(line)
@@ -412,9 +412,7 @@ class ExtractCoding:
     default=None, type=int,
     help="K-mer size of the peptide sequence to use. Defaults for"
          " different alphabets are, "
-         "protein: {}".format(constants_bf.DEFAULT_PROTEIN_KSIZE) +
-         ", dayhoff: {}".format(constants_bf.DEFAULT_DAYHOFF_KSIZE) +
-         " hydrophobic-polar: {}".format(constants_bf.DEFAULT_HP_KSIZE))
+         "protein: {}, dayhoff {}, hydrophobic-polar {}".format(constants_bf.DEFAULT_PROTEIN_KSIZE, constants_bf.DEFAULT_DAYHOFF_KSIZE, constants_bf.DEFAULT_HP_KSIZE)) # noqa
 @click.option("--save-peptide-bloom-filter",
               is_flag=True,
               default=False,
@@ -431,9 +429,9 @@ class ExtractCoding:
                    "peptide database for this read to be called a "
                    "'coding read'.'"
                    "Default:"
-                   "{}".format(constants_ec.DEFAULT_JACCARD_THRESHOLD) +
-                   " for protein and dayhoff encodings, and "
-                   "{}".format(constants_ec.DEFAULT_HP_JACCARD_THRESHOLD) +
+                   "{}".format(constants_ec.DEFAULT_JACCARD_THRESHOLD) +  # noqa
+                   " for protein and dayhoff encodings, and "  +  # noqa
+                   "{}".format(constants_ec.DEFAULT_HP_JACCARD_THRESHOLD) + # noqa
                    "for hydrophobic-polar (hp) encoding")
 @click.option('--alphabet', '--encoding', '--molecule',
               default='protein',

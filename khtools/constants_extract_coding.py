@@ -46,7 +46,7 @@ PROTEIN_CODING_CATEGORIES = {
 
 SingleReadScore = namedtuple(
     "SingleReadScore",
-    ['max_fraction_kmers_in_peptide_db_across_six_frame_translations',
+    ['max_fraction_kmers_in_peptide_db',
      'max_n_kmers',
      'special_case'])
 
