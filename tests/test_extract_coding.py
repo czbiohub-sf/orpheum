@@ -57,7 +57,7 @@ def translations_for_single_seq():
 def test_get_jaccard_threshold():
     assert ec.get_jaccard_threshold(
         None, "") == constants_ec.DEFAULT_JACCARD_THRESHOLD
-    assert ec.get_jaccard_threshold(0.5, "") is 0.5
+    assert ec.get_jaccard_threshold(0.5, "") == 0.5
 
     assert ec.get_jaccard_threshold(
         None, "protein") == constants_ec.DEFAULT_JACCARD_THRESHOLD
