@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 import pytest
 import warnings
 
@@ -110,8 +111,8 @@ def alphabet(alphabet_ksize):
 def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
     filename = os.path.join(
         data_folder, 'bloom_filter',
-        f'Homo_sapiens.GRCh38.pep.subset.alphabet-{alphabet}_'
-        f'ksize-{peptide_ksize}.bloomfilter.nodegraph'
+        'Homo_sapiens.GRCh38.pep.subset.alphabet-{}_'.format(alphabet) +
+        'ksize-{}.bloomfilter.nodegraph'.format(peptide_ksize)
     )
     return filename
 
@@ -123,7 +124,7 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, alphabet,
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
         return load_nodegraph(peptide_bloom_filter_path)
-    except (FileNotFoundError, OSError):
+    except (OSError):
         from khtools.bloom_filter import make_peptide_bloom_filter
 
         bloom_filter = make_peptide_bloom_filter(peptide_fasta,
@@ -144,3 +145,37 @@ def true_protein_coding_fasta_path(data_folder):
 def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
     with open(true_protein_coding_fasta_path) as f:
         return f.read()
+
+
+@pytest.fixture
+def low_complexity_seq():
+    return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA" \
+           "CACACCCCCAACACCC"
+
+
+@pytest.fixture(params=['seq', 'low_complexity_seq'])
+def type_seq(request, seq, low_complexity_seq):
+    if request.param == 'seq':
+        return request.param, seq
+    elif request.param == 'low_complexity_seq':
+        return request.param, low_complexity_seq
+
+
+@pytest.fixture
+def empty_fasta(data_folder):
+    return os.path.join(
+        data_folder, 'empty_fasta.fasta')
+
+
+@pytest.fixture
+def true_scores_path(data_folder, alphabet, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
+        "subsampled_n22__alphabet-{}_ksize-".format(alphabet) +
+        "{}.csv".format(peptide_ksize))
+
+
+@pytest.fixture
+def true_scores(true_scores_path):
+    return pd.read_csv(true_scores_path)

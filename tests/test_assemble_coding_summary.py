@@ -40,7 +40,7 @@ def true_scores_path(data_folder):
     true_scores_path = os.path.join(
         data_folder, "extract_coding",
         "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
-        "molecule-protein_ksize-7.csv")
+        "alphabet-protein_ksize-7.csv")
     return true_scores_path
 
 

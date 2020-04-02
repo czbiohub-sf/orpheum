@@ -23,12 +23,12 @@ def test_per_read_false_positive_coding_rate():
 
 
 def test_make_peptide_bloom_filter(variable_peptide_fasta,
-                                   molecule, peptide_ksize):
+                                   alphabet, peptide_ksize):
     from khtools.bloom_filter import make_peptide_bloom_filter
 
     test = make_peptide_bloom_filter(variable_peptide_fasta,
                                      peptide_ksize,
-                                     molecule,
+                                     alphabet,
                                      n_tables=4,
                                      tablesize=1e6)
     if 'first1000lines' in variable_peptide_fasta:
@@ -51,7 +51,7 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
             ("hydrophobic-polar", 21): 434810,
             ("hydrophobic-polar", 7): 170
         }
-    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(molecule, peptide_ksize)]
+    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet, peptide_ksize)]
 
     # For now, assert that the number of kmers is within 0.1% of the true value
     np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers,
@@ -59,12 +59,12 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
 
 
 def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
-                                         molecule, peptide_ksize):
+                                         alphabet, peptide_ksize):
     from khtools.bloom_filter import maybe_make_peptide_bloom_filter
 
     maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
                                     peptide_ksize,
-                                    molecule,
+                                    alphabet,
                                     peptides_are_bloom_filter=True)
     # No assertion, just check that it ran
     # assert isinstance(test, khmer.Nodegraph)
@@ -80,41 +80,41 @@ def test_cli_minimum(peptide_fasta):
     assert result.exit_code == 0
 
 
-def test_cli_options(peptide_fasta, molecule, peptide_ksize):
+def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
     from khtools.bloom_filter import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, '--alphabet', molecule,
+        '--peptide-ksize', peptide_ksize, '--alphabet', alphabet,
         "--tablesize", "1e4",
         peptide_fasta,
     ])
     assert result.exit_code == 0
 
 
-def test_get_peptide_ksize_default(molecule):
+def test_get_peptide_ksize_default(alphabet):
     from khtools.bloom_filter import get_peptide_ksize
     from khtools.constants_bloom_filter import \
         DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
 
-    test = get_peptide_ksize(molecule, peptide_ksize=None)
-    if molecule == 'protein':
+    test = get_peptide_ksize(alphabet, peptide_ksize=None)
+    if alphabet == 'protein':
         assert test == DEFAULT_PROTEIN_KSIZE
-    elif molecule == 'dayhoff':
+    elif alphabet == 'dayhoff':
         assert test == DEFAULT_DAYHOFF_KSIZE
-    elif molecule == 'hydrophobic-polar':
+    elif alphabet == 'hydrophobic-polar':
         assert test == DEFAULT_HP_KSIZE
 
 
-def test_get_peptide_ksize_with_ksize(molecule):
+def test_get_peptide_ksize_with_ksize(alphabet):
     from khtools.bloom_filter import get_peptide_ksize
 
     peptide_ksize = 123
-    test = get_peptide_ksize(molecule, peptide_ksize)
+    test = get_peptide_ksize(alphabet, peptide_ksize)
     assert test == peptide_ksize
 
 
-def test_get_peptide_ksize_with_bad_molecule():
+def test_get_peptide_ksize_with_bad_alphabet():
     from khtools.bloom_filter import get_peptide_ksize
 
     with pytest.raises(ValueError):

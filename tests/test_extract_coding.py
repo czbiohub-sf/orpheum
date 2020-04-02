@@ -1,36 +1,75 @@
 import os
 import subprocess
+import sys
 
+import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
-import screed
+
+import khtools.extract_coding as ec
+import khtools.constants_extract_coding as constants_ec
+import khtools.constants_bloom_filter as constants_bf
+
 
 KHTOOLS = "khtools"
 EXTRACT_CODING = "extract-coding"
 CMD = KHTOOLS + " " + EXTRACT_CODING
 
 
+@pytest.fixture()
+def extract_coding_class(tmpdir, reads, peptide_fasta):
+    args = dict(
+        reads=[reads],
+        peptides=peptide_fasta,
+        peptide_ksize=None,
+        save_peptide_bloom_filter=True,
+        peptides_are_bloom_filter=False,
+        jaccard_threshold=None,
+        alphabet='protein',
+        csv=False,
+        json_summary=False,
+        coding_nucleotide_fasta=os.path.join(
+            tmpdir, "coding_nucleotide_fasta.fa"),
+        noncoding_nucleotide_fasta=os.path.join(
+            tmpdir, "noncoding_nucleotide_fasta.fa"),
+        low_complexity_nucleotide_fasta=os.path.join(
+            tmpdir, "low_complexity_nucleotide_fasta.fa"),
+        low_complexity_peptide_fasta=os.path.join(
+            tmpdir, "low_complexity_peptide_fasta.fa"),
+        tablesize=constants_bf.DEFAULT_MAX_TABLESIZE,
+        n_tables=constants_bf.DEFAULT_N_TABLES,
+        long_reads=False,
+        verbose=True)
+    ec_obj = ec.ExtractCoding(args)
+    return ec_obj
+
+
 @pytest.fixture
-def low_complexity_seq():
-    return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA" \
-           "CACACCCCCAACACCC"
+def translations_for_single_seq():
+    return {
+        2: 'ACLILTSIILGKSQYNCKSCSV',
+        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
+        -3: 'QNRIYSYIAIFLILLMSVLSK'
+    }
 
 
-@pytest.fixture(params=['seq', 'low_complexity_seq'])
-def type_seq(request, seq, low_complexity_seq):
-    if request.param == 'seq':
-        return request.param, seq
-    elif request.param == 'low_complexity_seq':
-        return request.param, low_complexity_seq
+def test_get_jaccard_threshold():
+    assert ec.get_jaccard_threshold(
+        None, "") == constants_ec.DEFAULT_JACCARD_THRESHOLD
+    assert ec.get_jaccard_threshold(0.5, "") is 0.5
+
+    assert ec.get_jaccard_threshold(
+        None, "protein") == constants_ec.DEFAULT_JACCARD_THRESHOLD
+    assert ec.get_jaccard_threshold(
+        None, "dayhoff") == constants_ec.DEFAULT_JACCARD_THRESHOLD
+    assert ec.get_jaccard_threshold(
+        None, "hp") == constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
 
 
 def test_evaluate_is_fastp_low_complexity(type_seq):
-    from khtools.extract_coding import evaluate_is_fastp_low_complexity
-
     seqtype, seq = type_seq
-
-    test = evaluate_is_fastp_low_complexity(seq)
+    test = ec.evaluate_is_fastp_low_complexity(seq)
     if seqtype == 'seq':
         # regular sequence is not low complexity
         assert not test
@@ -39,44 +78,145 @@ def test_evaluate_is_fastp_low_complexity(type_seq):
         assert test
 
 
-@pytest.fixture
-def empty_fasta(data_folder):
-    return os.path.join(
-        data_folder, 'empty_fasta.fasta')
+def test_compute_fastp_complexity(type_seq):
+    seqtype, seq = type_seq
+    test = ec.compute_fastp_complexity(seq)
+    if seqtype == 'seq':
+        # regular sequence is not low complexity
+        np.testing.assert_almost_equal(test, 0.74, 0.001)
+    elif seqtype == 'low_complexity_seq':
+        # low complexity sequence should evaluate to low complexity!
+        np.testing.assert_almost_equal(test, 0.26, 0.001)
 
 
-@pytest.fixture
-def true_scores_path(data_folder, alphabet, peptide_ksize):
-    return os.path.join(
-        data_folder, "extract_coding",
-        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
-        "subsampled_n22__alphabet-{}_ksize-".format(alphabet) +
-        "{}.csv".format(peptide_ksize))
+def test_evaluate_is_kmer_low_complexity(type_seq):
+    seqtype, seq = type_seq
+    test = ec.evaluate_is_kmer_low_complexity(seq, 7)
+    if seqtype == 'seq':
+        # regular sequence is not low complexity
+        assert test is False
+    elif seqtype == 'low_complexity_seq':
+        # low complexity sequence should evaluate to low complexity!
+        assert test is True
 
 
-@pytest.fixture
-def true_scores(true_scores_path):
-    return pd.read_csv(true_scores_path)
+def test_compute_kmer_complexity(type_seq):
+    seqtype, seq = type_seq
+    test = ec.compute_kmer_complexity(seq, 7)
+    if seqtype == 'seq':
+        # regular sequence is not low complexity
+        assert test == 30.5
+    elif seqtype == 'low_complexity_seq':
+        # low complexity sequence should evaluate to low complexity!
+        assert test == 35.0
 
 
-@pytest.fixture
-def true_protein_coding_fasta_path(data_folder):
-    return os.path.join(data_folder, "extract_coding",
-                        "true_protein_coding.fasta")
+def test_write_fasta(capsys):
+    description = "test"
+    sequence = "seq"
+    ec.write_fasta(sys.stdout, description, sequence)
+    captured = capsys.readouterr()
+    assert captured.out == ">test\nseq\n"
 
 
-@pytest.fixture
-def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
-    with open(true_protein_coding_fasta_path) as f:
-        return f.read()
+def test_maybe_write_fasta(tmpdir, capsys, extract_coding_class):
+    # Check if file handle is stdout
+    description = "test"
+    sequence = "seq"
+    extract_coding_class.maybe_write_fasta(sys.stdout, description, sequence)
+    captured = capsys.readouterr()
+    assert captured.out == ">test\nseq\n"
+    # check if file handle is None
+    extract_coding_class.maybe_write_fasta(None, description, sequence)
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    fasta = os.path.join(tmpdir, 'test_maybe_write_fasta.fasta')
+    # check if file handle is a temporary fasta file
+    extract_coding_class.maybe_write_fasta(
+        open(fasta, "w"), description, sequence)
+    assert captured.out == ""
 
 
-def get_fasta_record_names(fasta_path):
-    names = []
-    for record in screed.open(fasta_path):
-        name = record['name']
-        names.append(name)
-    return set(names)
+def test_open_and_announce(tmpdir, capsys, extract_coding_class):
+    # Check if expected announcement is made
+    fasta = os.path.join(tmpdir, 'test_noncoding_nucleotide.fasta')
+    extract_coding_class.open_and_announce(fasta, "noncoding_nucleotide")
+    captured = capsys.readouterr()
+    expected = \
+        'Writing nucleotide sequence from reads WITHOUT matches to protein-coding peptides to {}\n'.format(fasta)
+    assert captured.out in expected
+
+
+def test_maybe_open_fastas(tmpdir, capsys, extract_coding_class):
+    # Check if file handle is stdout
+    extract_coding_class.set_coding_scores_all_files()
+    assert len(extract_coding_class.fastas) == 4
+    assert len(extract_coding_class.file_handles) == 4
+    fastas = [
+        extract_coding_class.noncoding_nucleotide_fasta,
+        extract_coding_class.coding_nucleotide_fasta,
+        extract_coding_class.low_complexity_peptide_fasta,
+        extract_coding_class.low_complexity_nucleotide_fasta]
+    seqtypes = list(extract_coding_class.file_handles.keys())
+    for key, value in extract_coding_class.fastas.items():
+        assert value in fastas
+        assert key in seqtypes
+
+
+def test_ec_get_jaccard_threshold(extract_coding_class):
+    assert extract_coding_class.get_jaccard_threshold(
+    ) == constants_ec.DEFAULT_JACCARD_THRESHOLD
+
+
+def test_score_single_translation(
+        translations_for_single_seq, extract_coding_class):
+    fraction_in_peptide_db, n_kmers = \
+        extract_coding_class.score_single_translation(
+            translations_for_single_seq)
+    np.testing.assert_almost_equal(
+        fraction_in_peptide_db, 0.19, 0.05)
+    assert n_kmers == 82
+
+
+def test_get_peptide_meta(
+        extract_coding_class, translations_for_single_seq):
+
+    # Convert to BioPython sequence object for translation
+    result = \
+        extract_coding_class.get_peptide_meta(
+            translations_for_single_seq)
+    expected = (
+        {-3: 0.0, -2: 1.0, 2: 0.0},
+        {-3: 15, -2: 16, 2: 16},
+        {-3: False, -2: False, 2: False})
+    assert result == expected
+
+
+def test_get_coding_score_line(
+        extract_coding_class, translations_for_single_seq):
+
+    # Convert to BioPython sequence object for translation
+    result = \
+        extract_coding_class.get_coding_score_line(
+            "description",
+            0.5,
+            40,
+            "test special case")
+    assert result == ['description', 0.5, 40, 'test special case']
+    result = \
+        extract_coding_class.get_coding_score_line(
+            "description",
+            1.0,
+            40,
+            "test special case")
+    assert result == ['description', 1.0, 40, "test special case"]
+    result = \
+        extract_coding_class.get_coding_score_line(
+            "description",
+            1.0,
+            40,
+            None)
+    assert result == ['description', 1.0, 40, 'Coding']
 
 
 def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
@@ -168,7 +308,6 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
     true['filename'] = reads
 
     test_scores = pd.read_csv(csv)
-    print(test_scores)
     pdt.assert_equal(test_scores, true)
 
 

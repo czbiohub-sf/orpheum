@@ -85,7 +85,7 @@ def compute_fastp_complexity(seq):
     return complexity
 
 
-def evaluate_is_kmer_low_complexity(sequence, ksize):
+def evaluate_is_kmer_low_complexity(seq, ksize):
     """Check if sequence is low complexity, i.e. mostly repetitive
     By this definition, the sequence is not complex if its number of unique
     k-mers is smaller than half the number of expected k-mers
@@ -94,15 +94,20 @@ def evaluate_is_kmer_low_complexity(sequence, ksize):
         warnings.filterwarnings('ignore')
         # Ignore Biopython warning of seq objects being strings now
         try:
-            kmers = kmerize(sequence, ksize)
+            kmers = kmerize(seq, ksize)
         except ValueError:
             # k-mer size is larger than sequence
             return None, None
     n_kmers = len(kmers)
-    n_possible_kmers_on_sequence = len(sequence) - ksize + 1
-    min_kmer_entropy = n_possible_kmers_on_sequence / 2
-    is_low_complexity = n_kmers <= min_kmer_entropy
+    complexity = compute_kmer_complexity(seq, ksize)
+    is_low_complexity = n_kmers <= complexity
     return is_low_complexity
+
+
+def compute_kmer_complexity(seq, ksize):
+    n_possible_kmers_on_sequence = len(seq) - ksize + 1
+    complexity = n_possible_kmers_on_sequence / 2
+    return complexity
 
 
 def write_fasta(file_handle, description, sequence):
@@ -142,7 +147,7 @@ class ExtractCoding:
         self.peptide_ksize = self.peptide_bloom_filter.ksize()
         self.nucleotide_ksize = 3 * self.peptide_ksize
 
-    def maybe_write_fasta(self, description, file_handle, sequence):
+    def maybe_write_fasta(self, file_handle, description, sequence):
         """Write fasta to file handle if it is not None"""
         if file_handle is not None:
             write_fasta(file_handle, description, sequence)
@@ -229,8 +234,10 @@ class ExtractCoding:
 
     def check_peptide_content(self, description, sequence):
         """Predict whether a nucleotide sequence could be protein-coding"""
-        translations = TranslateSingleSeq(
-            Seq(sequence), self.verbose).six_frame_translation_no_stops()
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
+            translations = TranslateSingleSeq(
+                Seq(sequence), self.verbose).six_frame_translation_no_stops()
         if len(translations) == 0:
             scoring_lines = [constants_ec.SingleReadScore(
                 np.nan,
@@ -259,8 +266,8 @@ class ExtractCoding:
          kmer_capacities) = self.get_peptide_meta(translations)
         if max(fraction_in_peptide_dbs.values()) <= self.jaccard_threshold:
             self.maybe_write_fasta(
-                description,
                 self.file_handles['noncoding_nucleotide'],
+                description,
                 sequence)
             scoring_lines = [constants_ec.SingleReadScore(
                 max(fraction_in_peptide_dbs.values()),
@@ -273,13 +280,14 @@ class ExtractCoding:
             n_kmers = kmers_in_peptide_dbs[frame]
             if kmer_capacities[frame]:
                 self.maybe_write_fasta(
-                    description + " translation_frame: {}.format(frame)",
                     self.file_handles['low_complexity_peptide'],
+                    description + " translation_frame: {}.format(frame)",
                     translation)
                 scoring_lines.append(constants_ec.SingleReadScore(
                     np.nan,
                     n_kmers,
                     constants_ec.LOW_COMPLEXITY_CATEGORIES[self.alphabet]))
+                return scoring_lines
             else:
                 fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
                 if fraction_in_peptide_db > self.jaccard_threshold:
@@ -297,8 +305,8 @@ class ExtractCoding:
                         seqname,
                         translation)
                     self.maybe_write_fasta(
-                        seqname,
                         self.file_handles['coding_nucleotide'],
+                        seqname,
                         sequence)
                     scoring_lines.append(
                         constants_ec.SingleReadScore(
@@ -318,8 +326,8 @@ class ExtractCoding:
             jaccard = np.nan
             special_case = "Low complexity nucleotide"
             self.maybe_write_fasta(
-                description,
                 self.file_handles['low_complexity_nucleotide'],
+                description,
                 sequence)
         else:
             jaccard = np.nan
