@@ -52,7 +52,7 @@ def validate_jaccard(ctx, param, value):
     except (ValueError, AssertionError):
         raise click.BadParameter(
             '--jaccard-threshold needs to be a number'
-            ' between 0 and 1, but was provided'.format(value))
+            ' between 0 and 1, but {} was provided'.format(value))
 
 
 def evaluate_is_fastp_low_complexity(seq):
