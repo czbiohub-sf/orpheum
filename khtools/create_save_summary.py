@@ -1,7 +1,7 @@
 import json
 
 import pandas as pd
-from khtools.constants_extract_coding import (
+from khtools.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES, PROTEIN_CODING_CATEGORIES)
 from khtools.log_utils import get_logger
 
@@ -57,9 +57,9 @@ class CreateSaveSummary:
                 'classification_value_counts': empty_coding_categories,
                 'classification_percentages': empty_coding_categories,
                 'histogram_n_coding_frames_per_read': {
-                    str(i): 0 for i in range(6)},
+                    str(i): 0 for i in range(len(empty_coding_categories))},
                 'histogram_n_coding_frames_per_read_percentages': {
-                    str(i): 0 for i in range(6)},
+                    str(i): 0 for i in range(len(empty_coding_categories))},
             }
         else:
             summary = self.generate_coding_summary(coding_scores)

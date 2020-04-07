@@ -2,8 +2,8 @@ import os
 import warnings
 import pytest
 import pandas as pd
-from khtools.assemble_coding_summary import AssembleSaveSummary
-from khtools.constants_extract_coding import (
+from khtools.create_save_summary import CreateSaveSummary
+from khtools.constants_translate import (
     DEFAULT_JACCARD_THRESHOLD, LOW_COMPLEXITY_CATEGORIES)
 
 
@@ -52,11 +52,11 @@ def single_alphabet_ksize_true_scores(true_scores_path):
 def test_maybe_write_json_summary_empty(
         coding_scores_empty, alphabet,
         peptide_bloom_filter_path, peptide_ksize):
-    assemble_ss = AssembleSaveSummary(
+    create_ss = CreateSaveSummary(
         ['nonexistent.fa'], True, True,
         peptide_bloom_filter_path,
         alphabet, peptide_ksize, DEFAULT_JACCARD_THRESHOLD)
-    summary = assemble_ss.maybe_write_json_summary(coding_scores_empty)
+    summary = create_ss.maybe_write_json_summary(coding_scores_empty)
     assert summary['input_files'] == ['nonexistent.fa']
     assert summary['jaccard_info']['count'] == 0
 
@@ -64,11 +64,11 @@ def test_maybe_write_json_summary_empty(
 def test_get_n_translated_frames_per_read(
         coding_scores_nonempty, alphabet,
         peptide_bloom_filter_path, peptide_ksize):
-    assemble_ss = AssembleSaveSummary(
+    create_ss = CreateSaveSummary(
         ['nonexistent.fa'], True, True,
         peptide_bloom_filter_path,
         alphabet, peptide_ksize, DEFAULT_JACCARD_THRESHOLD)
-    percentages, histogram = assemble_ss.get_n_translated_frames_per_read(
+    percentages, histogram = create_ss.get_n_translated_frames_per_read(
         coding_scores_nonempty)
     assert histogram == {
         'Number of reads with 1 putative protein-coding translations': 5,
@@ -90,7 +90,7 @@ def test_get_n_per_coding_classification(
         coding_scores_nonempty, alphabet,
         peptide_bloom_filter_path, peptide_ksize, jaccard_threshold):
     from khtools.sequence_encodings import ALIAS_TO_ALPHABET
-    assemble_ss = AssembleSaveSummary(
+    create_ss = CreateSaveSummary(
         ['nonexistent.fa'], True, True,
         peptide_bloom_filter_path,
         alphabet, peptide_ksize, jaccard_threshold)
@@ -106,7 +106,7 @@ def test_get_n_per_coding_classification(
     df = pd.DataFrame(data, columns=['read_id', 'classification'])
 
     test_counts, test_percentages = \
-        assemble_ss.get_n_per_coding_classification(df)
+        create_ss.get_n_per_coding_classification(df)
     canonical_alphabet = ALIAS_TO_ALPHABET[alphabet]
     true_counts = {
         'All translations shorter than peptide k-mer size + 1': 14.285714285714286,
@@ -128,11 +128,11 @@ def test_get_n_per_coding_classification(
 def test_generate_coding_summary(
         reads, data_folder,
         single_alphabet_ksize_true_scores):
-    assemble_ss = AssembleSaveSummary(
+    create_ss = CreateSaveSummary(
         reads, True, True,
         'bloom_filter.nodegraph',
         "protein", 7, 0.5)
-    test_summary = assemble_ss.generate_coding_summary(
+    test_summary = create_ss.generate_coding_summary(
         single_alphabet_ksize_true_scores)
 
     true_summary = {
@@ -169,16 +169,16 @@ def test_generate_coding_summary(
 
 def test_maybe_write_csv(
         reads, single_alphabet_ksize_true_scores, true_scores_path):
-    assemble_ss = AssembleSaveSummary(
+    create_ss = CreateSaveSummary(
         reads, true_scores_path, True,
         'bloom_filter.nodegraph',
         "protein", 7, 0.5)
-    assemble_ss.maybe_write_csv(
+    create_ss.maybe_write_csv(
         single_alphabet_ksize_true_scores)
 
 
 def test_make_empty_coding_categories():
-    assemble_ss = AssembleSaveSummary(
+    create_ss = CreateSaveSummary(
         ['nonexistent.fa'], True, True,
         'bloom_filter.nodegraph',
         "protein", 7, 0.5)
@@ -190,5 +190,5 @@ def test_make_empty_coding_categories():
         'Low complexity nucleotide': 0,
         'Read length was shorter than 3 * peptide k-mer size': 0,
         'Low complexity peptide in protein20 alphabet': 0}
-    true_coding_categories = assemble_ss.make_empty_coding_categories()
+    true_coding_categories = create_ss.make_empty_coding_categories()
     assert true_coding_categories == test_coding_categories

@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
-from khtools.extract_coding import cli
+from khtools.translate import cli
 from click.testing import CliRunner
 
-import khtools.extract_coding as ec
-import khtools.constants_extract_coding as constants_ec
-import khtools.constants_bloom_filter as constants_bf
+import khtools.translate as translate
+import khtools.constants_translate as constants_translate
+import khtools.constants_index as constants_index
 
 
 KHTOOLS = "khtools"
@@ -19,7 +19,7 @@ CMD = KHTOOLS + " " + EXTRACT_CODING
 
 
 @pytest.fixture()
-def extract_coding_class(tmpdir, reads, peptide_fasta):
+def translate_class(tmpdir, reads, peptide_fasta):
     args = dict(
         reads=[reads],
         peptides=peptide_fasta,
@@ -38,12 +38,12 @@ def extract_coding_class(tmpdir, reads, peptide_fasta):
             tmpdir, "low_complexity_nucleotide_fasta.fa"),
         low_complexity_peptide_fasta=os.path.join(
             tmpdir, "low_complexity_peptide_fasta.fa"),
-        tablesize=constants_bf.DEFAULT_MAX_TABLESIZE,
-        n_tables=constants_bf.DEFAULT_N_TABLES,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+        n_tables=constants_index.DEFAULT_N_TABLES,
         long_reads=False,
         verbose=True)
-    ec_obj = ec.ExtractCoding(args)
-    return ec_obj
+    translate_obj = translate.Translate(args)
+    return translate_obj
 
 
 @pytest.fixture
@@ -56,21 +56,21 @@ def translations_for_single_seq():
 
 
 def test_get_jaccard_threshold():
-    assert ec.get_jaccard_threshold(
-        None, "") == constants_ec.DEFAULT_JACCARD_THRESHOLD
-    assert ec.get_jaccard_threshold(0.5, "") == 0.5
+    assert translate.get_jaccard_threshold(
+        None, "") == constants_translate.DEFAULT_JACCARD_THRESHOLD
+    assert translate.get_jaccard_threshold(0.5, "") == 0.5
 
-    assert ec.get_jaccard_threshold(
-        None, "protein") == constants_ec.DEFAULT_JACCARD_THRESHOLD
-    assert ec.get_jaccard_threshold(
-        None, "dayhoff") == constants_ec.DEFAULT_JACCARD_THRESHOLD
-    assert ec.get_jaccard_threshold(
-        None, "hp") == constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
+    assert translate.get_jaccard_threshold(
+        None, "protein") == constants_translate.DEFAULT_JACCARD_THRESHOLD
+    assert translate.get_jaccard_threshold(
+        None, "dayhoff") == constants_translate.DEFAULT_JACCARD_THRESHOLD
+    assert translate.get_jaccard_threshold(
+        None, "hp") == constants_translate.DEFAULT_HP_JACCARD_THRESHOLD
 
 
 def test_evaluate_is_fastp_low_complexity(type_seq):
     seqtype, seq = type_seq
-    test = ec.evaluate_is_fastp_low_complexity(seq)
+    test = translate.evaluate_is_fastp_low_complexity(seq)
     if seqtype == 'seq':
         # regular sequence is not low complexity
         assert not test
@@ -81,7 +81,7 @@ def test_evaluate_is_fastp_low_complexity(type_seq):
 
 def test_compute_fastp_complexity(type_seq):
     seqtype, seq = type_seq
-    test = ec.compute_fastp_complexity(seq)
+    test = translate.compute_fastp_complexity(seq)
     if seqtype == 'seq':
         # regular sequence is not low complexity
         np.testing.assert_almost_equal(test, 0.74, 0.001)
@@ -92,7 +92,7 @@ def test_compute_fastp_complexity(type_seq):
 
 def test_evaluate_is_kmer_low_complexity(type_seq):
     seqtype, seq = type_seq
-    test = ec.evaluate_is_kmer_low_complexity(seq, 7)
+    test = translate.evaluate_is_kmer_low_complexity(seq, 7)
     if seqtype == 'seq':
         # regular sequence is not low complexity
         assert test is False
@@ -103,7 +103,7 @@ def test_evaluate_is_kmer_low_complexity(type_seq):
 
 def test_compute_kmer_complexity(type_seq):
     seqtype, seq = type_seq
-    test = ec.compute_kmer_complexity(seq, 7)
+    test = translate.compute_kmer_complexity(seq, 7)
     if seqtype == 'seq':
         # regular sequence is not low complexity
         assert test == 30.5
@@ -115,64 +115,64 @@ def test_compute_kmer_complexity(type_seq):
 def test_write_fasta(capsys):
     description = "test"
     sequence = "seq"
-    ec.write_fasta(sys.stdout, description, sequence)
+    translate.write_fasta(sys.stdout, description, sequence)
     captured = capsys.readouterr()
     assert captured.out == ">test\nseq\n"
 
 
-def test_maybe_write_fasta(tmpdir, capsys, extract_coding_class):
+def test_maybe_write_fasta(tmpdir, capsys, translate_class):
     # Check if file handle is stdout
     description = "test"
     sequence = "seq"
-    extract_coding_class.maybe_write_fasta(sys.stdout, description, sequence)
+    translate_class.maybe_write_fasta(sys.stdout, description, sequence)
     captured = capsys.readouterr()
     assert captured.out == ">test\nseq\n"
     # check if file handle is None
-    extract_coding_class.maybe_write_fasta(None, description, sequence)
+    translate_class.maybe_write_fasta(None, description, sequence)
     captured = capsys.readouterr()
     assert captured.out == ""
     fasta = os.path.join(tmpdir, 'test_maybe_write_fasta.fasta')
     # check if file handle is a temporary fasta file
-    extract_coding_class.maybe_write_fasta(
+    translate_class.maybe_write_fasta(
         open(fasta, "w"), description, sequence)
     assert captured.out == ""
 
 
-def test_open_and_announce(tmpdir, capsys, extract_coding_class):
+def test_open_and_announce(tmpdir, capsys, translate_class):
     # Check if expected announcement is made
     fasta = os.path.join(tmpdir, 'test_noncoding_nucleotide.fasta')
-    extract_coding_class.open_and_announce(fasta, "noncoding_nucleotide")
+    translate_class.open_and_announce(fasta, "noncoding_nucleotide")
     captured = capsys.readouterr()
     expected = \
         'Writing nucleotide sequence from reads WITHOUT matches to protein-coding peptides to {}\n'.format(fasta)
     assert captured.out in expected
 
 
-def test_maybe_open_fastas(tmpdir, capsys, extract_coding_class):
+def test_maybe_open_fastas(tmpdir, capsys, translate_class):
     # Check if file handle is stdout
-    extract_coding_class.set_coding_scores_all_files()
-    assert len(extract_coding_class.fastas) == 4
-    assert len(extract_coding_class.file_handles) == 4
+    translate_class.set_coding_scores_all_files()
+    assert len(translate_class.fastas) == 4
+    assert len(translate_class.file_handles) == 4
     fastas = [
-        extract_coding_class.noncoding_nucleotide_fasta,
-        extract_coding_class.coding_nucleotide_fasta,
-        extract_coding_class.low_complexity_peptide_fasta,
-        extract_coding_class.low_complexity_nucleotide_fasta]
-    seqtypes = list(extract_coding_class.file_handles.keys())
-    for key, value in extract_coding_class.fastas.items():
+        translate_class.noncoding_nucleotide_fasta,
+        translate_class.coding_nucleotide_fasta,
+        translate_class.low_complexity_peptide_fasta,
+        translate_class.low_complexity_nucleotide_fasta]
+    seqtypes = list(translate_class.file_handles.keys())
+    for key, value in translate_class.fastas.items():
         assert value in fastas
         assert key in seqtypes
 
 
-def test_ec_get_jaccard_threshold(extract_coding_class):
-    assert extract_coding_class.get_jaccard_threshold(
-    ) == constants_ec.DEFAULT_JACCARD_THRESHOLD
+def test_translate_get_jaccard_threshold(translate_class):
+    assert translate_class.get_jaccard_threshold(
+    ) == constants_translate.DEFAULT_JACCARD_THRESHOLD
 
 
 def test_score_single_translation(
-        translations_for_single_seq, extract_coding_class):
+        translations_for_single_seq, translate_class):
     fraction_in_peptide_db, n_kmers = \
-        extract_coding_class.score_single_translation(
+        translate_class.score_single_translation(
             translations_for_single_seq)
     np.testing.assert_almost_equal(
         fraction_in_peptide_db, 0.19, 0.05)
@@ -180,11 +180,11 @@ def test_score_single_translation(
 
 
 def test_get_peptide_meta(
-        extract_coding_class, translations_for_single_seq):
+        translate_class, translations_for_single_seq):
 
     # Convert to BioPython sequence object for translation
     result = \
-        extract_coding_class.get_peptide_meta(
+        translate_class.get_peptide_meta(
             translations_for_single_seq)
     expected = (
         {-3: 0.0, -2: 1.0, 2: 0.0},
@@ -194,25 +194,25 @@ def test_get_peptide_meta(
 
 
 def test_get_coding_score_line(
-        extract_coding_class, translations_for_single_seq):
+        translate_class, translations_for_single_seq):
 
     # Convert to BioPython sequence object for translation
     result = \
-        extract_coding_class.get_coding_score_line(
+        translate_class.get_coding_score_line(
             "description",
             0.5,
             40,
             "test special case")
     assert result == ['description', 0.5, 40, 'test special case']
     result = \
-        extract_coding_class.get_coding_score_line(
+        translate_class.get_coding_score_line(
             "description",
             1.0,
             40,
             "test special case")
     assert result == ['description', 1.0, 40, "test special case"]
     result = \
-        extract_coding_class.get_coding_score_line(
+        translate_class.get_coding_score_line(
             "description",
             1.0,
             40,
@@ -246,7 +246,7 @@ def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
         "--jaccard-threshold", "3.14", peptide_fasta, reads
     ])
     assert result.exit_code == 2
-    error_message = "Invalid value for '--jaccard-threshold': --jaccard-threshold needs to be a number between 0 and 1, but 3.14 was provided"
+    error_message = "--jaccard-threshold needs to be a number between 0 and 1, but 3.14 was provided"
     assert error_message in result.output
 
 
@@ -256,7 +256,7 @@ def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
         "--jaccard-threshold", "beyonce", peptide_fasta, reads
     ])
     assert result.exit_code == 2
-    error_message = "Invalid value for '--jaccard-threshold': beyonce is not a valid floating point value"
+    error_message = "beyonce is not a valid floating point value"
     assert error_message in result.output
 
 

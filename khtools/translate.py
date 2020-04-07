@@ -16,11 +16,11 @@ from sourmash._minhash import hash_murmur
 from khtools.log_utils import get_logger
 from khtools.sequence_encodings import encode_peptide
 from khtools.compare_kmer_content import kmerize
-from khtools.assemble_coding_summary import AssembleSaveSummary
-from khtools.bloom_filter import (maybe_make_peptide_bloom_filter,
-                                  maybe_save_peptide_bloom_filter)
-import khtools.constants_bloom_filter as constants_bf
-import khtools.constants_extract_coding as constants_ec
+from khtools.create_save_summary import CreateSaveSummary
+from khtools.index import (maybe_make_peptide_bloom_filter,
+                           maybe_save_peptide_bloom_filter)
+import khtools.constants_index as constants_index
+import khtools.constants_translate as constants_translate
 from khtools.translate_single_seq import TranslateSingleSeq
 
 
@@ -31,10 +31,10 @@ def get_jaccard_threshold(jaccard_threshold, alphabet):
     if jaccard_threshold is None:
         if alphabet == 'hp' or alphabet == 'hydrophobic-polar':
             jaccard_threshold = \
-                constants_ec.DEFAULT_HP_JACCARD_THRESHOLD
+                constants_translate.DEFAULT_HP_JACCARD_THRESHOLD
         else:
             jaccard_threshold = \
-                constants_ec.DEFAULT_JACCARD_THRESHOLD
+                constants_translate.DEFAULT_JACCARD_THRESHOLD
     return jaccard_threshold
 
 
@@ -73,7 +73,7 @@ def evaluate_is_fastp_low_complexity(seq):
         Whether or not the sequence passes the complexity threshold
     """
     complexity = compute_fastp_complexity(seq)
-    return complexity < constants_ec.COMPLEXITY_THRESHOLD
+    return complexity < constants_translate.COMPLEXITY_THRESHOLD
 
 
 def compute_fastp_complexity(seq):
@@ -112,7 +112,7 @@ def write_fasta(file_handle, description, sequence):
     file_handle.write(">{}\n{}\n".format(description, sequence))
 
 
-class ExtractCoding:
+class Translate:
 
     def __init__(self, args):
         """Constructor"""
@@ -153,7 +153,7 @@ class ExtractCoding:
     def open_and_announce(self, filename, seqtype):
         """Return an opened file handle to write and announce"""
         if self.verbose:
-            announcement = constants_ec.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
+            announcement = constants_translate.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
             logger.info(
                 "Writing {} to {}".format(announcement, filename))
         return open(filename, 'w')
@@ -237,10 +237,10 @@ class ExtractCoding:
             translations = TranslateSingleSeq(
                 Seq(sequence), self.verbose).six_frame_translation_no_stops()
         if len(translations) == 0:
-            scoring_lines = [constants_ec.SingleReadScore(
+            scoring_lines = [constants_translate.SingleReadScore(
                 np.nan,
                 np.nan,
-                constants_ec.PROTEIN_CODING_CATEGORIES['stop_codons'])]
+                constants_translate.PROTEIN_CODING_CATEGORIES['stop_codons'])]
             return scoring_lines
 
         translations = {
@@ -250,10 +250,10 @@ class ExtractCoding:
         }
         if len(translations) == 0:
             scoring_lines = [
-                constants_ec.SingleReadScore(
+                constants_translate.SingleReadScore(
                     np.nan,
                     np.nan,
-                    constants_ec.PROTEIN_CODING_CATEGORIES[
+                    constants_translate.PROTEIN_CODING_CATEGORIES[
                         'too_short_peptide'])]
             return scoring_lines
 
@@ -267,10 +267,10 @@ class ExtractCoding:
                 self.file_handles['noncoding_nucleotide'],
                 description,
                 sequence)
-            scoring_lines = [constants_ec.SingleReadScore(
+            scoring_lines = [constants_translate.SingleReadScore(
                 max(fraction_in_peptide_dbs.values()),
                 max(kmers_in_peptide_dbs.values()),
-                constants_ec.PROTEIN_CODING_CATEGORIES['non_coding'])]
+                constants_translate.PROTEIN_CODING_CATEGORIES['non_coding'])]
             return scoring_lines
 
         scoring_lines = []
@@ -281,10 +281,10 @@ class ExtractCoding:
                     self.file_handles['low_complexity_peptide'],
                     description + " translation_frame: {}.format(frame)",
                     translation)
-                scoring_lines.append(constants_ec.SingleReadScore(
+                scoring_lines.append(constants_translate.SingleReadScore(
                     np.nan,
                     n_kmers,
-                    constants_ec.LOW_COMPLEXITY_CATEGORIES[self.alphabet]))
+                    constants_translate.LOW_COMPLEXITY_CATEGORIES[self.alphabet]))
                 return scoring_lines
             else:
                 fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
@@ -307,7 +307,7 @@ class ExtractCoding:
                         seqname,
                         sequence)
                     scoring_lines.append(
-                        constants_ec.SingleReadScore(
+                        constants_translate.SingleReadScore(
                             fraction_in_peptide_db,
                             n_kmers,
                             None))
@@ -332,7 +332,7 @@ class ExtractCoding:
             n_kmers = np.nan
             special_case = 'Read length was shorter than 3 * peptide ' \
                            'k-mer size'
-        return constants_ec.SingleReadScore(jaccard, n_kmers, special_case)
+        return constants_translate.SingleReadScore(jaccard, n_kmers, special_case)
 
     def maybe_score_single_read(self, description, sequence):
         """Check if read is low complexity/too short, otherwise score it"""
@@ -344,7 +344,7 @@ class ExtractCoding:
             jaccard, n_kmers, special_case = self.check_nucleotide_content(
                 description, n_kmers, sequence)
             scores = [
-                constants_ec.SingleReadScore(jaccard, n_kmers, special_case)]
+                constants_translate.SingleReadScore(jaccard, n_kmers, special_case)]
         else:
             scores = self.check_peptide_content(description, sequence)
             for jaccard, n_kmers, special_case in scores:
@@ -390,7 +390,7 @@ class ExtractCoding:
 
         # Concatenate all the lines into a single dataframe
         scoring_df = pd.DataFrame(
-            scoring_lines, columns=constants_ec.SCORING_DF_COLUMNS)
+            scoring_lines, columns=constants_translate.SCORING_DF_COLUMNS)
 
         # Add the reads that were used to generate these scores as a column
         scoring_df['filename'] = reads
@@ -418,7 +418,7 @@ class ExtractCoding:
     default=None, type=int,
     help="K-mer size of the peptide sequence to use. Defaults for"
          " different alphabets are, "
-         "protein: {}, dayhoff {}, hydrophobic-polar {}".format(constants_bf.DEFAULT_PROTEIN_KSIZE, constants_bf.DEFAULT_DAYHOFF_KSIZE, constants_bf.DEFAULT_HP_KSIZE)) # noqa
+         "protein: {}, dayhoff {}, hydrophobic-polar {}".format(constants_index.DEFAULT_PROTEIN_KSIZE, constants_index.DEFAULT_DAYHOFF_KSIZE, constants_index.DEFAULT_HP_KSIZE)) # noqa
 @click.option("--save-peptide-bloom-filter",
               is_flag=True,
               default=False,
@@ -435,9 +435,9 @@ class ExtractCoding:
                    "peptide database for this read to be called a "
                    "'coding read'.'"
                    "Default:"
-                   "{}".format(constants_ec.DEFAULT_JACCARD_THRESHOLD) +  # noqa
+                   "{}".format(constants_translate.DEFAULT_JACCARD_THRESHOLD) +  # noqa
                    " for protein and dayhoff encodings, and "  +  # noqa
-                   "{}".format(constants_ec.DEFAULT_HP_JACCARD_THRESHOLD) + # noqa
+                   "{}".format(constants_translate.DEFAULT_HP_JACCARD_THRESHOLD) + # noqa
                    "for hydrophobic-polar (hp) encoding")
 @click.option('--alphabet', '--encoding', '--molecule',
               default='protein',
@@ -463,11 +463,11 @@ class ExtractCoding:
 @click.option("--low-complexity-peptide-fasta",
               help="If specified, save the low-complexity peptides to this "
                    "file")
-@click.option('--tablesize', type=constants_bf.BASED_INT,
+@click.option('--tablesize', type=constants_index.BASED_INT,
               default="1e8",
               help='Size of the bloom filter table to use')
 @click.option('--n-tables', type=int,
-              default=constants_bf.DEFAULT_N_TABLES,
+              default=constants_index.DEFAULT_N_TABLES,
               help='Size of the bloom filter table to use')
 @click.option("--long-reads",
               is_flag=True,
@@ -488,8 +488,8 @@ def cli(peptides,
         noncoding_nucleotide_fasta=None,
         low_complexity_nucleotide_fasta=None,
         low_complexity_peptide_fasta=None,
-        tablesize=constants_bf.DEFAULT_MAX_TABLESIZE,
-        n_tables=constants_bf.DEFAULT_N_TABLES,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+        n_tables=constants_index.DEFAULT_N_TABLES,
         long_reads=False,
         verbose=False):
     """Writes coding peptides from reads to standard output
@@ -565,10 +565,10 @@ def cli(peptides,
         Outputs a fasta-formatted sequence of translated peptides
     """
     # \b above prevents re-wrapping of paragraphs
-    extract_coding_obj = ExtractCoding(locals())
+    extract_coding_obj = Translate(locals())
     extract_coding_obj.set_coding_scores_all_files()
     coding_scores = extract_coding_obj.get_coding_scores_all_files()
-    assemble_summary_obj = AssembleSaveSummary(
+    assemble_summary_obj = CreateSaveSummary(
         reads, csv, json_summary,
         extract_coding_obj.peptide_bloom_filter_filename,
         alphabet,
