@@ -8,7 +8,7 @@ from khtools.log_utils import get_logger
 logger = get_logger(__file__)
 
 
-class AssembleSaveSummary:
+class CreateSaveSummary:
 
     def __init__(
             self, filenames, csv, json_summary,
