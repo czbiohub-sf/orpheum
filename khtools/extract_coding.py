@@ -23,9 +23,7 @@ import khtools.constants_bloom_filter as constants_bf
 import khtools.constants_extract_coding as constants_ec
 from khtools.translate_single_seq import TranslateSingleSeq
 
-# Import modified 'os' module with LC_LANG set so click doesn't complain.
-# The '# noqa: F401' line prevents the linter from complaining about the unused
-# import.
+
 logger = get_logger(__file__)
 
 
