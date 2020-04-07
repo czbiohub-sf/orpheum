@@ -281,10 +281,12 @@ class Translate:
                     self.file_handles['low_complexity_peptide'],
                     description + " translation_frame: {}.format(frame)",
                     translation)
-                scoring_lines.append(constants_translate.SingleReadScore(
-                    np.nan,
-                    n_kmers,
-                    constants_translate.LOW_COMPLEXITY_CATEGORIES[self.alphabet]))
+                scoring_lines.append(
+                    constants_translate.SingleReadScore(
+                        np.nan,
+                        n_kmers,
+                        constants_translate.LOW_COMPLEXITY_CATEGORIES[
+                            self.alphabet]))
                 return scoring_lines
             else:
                 fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
@@ -332,7 +334,8 @@ class Translate:
             n_kmers = np.nan
             special_case = 'Read length was shorter than 3 * peptide ' \
                            'k-mer size'
-        return constants_translate.SingleReadScore(jaccard, n_kmers, special_case)
+        return constants_translate.SingleReadScore(
+            jaccard, n_kmers, special_case)
 
     def maybe_score_single_read(self, description, sequence):
         """Check if read is low complexity/too short, otherwise score it"""
@@ -344,7 +347,8 @@ class Translate:
             jaccard, n_kmers, special_case = self.check_nucleotide_content(
                 description, n_kmers, sequence)
             scores = [
-                constants_translate.SingleReadScore(jaccard, n_kmers, special_case)]
+                constants_translate.SingleReadScore(
+                    jaccard, n_kmers, special_case)]
         else:
             scores = self.check_peptide_content(description, sequence)
             for jaccard, n_kmers, special_case in scores:
