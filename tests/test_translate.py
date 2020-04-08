@@ -202,22 +202,25 @@ def test_get_coding_score_line(
             "description",
             0.5,
             40,
-            "test special case")
-    assert result == ['description', 0.5, 40, 'test special case']
+            "test special case",
+            0)
+    assert result == ['description', 0.5, 40, 'test special case', 0]
     result = \
         translate_class.get_coding_score_line(
             "description",
             1.0,
             40,
-            "test special case")
-    assert result == ['description', 1.0, 40, "test special case"]
+            "test special case",
+            0)
+    assert result == ['description', 1.0, 40, "test special case", 0]
     result = \
         translate_class.get_coding_score_line(
             "description",
             1.0,
             40,
-            None)
-    assert result == ['description', 1.0, 40, 'Coding']
+            None,
+            6)
+    assert result == ['description', 1.0, 40, 'Coding', 6]
 
 
 def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,

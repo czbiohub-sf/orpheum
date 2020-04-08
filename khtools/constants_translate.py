@@ -20,7 +20,8 @@ SEQTYPE_TO_ANNOUNCEMENT = {
         " reads"
 }
 SCORING_DF_COLUMNS = [
-    'read_id', 'jaccard_in_peptide_db', 'n_kmers', 'classification'
+    'read_id', 'jaccard_in_peptide_db', 'n_kmers',
+    'classification', 'translation_frame'
 ]
 
 LOW_COMPLEXITY_PER_ALIAS = [
@@ -48,6 +49,7 @@ SingleReadScore = namedtuple(
     "SingleReadScore",
     ['max_fraction_kmers_in_peptide_db',
      'max_n_kmers',
-     'special_case'])
+     'special_case',
+     'translation_frame'])
 
 COMPLEXITY_THRESHOLD = 0.3
