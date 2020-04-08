@@ -1,12 +1,44 @@
 import os
 
+import pandas as pd
 import pytest
+import warnings
+
 """
 conftest.py contains fixtures or functions-turned-variables that can be
 used in any test
 """
-from khtools.bloom_filter import DEFAULT_PROTEIN_KSIZE, \
+from khtools.constants_index import DEFAULT_PROTEIN_KSIZE, \
     DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE
+
+
+@pytest.fixture
+def reads(data_folder):
+    return os.path.join(
+        data_folder,
+        'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq')
+
+
+@pytest.fixture
+def jaccard_threshold(alphabet):
+    from khtools.translate import get_jaccard_threshold
+    threshold = get_jaccard_threshold(None, alphabet)
+    return threshold
+
+
+@pytest.fixture
+def seq():
+    from Bio.Seq import Seq
+    s = 'CGCTTGCTTAATACTGACATCAATAATATTAGGAAAATCGCAATATAACTGTAAATCCTGTTCTGTC'
+    with warnings.catch_warnings():
+        # Ignore The following warning because we don't use Bio.Alphabet
+        # explicitly:
+        # PendingDeprecationWarning: We intend to remove or replace
+        # Bio.Alphabet in 2020, ideally avoid using it explicitly in your
+        # code. Please get in touch if you will be adversely affected by this.
+        # https://github.com/biopython/biopython/issues/2046
+        warnings.simplefilter("ignore")
+        return Seq(s)
 
 
 @pytest.fixture
@@ -61,43 +93,43 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
                     'dayhoff_protein_ksize_xfail', 'hp_default_ksize',
                     'hp_protein_ksize_xfail'
 ])
-def molecule_ksize(request):
+def alphabet_ksize(request):
     return request.param
 
 
 @pytest.fixture
-def peptide_ksize(molecule_ksize):
-    return molecule_ksize[1]
+def peptide_ksize(alphabet_ksize):
+    return alphabet_ksize[1]
 
 
 @pytest.fixture
-def molecule(molecule_ksize):
-    return molecule_ksize[0]
+def alphabet(alphabet_ksize):
+    return alphabet_ksize[0]
 
 
 @pytest.fixture
-def peptide_bloom_filter_path(data_folder, molecule, peptide_ksize):
+def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
     filename = os.path.join(
         data_folder, 'bloom_filter',
-        f'Homo_sapiens.GRCh38.pep.subset.molecule-{molecule}_'
-        f'ksize-{peptide_ksize}.bloomfilter.nodegraph'
+        'Homo_sapiens.GRCh38.pep.subset.alphabet-{}_'.format(alphabet) +
+        'ksize-{}.bloomfilter.nodegraph'.format(peptide_ksize)
     )
     return filename
 
 
 @pytest.fixture
-def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, molecule,
+def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, alphabet,
                          peptide_ksize):
-    from khtools.bloom_filter import load_nodegraph
+    from khtools.index import load_nodegraph
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
         return load_nodegraph(peptide_bloom_filter_path)
-    except (FileNotFoundError, OSError):
-        from khtools.bloom_filter import make_peptide_bloom_filter
+    except (OSError):
+        from khtools.index import make_peptide_bloom_filter
 
         bloom_filter = make_peptide_bloom_filter(peptide_fasta,
                                                  peptide_ksize,
-                                                 molecule,
+                                                 alphabet,
                                                  tablesize=1e6)
         bloom_filter.save(peptide_bloom_filter_path)
         return bloom_filter
@@ -113,3 +145,37 @@ def true_protein_coding_fasta_path(data_folder):
 def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
     with open(true_protein_coding_fasta_path) as f:
         return f.read()
+
+
+@pytest.fixture
+def low_complexity_seq():
+    return "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA" \
+           "CACACCCCCAACACCC"
+
+
+@pytest.fixture(params=['seq', 'low_complexity_seq'])
+def type_seq(request, seq, low_complexity_seq):
+    if request.param == 'seq':
+        return request.param, seq
+    elif request.param == 'low_complexity_seq':
+        return request.param, low_complexity_seq
+
+
+@pytest.fixture
+def empty_fasta(data_folder):
+    return os.path.join(
+        data_folder, 'empty_fasta.fasta')
+
+
+@pytest.fixture
+def true_scores_path(data_folder, alphabet, peptide_ksize):
+    return os.path.join(
+        data_folder, "extract_coding",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
+        "subsampled_n22__alphabet-{}_ksize-".format(alphabet) +
+        "{}.csv".format(peptide_ksize))
+
+
+@pytest.fixture
+def true_scores(true_scores_path):
+    return pd.read_csv(true_scores_path)

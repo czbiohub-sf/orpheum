@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Import modified 'os' module with LC_LANG set so click doesn't complain
-from .os_utils import os  # noqa: F401
 
 # Python standard library imports
 from functools import partial
@@ -11,8 +10,8 @@ import click
 
 # Within-module imports
 from khtools.compare_kmer_content import cli as compare_kmers
-from khtools.extract_coding import cli as extract_coding
-from khtools.bloom_filter import cli as bloom_filter
+from khtools.translate import cli as translate
+from khtools.index import cli as index
 
 click.option = partial(click.option, show_default=True)
 
@@ -33,8 +32,8 @@ def cli():
 
 
 cli.add_command(compare_kmers, name='compare-kmers')
-cli.add_command(bloom_filter, name='bloom-filter')
-cli.add_command(extract_coding, name='extract-coding')
+cli.add_command(index, name='index')
+cli.add_command(translate, name='translate')
 
 if __name__ == "__main__":
     cli()

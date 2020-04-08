@@ -10,21 +10,17 @@ from tqdm import tqdm
 from khtools.compare_kmer_content import kmerize
 from khtools.sequence_encodings import encode_peptide, BEST_KSIZES, \
     ALPHABET_SIZES
+import khtools.constants_index as constants_index
+from khtools.log_utils import get_logger
 
-# khmer Nodegraph features
-DEFAULT_N_TABLES = 4
-DEFAULT_MAX_TABLESIZE = int(1e8)
-
-# Default k-mer sizes for different alphabets
-DEFAULT_PROTEIN_KSIZE = 7
-DEFAULT_DAYHOFF_KSIZE = 12
-DEFAULT_HP_KSIZE = 31
+logger = get_logger(__file__)
 
 
-def per_translation_false_positive_rate(n_kmers_in_translation,
-                                        n_total_kmers=1e7,
-                                        n_hash_functions=DEFAULT_N_TABLES,
-                                        tablesize=DEFAULT_MAX_TABLESIZE):
+def per_translation_false_positive_rate(
+        n_kmers_in_translation,
+        n_total_kmers=1e7,
+        n_hash_functions=constants_index.DEFAULT_N_TABLES,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
     exponent = - n_hash_functions * n_total_kmers / tablesize
     print(f"exponent: {exponent}")
 
@@ -41,10 +37,11 @@ def per_translation_false_positive_rate(n_kmers_in_translation,
     return per_read_fpr
 
 
-def per_read_false_positive_coding_rate(read_length, peptide_ksize,
-                                        n_total_kmers=4e7, alphabet='protein',
-                                        n_hash_functions=DEFAULT_N_TABLES,
-                                        tablesize=DEFAULT_MAX_TABLESIZE):
+def per_read_false_positive_coding_rate(
+        read_length, peptide_ksize,
+        n_total_kmers=4e7, alphabet='protein',
+        n_hash_functions=constants_index.DEFAULT_N_TABLES,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
     """Compute the false positive rate that a translated k-mer randomly
     appears in the database"""
 
@@ -76,39 +73,12 @@ def load_nodegraph(*args, **kwargs):
         return khmer.Nodegraph.load(*args, **kwargs)
 
 
-# Cribbed from https://click.palletsprojects.com/en/7.x/parameters/
-class BasedIntParamType(click.ParamType):
-    name = "integer"
-
-    def convert(self, value, param, ctx):
-        try:
-            if isinstance(value, int):
-                return value
-            if 'e' in value:
-                sigfig, exponent = value.split('e')
-                sigfig = float(sigfig)
-                exponent = int(exponent)
-                return int(sigfig * 10 ** exponent)
-            return int(value, 10)
-        except TypeError:
-            self.fail(
-                "expected string for int() conversion, got "
-                f"{value!r} of type {type(value).__name__}",
-                param,
-                ctx,
-            )
-        except ValueError:
-            self.fail(f"{value!r} is not a valid integer", param, ctx)
-
-
-BASED_INT = BasedIntParamType()
-
-
-def make_peptide_bloom_filter(peptide_fasta,
-                              peptide_ksize,
-                              molecule,
-                              n_tables=DEFAULT_N_TABLES,
-                              tablesize=DEFAULT_MAX_TABLESIZE):
+def make_peptide_bloom_filter(
+        peptide_fasta,
+        peptide_ksize,
+        molecule,
+        n_tables=constants_index.DEFAULT_N_TABLES,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
     """Create a bloom filter out of peptide sequences"""
     peptide_bloom_filter = khmer.Nodegraph(peptide_ksize,
                                            tablesize,
@@ -155,15 +125,15 @@ def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
     return peptide_set
 
 
-def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
-                                    peptides_are_bloom_filter,
-                                    n_tables=DEFAULT_N_TABLES,
-                                    tablesize=DEFAULT_MAX_TABLESIZE):
+def maybe_make_peptide_bloom_filter(
+        peptides, peptide_ksize, molecule,
+        peptides_are_bloom_filter,
+        n_tables=constants_index.DEFAULT_N_TABLES,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
     if peptides_are_bloom_filter:
-        click.echo(
+        logger.info(
             f"Loading existing bloom filter from {peptides} and "
-            f"making sure the ksizes match",
-            err=True)
+            f"making sure the ksizes match")
         peptide_bloom_filter = load_nodegraph(peptides)
         if peptide_ksize is not None:
             try:
@@ -175,11 +145,10 @@ def maybe_make_peptide_bloom_filter(peptides, peptide_ksize, molecule,
                                  f"equal")
     else:
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-        click.echo(
+        logger.info(
             f"Creating peptide bloom filter with file: {peptides}\n"
             f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
-            f"...",
-            err=True)
+            f"...")
         peptide_bloom_filter = make_peptide_bloom_filter(
             peptides, peptide_ksize, molecule=molecule,
             n_tables=n_tables, tablesize=tablesize)
@@ -199,9 +168,9 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
                      f'nodegraph'
             filename = os.path.splitext(peptides)[0] + suffix
 
-        click.echo(f"Writing peptide bloom filter to {filename}", err=True)
+        logger.info(f"Writing peptide bloom filter to {filename}")
         peptide_bloom_filter.save(filename)
-        click.echo("\tDone!", err=True)
+        logger.info("\tDone!")
         return filename
 
 
@@ -211,9 +180,9 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               default=None, type=int,
               help="K-mer size of the peptide sequence to use. Defaults for"
               " different molecules are, "
-              f"protein: {DEFAULT_PROTEIN_KSIZE}"
-              f", dayhoff: {DEFAULT_DAYHOFF_KSIZE},"
-              f" hydrophobic-polar: {DEFAULT_HP_KSIZE}")
+              f"protein: {constants_index.DEFAULT_PROTEIN_KSIZE}"
+              f", dayhoff: {constants_index.DEFAULT_DAYHOFF_KSIZE},"
+              f" hydrophobic-polar: {constants_index.DEFAULT_HP_KSIZE}")
 @click.option('--alphabet', '--molecule',
               default='protein',
               help="The type of amino acid alphabet/encoding to use. Default "
@@ -223,14 +192,17 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
               default=None,
               help='If provided, save peptide bloom filter as this filename. '
               'Otherwise, add ksize and alphabet name to input filename.')
-@click.option('--tablesize', type=BASED_INT,
+@click.option('--tablesize',
+              type=constants_index.BASED_INT,
               default="1e8",
               help='Size of the bloom filter table to use')
 @click.option('--n-tables', type=int,
-              default=DEFAULT_N_TABLES,
+              default=constants_index.DEFAULT_N_TABLES,
               help='Size of the bloom filter table to use')
-def cli(peptides, peptide_ksize=None, alphabet='protein', save_as=None,
-        tablesize=DEFAULT_MAX_TABLESIZE, n_tables=DEFAULT_N_TABLES):
+def cli(peptides, peptide_ksize=None, alphabet='protein',
+        save_as=None,
+        tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+        n_tables=constants_index.DEFAULT_N_TABLES):
     """Make a peptide bloom filter for your peptides
 
     \b
@@ -256,7 +228,7 @@ def cli(peptides, peptide_ksize=None, alphabet='protein', save_as=None,
                                                      alphabet,
                                                      n_tables=n_tables,
                                                      tablesize=tablesize)
-    click.echo("\tDone!", err=True)
+    logger.info("\tDone!")
 
     save_peptide_bloom_filter = save_as if save_as is not None else True
     maybe_save_peptide_bloom_filter(
