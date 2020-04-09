@@ -318,7 +318,7 @@ class Translate:
                             n_kmers,
                             constants_translate.PROTEIN_CODING_CATEGORIES[
                                 'non_coding'],
-                            frame))
+                            None))
         return scoring_lines
 
     def check_nucleotide_content(self, description, n_kmers, sequence):
