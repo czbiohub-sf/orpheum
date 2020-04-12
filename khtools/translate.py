@@ -7,6 +7,7 @@ import sys
 import warnings
 
 from Bio.Seq import Seq
+from Bio import BiopythonWarning
 import click
 import numpy as np
 import pandas as pd
@@ -89,7 +90,7 @@ def evaluate_is_kmer_low_complexity(seq, ksize):
     k-mers is smaller than half the number of expected k-mers
     """
     with warnings.catch_warnings():
-        warnings.filterwarnings('ignore')
+        warnings.simplefilter('ignore', BiopythonWarning)
         # Ignore Biopython warning of seq objects being strings now
         try:
             kmers = kmerize(seq, ksize)
@@ -233,7 +234,7 @@ class Translate:
     def check_peptide_content(self, description, sequence):
         """Predict whether a nucleotide sequence could be protein-coding"""
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore')
+            warnings.simplefilter("ignore")
             translations = TranslateSingleSeq(
                 Seq(sequence), self.verbose).six_frame_translation_no_stops()
         if len(translations) == 0:
@@ -291,11 +292,11 @@ class Translate:
                     '{} translation_frame: {} '.format(
                         description, frame) + \
                     'jaccard: {}'.format(fraction_in_peptide_db)
-                write_fasta(
-                    sys.stdout,
-                    seqname,
-                    translation)
                 if fraction_in_peptide_db > self.jaccard_threshold:
+                    write_fasta(
+                        sys.stdout,
+                        seqname,
+                        translation)
                     self.maybe_write_fasta(
                         self.file_handles['coding_nucleotide'],
                         seqname,
