@@ -295,11 +295,6 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
     true['filename'] = reads
 
     test_scores = pd.read_csv(csv)
-    test_scores.to_csv(os.path.join(
-        data_folder, "translate",
-        "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
-        "subsampled_n22__alphabet-{}_ksize-".format(alphabet) +
-        "{}.csv".format(peptide_ksize))
     pdt.assert_equal(test_scores, true)
 
 
