@@ -295,6 +295,7 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
     true['filename'] = reads
 
     test_scores = pd.read_csv(csv)
+
     pdt.assert_equal(test_scores, true)
 
 

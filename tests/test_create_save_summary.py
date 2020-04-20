@@ -134,7 +134,7 @@ def test_generate_coding_summary(
         "protein", 7, 0.5)
     test_summary = create_ss.generate_coding_summary(
         single_alphabet_ksize_true_scores)
-
+    print(test_summary)
     true_summary = {
         'input_files': ['SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
         'jaccard_info': {
