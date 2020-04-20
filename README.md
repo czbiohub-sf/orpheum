@@ -32,7 +32,7 @@ Usage
 
 
 ```
-khtools extract_coding peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+khtools translate peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the "coding scores" to a csv
@@ -45,7 +45,7 @@ score is the maximum Jaccard index across all reading frames. If you'd like to
 see the coding scores for all reads, use the `--csv` flag.
 
 ```
-khtools extract_coding --csv coding_scores.csv peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+khtools translate --csv coding_scores.csv peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 
@@ -55,7 +55,7 @@ By default, only the coding *peptides* are output. If you'd like to also output
 the underlying *nucleotide* sequence, then use the flag `--coding-nucleotide-fasta`
 
 ```
-khtools extract_coding --coding-nucleotide-fasta coding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+khtools translate --coding-nucleotide-fasta coding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the *non*-coding nucleotides to a fasta
@@ -64,7 +64,7 @@ To see the sequence of reads which were deemed non-coding, use the flag
 `--noncoding-nucleotide-fasta`.
 
 ```
-khtools extract_coding --noncoding-nucleotide-fasta noncoding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+khtools translate --noncoding-nucleotide-fasta noncoding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the low complexity nucleotides to a fasta
@@ -80,7 +80,7 @@ would be considered low complexity. While this sequence has many nucleotide
 k-mers, it is likely a result of a sequencing error and we ignore it.
 
 ```
-khtools extract_coding --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+khtools translate --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the low complexity peptides to a fasta
@@ -103,7 +103,7 @@ sequence of low-complexity peptides to a fasta, use the flag
 `--low-complexity-peptides-fasta`.
 
 ```
-khtools extract_coding --low-complexity-peptides-fasta low_complexity_peptides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+khtools translate --low-complexity-peptides-fasta low_complexity_peptides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 

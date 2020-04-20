@@ -14,8 +14,8 @@ import khtools.constants_index as constants_index
 
 
 KHTOOLS = "khtools"
-EXTRACT_CODING = "extract-coding"
-CMD = KHTOOLS + " " + EXTRACT_CODING
+TRANSLATE = "translate"
+CMD = KHTOOLS + " " + TRANSLATE
 
 
 @pytest.fixture()
@@ -236,9 +236,9 @@ def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
     # true string is contained in the output
     assert true_protein_coding_fasta_string in result.output
 
-    # Make sure "Writing extract_coding summary to" didn't get accidentally
+    # Make sure "Writing translate summary to" didn't get accidentally
     # written to stdout instead of stderr
-    assert 'Writing extract_coding summary to' \
+    assert 'Writing translate summary to' \
            not in true_protein_coding_fasta_string
 
 

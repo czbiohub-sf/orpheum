@@ -1,5 +1,5 @@
 """
-extract_coding.py
+translate.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
@@ -580,15 +580,15 @@ def cli(peptides,
         Outputs a fasta-formatted sequence of translated peptides
     """
     # \b above prevents re-wrapping of paragraphs
-    extract_coding_obj = Translate(locals())
-    extract_coding_obj.set_coding_scores_all_files()
-    coding_scores = extract_coding_obj.get_coding_scores_all_files()
+    translate_obj = Translate(locals())
+    translate_obj.set_coding_scores_all_files()
+    coding_scores = translate_obj.get_coding_scores_all_files()
     assemble_summary_obj = CreateSaveSummary(
         reads, csv, json_summary,
-        extract_coding_obj.peptide_bloom_filter_filename,
+        translate_obj.peptide_bloom_filter_filename,
         alphabet,
-        extract_coding_obj.peptide_ksize,
-        extract_coding_obj.jaccard_threshold)
+        translate_obj.peptide_ksize,
+        translate_obj.jaccard_threshold)
     assemble_summary_obj.maybe_write_csv(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
 
