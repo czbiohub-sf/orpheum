@@ -8,13 +8,9 @@ class TranslateSingleSeq:
         self.sign = 1
 
     def three_frame_translation(self):
-        if self.verbose:
-            warning_filter = 'default'
-        else:
-            warning_filter = 'ignore'
-
+        from Bio import BiopythonWarning
         with warnings.catch_warnings():
-            warnings.simplefilter(warning_filter)
+            warnings.simplefilter('ignore', BiopythonWarning)
             for frame in range(3):
                 if self.sign == 1:
                     translation = self.seq[frame:].translate()

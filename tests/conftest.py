@@ -29,6 +29,7 @@ def jaccard_threshold(alphabet):
 @pytest.fixture
 def seq():
     from Bio.Seq import Seq
+    from Bio import BiopythonWarning
     s = 'CGCTTGCTTAATACTGACATCAATAATATTAGGAAAATCGCAATATAACTGTAAATCCTGTTCTGTC'
     with warnings.catch_warnings():
         # Ignore The following warning because we don't use Bio.Alphabet
@@ -37,7 +38,7 @@ def seq():
         # Bio.Alphabet in 2020, ideally avoid using it explicitly in your
         # code. Please get in touch if you will be adversely affected by this.
         # https://github.com/biopython/biopython/issues/2046
-        warnings.simplefilter("ignore")
+        warnings.simplefilter("ignore", BiopythonWarning)
         return Seq(s)
 
 
@@ -49,14 +50,14 @@ def data_folder():
 
 @pytest.fixture
 def peptide_fasta(data_folder):
-    filename = os.path.join(data_folder, 'bloom_filter',
+    filename = os.path.join(data_folder, 'index',
                             'Homo_sapiens.GRCh38.pep.subset.fa.gz')
     return filename
 
 
 @pytest.fixture
 def adversarial_peptide_fasta(data_folder):
-    filename = os.path.join(data_folder, 'bloom_filter',
+    filename = os.path.join(data_folder, 'index',
                             'Homo_sapiens.GRCh38.pep.first1000lines.fa')
     return filename
 
@@ -110,7 +111,7 @@ def alphabet(alphabet_ksize):
 @pytest.fixture
 def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
     filename = os.path.join(
-        data_folder, 'bloom_filter',
+        data_folder, 'index',
         'Homo_sapiens.GRCh38.pep.subset.alphabet-{}_'.format(alphabet) +
         'ksize-{}.bloomfilter.nodegraph'.format(peptide_ksize)
     )
@@ -137,7 +138,7 @@ def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, alphabet,
 
 @pytest.fixture
 def true_protein_coding_fasta_path(data_folder):
-    return os.path.join(data_folder, "extract_coding",
+    return os.path.join(data_folder, "translate",
                         "true_protein_coding.fasta")
 
 
@@ -170,7 +171,7 @@ def empty_fasta(data_folder):
 @pytest.fixture
 def true_scores_path(data_folder, alphabet, peptide_ksize):
     return os.path.join(
-        data_folder, "extract_coding",
+        data_folder, "translate",
         "SRR306838_GSM752691_hsa_br_F_1_trimmed_"
         "subsampled_n22__alphabet-{}_ksize-".format(alphabet) +
         "{}.csv".format(peptide_ksize))

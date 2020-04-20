@@ -14,8 +14,8 @@ import khtools.constants_index as constants_index
 
 
 KHTOOLS = "khtools"
-EXTRACT_CODING = "extract-coding"
-CMD = KHTOOLS + " " + EXTRACT_CODING
+TRANSLATE = "translate"
+CMD = KHTOOLS + " " + TRANSLATE
 
 
 @pytest.fixture()
@@ -202,22 +202,25 @@ def test_get_coding_score_line(
             "description",
             0.5,
             40,
-            "test special case")
-    assert result == ['description', 0.5, 40, 'test special case']
+            "test special case",
+            -2)
+    assert result == ['description', 0.5, 40, 'test special case', -2]
     result = \
         translate_class.get_coding_score_line(
             "description",
             1.0,
             40,
-            "test special case")
-    assert result == ['description', 1.0, 40, "test special case"]
+            "test special case",
+            1)
+    assert result == ['description', 1.0, 40, "test special case", 1]
     result = \
         translate_class.get_coding_score_line(
             "description",
             1.0,
             40,
-            None)
-    assert result == ['description', 1.0, 40, 'Coding']
+            None,
+            -3)
+    assert result == ['description', 1.0, 40, 'Coding', -3]
 
 
 def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
@@ -233,9 +236,9 @@ def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
     # true string is contained in the output
     assert true_protein_coding_fasta_string in result.output
 
-    # Make sure "Writing extract_coding summary to" didn't get accidentally
+    # Make sure "Writing translate summary to" didn't get accidentally
     # written to stdout instead of stderr
-    assert 'Writing extract_coding summary to' \
+    assert 'Writing translate summary to' \
            not in true_protein_coding_fasta_string
 
 
@@ -292,6 +295,7 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
     true['filename'] = reads
 
     test_scores = pd.read_csv(csv)
+
     pdt.assert_equal(test_scores, true)
 
 

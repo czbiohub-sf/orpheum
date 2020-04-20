@@ -65,7 +65,7 @@ class CreateSaveSummary:
             summary = self.generate_coding_summary(coding_scores)
         with open(self.json_summary, 'w') as f:
             logger.info(
-                "Writing extract_coding summary to {}".format(
+                "Writing translate summary to {}".format(
                     self.json_summary))
             json.dump(summary, fp=f)
         return summary
