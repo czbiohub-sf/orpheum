@@ -209,117 +209,86 @@ class Translate:
 
         return fraction_in_peptide_db, n_kmers
 
-    def get_peptide_meta(self, translations):
-        """Return a dictionary fraction_in_peptide_dbs, kmers_in_peptide_dbs,
-        kmer_complexities per translation
-        """
-        fraction_in_peptide_dbs = {}
-        kmers_in_peptide_dbs = {}
-        kmer_capacities = {}
-
-        for frame, translation in translations.items():
-            encoded = encode_peptide(str(translation), self.alphabet)
-
-            score, n_kmers = self.score_single_translation(encoded)
-
-            fraction_in_peptide_dbs[frame] = score
-
-            kmers_in_peptide_dbs[frame] = n_kmers
-
-            kmer_capacities[frame] = \
-                evaluate_is_kmer_low_complexity(encoded, self.peptide_ksize)
-
-        return fraction_in_peptide_dbs, kmers_in_peptide_dbs, kmer_capacities
-
     def check_peptide_content(self, description, sequence):
         """Predict whether a nucleotide sequence could be protein-coding"""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             translations = TranslateSingleSeq(
-                Seq(sequence), self.verbose).six_frame_translation_no_stops()
-        if len(translations) == 0:
-            scoring_lines = [constants_translate.SingleReadScore(
-                np.nan,
-                np.nan,
-                constants_translate.PROTEIN_CODING_CATEGORIES['stop_codons'],
-                0)]
-            return scoring_lines
-
-        translations = {
-            frame: translation
-            for frame, translation in translations.items()
-            if len(translation) > self.peptide_ksize
-        }
-        if len(translations) == 0:
-            scoring_lines = [
-                constants_translate.SingleReadScore(
-                    np.nan,
-                    np.nan,
-                    constants_translate.PROTEIN_CODING_CATEGORIES[
-                        'too_short_peptide'],
-                    0)]
-            return scoring_lines
-
-        # For all translations, use the one with the maximum number of k-mers
-        # in the databse
-        (fraction_in_peptide_dbs,
-         kmers_in_peptide_dbs,
-         kmer_capacities) = self.get_peptide_meta(translations)
+                Seq(sequence), self.verbose).six_frame_translation()
         scoring_lines = []
         for frame, translation in translations.items():
-            n_kmers = kmers_in_peptide_dbs[frame]
-            if kmer_capacities[frame]:
-                self.maybe_write_fasta(
-                    self.file_handles['low_complexity_peptide'],
-                    description + " translation_frame: {}.format(frame)",
-                    translation)
+            if "*" in translation:
                 scoring_lines.append(
                     constants_translate.SingleReadScore(
                         np.nan,
-                        n_kmers,
-                        constants_translate.LOW_COMPLEXITY_CATEGORIES[
-                            self.alphabet],
+                        np.nan,
+                        constants_translate.PROTEIN_CODING_CATEGORIES[
+                            'stop_codons'],
                         frame))
-                return scoring_lines
+            elif len(translation) < self.peptide_ksize:
+                scoring_lines.append(
+                    constants_translate.SingleReadScore(
+                        np.nan,
+                        np.nan,
+                        constants_translate.PROTEIN_CODING_CATEGORIES[
+                            'too_short_peptide'],
+                        frame))
             else:
-                fraction_in_peptide_db = fraction_in_peptide_dbs[frame]
-                if self.verbose:
-                    logger.info(
-                        "\t{} is above {}".format(
-                            translation,
-                            self.jaccard_threshold))
-                seqname = \
-                    '{} translation_frame: {} '.format(
-                        description, frame) + \
-                    'jaccard: {}'.format(fraction_in_peptide_db)
-                if fraction_in_peptide_db > self.jaccard_threshold:
-                    write_fasta(
-                        sys.stdout,
-                        seqname,
-                        translation)
+                encoded = encode_peptide(str(translation), self.alphabet)
+                fraction_in_peptide_db, n_kmers = \
+                    self.score_single_translation(encoded)
+                is_kmer_low_complex = evaluate_is_kmer_low_complexity(
+                    encoded, self.peptide_ksize)
+                if is_kmer_low_complex:
                     self.maybe_write_fasta(
-                        self.file_handles['coding_nucleotide'],
-                        seqname,
-                        sequence)
+                        self.file_handles['low_complexity_peptide'],
+                        description + " translation_frame: {}.format(frame)",
+                        translation)
                     scoring_lines.append(
                         constants_translate.SingleReadScore(
-                            fraction_in_peptide_db,
+                            np.nan,
                             n_kmers,
-                            constants_translate.PROTEIN_CODING_CATEGORIES[
-                                'coding'],
+                            constants_translate.LOW_COMPLEXITY_CATEGORIES[
+                                self.alphabet],
                             frame))
                 else:
-                    self.maybe_write_fasta(
-                        self.file_handles['noncoding_nucleotide'],
-                        seqname,
-                        sequence)
-                    scoring_lines.append(
-                        constants_translate.SingleReadScore(
-                            fraction_in_peptide_db,
-                            n_kmers,
-                            constants_translate.PROTEIN_CODING_CATEGORIES[
-                                'non_coding'],
-                            frame))
+                    if self.verbose:
+                        logger.info(
+                            "\t{} is above {}".format(
+                                translation,
+                                self.jaccard_threshold))
+                    seqname = \
+                        '{} translation_frame: {} '.format(
+                            description, frame) + \
+                        'jaccard: {}'.format(fraction_in_peptide_db)
+                    if fraction_in_peptide_db > self.jaccard_threshold:
+                        write_fasta(
+                            sys.stdout,
+                            seqname,
+                            translation)
+                        self.maybe_write_fasta(
+                            self.file_handles['coding_nucleotide'],
+                            seqname,
+                            sequence)
+                        scoring_lines.append(
+                            constants_translate.SingleReadScore(
+                                fraction_in_peptide_db,
+                                n_kmers,
+                                constants_translate.PROTEIN_CODING_CATEGORIES[
+                                    'coding'],
+                                frame))
+                    else:
+                        self.maybe_write_fasta(
+                            self.file_handles['noncoding_nucleotide'],
+                            seqname,
+                            sequence)
+                        scoring_lines.append(
+                            constants_translate.SingleReadScore(
+                                fraction_in_peptide_db,
+                                n_kmers,
+                                constants_translate.PROTEIN_CODING_CATEGORIES[
+                                    'non_coding'],
+                                frame))
         return scoring_lines
 
     def check_nucleotide_content(self, description, n_kmers, sequence):
