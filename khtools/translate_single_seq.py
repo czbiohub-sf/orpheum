@@ -29,6 +29,15 @@ class TranslateSingleSeq:
             if '*' not in t
         }
 
+    def three_frame_translation_stops(self, sign):
+        """Remove translations with stop codons &
+        keep track of reading frame"""
+        self.sign = sign
+        return {
+            self.sign * (i + 1): t
+            for i, t in enumerate(self.three_frame_translation())
+        }
+
     def six_frame_translation_no_stops(self):
         forward_translations = self.three_frame_translation_no_stops(1)
 
@@ -36,5 +45,15 @@ class TranslateSingleSeq:
         # to make it obvious they are
         # from the reverse strand
         reverse_translations = self.three_frame_translation_no_stops(-1)
+        forward_translations.update(reverse_translations)
+        return forward_translations
+
+    def six_frame_translation(self):
+        forward_translations = self.three_frame_translation_stops(1)
+
+        # Sign=-1 sets the reading frames as negative
+        # to make it obvious they are
+        # from the reverse strand
+        reverse_translations = self.three_frame_translation_stops(-1)
         forward_translations.update(reverse_translations)
         return forward_translations

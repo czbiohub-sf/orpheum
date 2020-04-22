@@ -148,20 +148,20 @@ def test_generate_coding_summary(
             'max': 1.0},
         'classification_value_counts': {
             'All translations shorter than peptide k-mer size + 1': 0,
-            'All translation frames have stop codons': 3,
+            'All translation frames have stop codons': 76,
             'Coding': 3,
             'Non-coding': 41,
             'Low complexity nucleotide': 0,
-            'Read length was shorter than 3 * peptide k-mer size': 2,
-            'Low complexity peptide in protein20 alphabet': 1},
+            'Read length was shorter than 3 * peptide k-mer size': 12,
+            'Low complexity peptide in protein20 alphabet': 6},
         'classification_percentages': {
             'All translations shorter than peptide k-mer size + 1': 0.0,
-            'All translation frames have stop codons': 6.0,
-            'Coding': 6.0,
-            'Non-coding': 82.0,
+            'All translation frames have stop codons': 55.072463768115945,
+            'Coding': 2.1739130434782608,
+            'Non-coding': 29.71014492753623,
             'Low complexity nucleotide': 0.0,
-            'Read length was shorter than 3 * peptide k-mer size': 4.0,
-            'Low complexity peptide in protein20 alphabet': 2.0},
+            'Read length was shorter than 3 * peptide k-mer size': 8.695652173913043,
+            'Low complexity peptide in protein20 alphabet': 4.3478260869565215},
         'histogram_n_coding_frames_per_read': {
             'Number of reads with 1 putative protein-coding translations': 3},
         'histogram_n_coding_frames_per_read_percentages': {
@@ -170,7 +170,6 @@ def test_generate_coding_summary(
         'peptide_alphabet': 'protein',
         'peptide_ksize': 7,
         'jaccard_threshold': 0.5}
-    print(test_summary)
     assert test_summary == true_summary
 
 

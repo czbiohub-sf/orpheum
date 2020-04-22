@@ -179,20 +179,6 @@ def test_score_single_translation(
     assert n_kmers == 82
 
 
-def test_get_peptide_meta(
-        translate_class, translations_for_single_seq):
-
-    # Convert to BioPython sequence object for translation
-    result = \
-        translate_class.get_peptide_meta(
-            translations_for_single_seq)
-    expected = (
-        {-3: 0.0, -2: 1.0, 2: 0.0},
-        {-3: 15, -2: 16, 2: 16},
-        {-3: False, -2: False, 2: False})
-    assert result == expected
-
-
 def test_get_coding_score_line(
         translate_class, translations_for_single_seq):
 
@@ -234,6 +220,7 @@ def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize,
     assert result.exit_code == 0
     # CliRunner jams together the stderr and stdout so just check if the
     # true string is contained in the output
+    print(result.output)
     assert true_protein_coding_fasta_string in result.output
 
     # Make sure "Writing translate summary to" didn't get accidentally
@@ -275,8 +262,9 @@ def test_cli_peptide_bloom_filter(reads, peptide_bloom_filter_path, alphabet,
     assert true_protein_coding_fasta_string in result.output
 
 
-def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
-                 peptide_ksize, true_protein_coding_fasta_string, true_scores):
+def test_cli_csv(
+        tmpdir, reads, peptide_bloom_filter_path, alphabet,
+        peptide_ksize, true_protein_coding_fasta_string, true_scores):
 
     csv = os.path.join(tmpdir, 'coding_scores.csv')
 
@@ -295,7 +283,6 @@ def test_cli_csv(tmpdir, reads, peptide_bloom_filter_path, alphabet,
     true['filename'] = reads
 
     test_scores = pd.read_csv(csv)
-
     pdt.assert_equal(test_scores, true)
 
 

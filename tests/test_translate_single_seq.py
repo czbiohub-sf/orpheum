@@ -43,13 +43,42 @@ def test_three_frame_rev_translation(translation):
     assert test == true
 
 
-def test_six_frame_translation(translation):
+def test_six_frame_translation_no_stops(translation):
     result = translation.translate_ss.six_frame_translation_no_stops()
     test = {
         k: str(
             v) for k, v in result.items()}
     true = {
         2: 'ACLILTSIILGKSQYNCKSCSV',
+        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
+        -3: 'QNRIYSYIAIFLILLMSVLSK'
+    }
+    assert test == true
+
+
+def test_three_frame_translation_stops(translation):
+    result = translation.translate_ss.three_frame_translation_stops(-1)
+    test = {
+        k: str(
+            v) for k, v in result.items()}
+    true = {
+        -1: 'DRTGFTVILRFS*YY*CQY*AS',
+        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
+        -3: 'QNRIYSYIAIFLILLMSVLSK'
+    }
+    assert test == true
+
+
+def test_six_frame_translation_stops(translation):
+    result = translation.translate_ss.six_frame_translation()
+    test = {
+        k: str(
+            v) for k, v in result.items()}
+    true = {
+        1: 'RLLNTDINNIRKIAI*L*ILFC',
+        2: 'ACLILTSIILGKSQYNCKSCSV',
+        3: 'LA*Y*HQ*Y*ENRNITVNPVL',
+        -1: 'DRTGFTVILRFS*YY*CQY*AS',
         -2: 'TEQDLQLYCDFPNIIDVSIKQA',
         -3: 'QNRIYSYIAIFLILLMSVLSK'
     }
