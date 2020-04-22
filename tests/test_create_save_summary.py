@@ -134,6 +134,7 @@ def test_generate_coding_summary(
         "protein", 7, 0.5)
     test_summary = create_ss.generate_coding_summary(
         single_alphabet_ksize_true_scores)
+    print(test_summary)
     true_summary = {
         'input_files': ['SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
         'jaccard_info': {
@@ -144,24 +145,23 @@ def test_generate_coding_summary(
             '25%': 0.0,
             '50%': 0.0,
             '75%': 0.05882352941176471,
-            'max': 1.0
-        },
+            'max': 1.0},
         'classification_value_counts': {
             'All translations shorter than peptide k-mer size + 1': 0,
             'All translation frames have stop codons': 76,
             'Coding': 3,
             'Non-coding': 41,
             'Low complexity nucleotide': 0,
-            'Read length was shorter than 3 * peptide k-mer size': 2,
+            'Read length was shorter than 3 * peptide k-mer size': 12,
             'Low complexity peptide in protein20 alphabet': 6},
         'classification_percentages': {
             'All translations shorter than peptide k-mer size + 1': 0.0,
-            'All translation frames have stop codons': 59.375,
-            'Coding': 2.34375,
-            'Non-coding': 32.03125,
+            'All translation frames have stop codons': 55.072463768115945,
+            'Coding': 2.1739130434782608,
+            'Non-coding': 29.71014492753623,
             'Low complexity nucleotide': 0.0,
-            'Read length was shorter than 3 * peptide k-mer size': 1.5625,
-            'Low complexity peptide in protein20 alphabet': 4.6875},
+            'Read length was shorter than 3 * peptide k-mer size': 8.695652173913043,
+            'Low complexity peptide in protein20 alphabet': 4.3478260869565215},
         'histogram_n_coding_frames_per_read': {
             'Number of reads with 1 putative protein-coding translations': 3},
         'histogram_n_coding_frames_per_read_percentages': {
