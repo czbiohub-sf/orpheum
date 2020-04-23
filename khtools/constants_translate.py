@@ -36,8 +36,8 @@ LOW_COMPLEXITY_CATEGORIES = dict(
 
 PROTEIN_CODING_CATEGORIES = {
     "too_short_peptide":
-        "All translations shorter than peptide k-mer size + 1",
-    "stop_codons": "All translation frames have stop codons",
+        "Translation is shorter than peptide k-mer size + 1",
+    "stop_codons": "Translation frame has stop codon(s)",
     "coding": "Coding",
     'non_coding': 'Non-coding',
     'low_complexity_nucleotide': "Low complexity nucleotide",

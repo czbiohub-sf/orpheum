@@ -95,8 +95,8 @@ def test_get_n_per_coding_classification(
         peptide_bloom_filter_path,
         alphabet, peptide_ksize, jaccard_threshold)
     data = [
-        ['read1', 'All translations shorter than peptide k-mer size + 1'],
-        ['read2', 'All translation frames have stop codons'],
+        ['read1', 'Translation is shorter than peptide k-mer size + 1'],
+        ['read2', 'Translation frame has stop codon(s)'],
         ['read3', 'Coding'],
         ['read4', 'Non-coding'],
         ['read5', 'Low complexity nucleotide'],
@@ -109,15 +109,15 @@ def test_get_n_per_coding_classification(
         create_ss.get_n_per_coding_classification(df)
     canonical_alphabet = ALIAS_TO_ALPHABET[alphabet]
     true_counts = {
-        'All translations shorter than peptide k-mer size + 1': 14.285714285714286,
-        'All translation frames have stop codons': 14.285714285714286,
+        'Translation is shorter than peptide k-mer size + 1': 14.285714285714286,
+        'Translation frame has stop codon(s)': 14.285714285714286,
         'Coding': 14.285714285714286, 'Non-coding': 14.285714285714286,
         'Low complexity nucleotide': 14.285714285714286,
         'Read length was shorter than 3 * peptide k-mer size': 14.285714285714286,
         f'Low complexity peptide in {canonical_alphabet} alphabet': 14.285714285714286}
     true_percentages = {
-        'All translations shorter than peptide k-mer size + 1': 1,
-        'All translation frames have stop codons': 1, 'Coding': 1,
+        'Translation is shorter than peptide k-mer size + 1': 1,
+        'Translation frame has stop codon(s)': 1, 'Coding': 1,
         'Non-coding': 1, 'Low complexity nucleotide': 1,
         'Read length was shorter than 3 * peptide k-mer size': 1,
         f'Low complexity peptide in {canonical_alphabet} alphabet': 1}
@@ -147,16 +147,16 @@ def test_generate_coding_summary(
             '75%': 0.05882352941176471,
             'max': 1.0},
         'classification_value_counts': {
-            'All translations shorter than peptide k-mer size + 1': 0,
-            'All translation frames have stop codons': 76,
+            'Translation is shorter than peptide k-mer size + 1': 0,
+            'Translation frame has stop codon(s)': 76,
             'Coding': 3,
             'Non-coding': 41,
             'Low complexity nucleotide': 0,
             'Read length was shorter than 3 * peptide k-mer size': 12,
             'Low complexity peptide in protein20 alphabet': 6},
         'classification_percentages': {
-            'All translations shorter than peptide k-mer size + 1': 0.0,
-            'All translation frames have stop codons': 55.072463768115945,
+            'Translation is shorter than peptide k-mer size + 1': 0.0,
+            'Translation frame has stop codon(s)': 55.072463768115945,
             'Coding': 2.1739130434782608,
             'Non-coding': 29.71014492753623,
             'Low complexity nucleotide': 0.0,
@@ -189,8 +189,8 @@ def test_make_empty_coding_categories():
         'bloom_filter.nodegraph',
         "protein", 7, 0.5)
     test_coding_categories = {
-        'All translations shorter than peptide k-mer size + 1': 0,
-        'All translation frames have stop codons': 0,
+        'Translation is shorter than peptide k-mer size + 1': 0,
+        'Translation frame has stop codon(s)': 0,
         'Coding': 0,
         'Non-coding': 0,
         'Low complexity nucleotide': 0,
