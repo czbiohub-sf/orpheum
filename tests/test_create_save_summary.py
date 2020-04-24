@@ -136,32 +136,33 @@ def test_generate_coding_summary(
         single_alphabet_ksize_true_scores)
     print(test_summary)
     true_summary = {
-        'input_files': ['SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
+        'input_files': [
+            'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
         'jaccard_info': {
-            'count': 38.0,
-            'mean': 0.09253465832413199,
-            'std': 0.27109478961653966,
+            'count': 44.0,
+            'mean': 0.085830733808675,
+            'std': 0.25321503253861455,
             'min': 0.0,
             '25%': 0.0,
             '50%': 0.0,
-            '75%': 0.0,
+            '75%': 0.05882352941176471,
             'max': 1.0},
         'categorization_counts': {
-            'Translation is shorter than peptide k-mer size + 1': 1,
-            'Translation frame has stop codon(s)': 0,
+            'Translation is shorter than peptide k-mer size + 1': 0,
+            'Translation frame has stop codon(s)': 3,
             'Coding': 3,
-            'Non-coding': 17,
+            'Non-coding': 14,
             'Low complexity nucleotide': 0,
             'Read length was shorter than 3 * peptide k-mer size': 2,
-            'Low complexity peptide in protein20 alphabet': 0},
+            'Low complexity peptide in protein20 alphabet': 1},
         'categorization_percentages': {
-            'Translation is shorter than peptide k-mer size + 1': 4.3478260869565215,
-            'Translation frame has stop codon(s)': 0.0,
+            'Translation is shorter than peptide k-mer size + 1': 0.0,
+            'Translation frame has stop codon(s)': 13.043478260869565,
             'Coding': 13.043478260869565,
-            'Non-coding': 73.91304347826087,
+            'Non-coding': 60.869565217391305,
             'Low complexity nucleotide': 0.0,
             'Read length was shorter than 3 * peptide k-mer size': 8.695652173913043,
-            'Low complexity peptide in protein20 alphabet': 0.0},
+            'Low complexity peptide in protein20 alphabet': 4.3478260869565215},
         'histogram_n_coding_frames_per_read': {
             'Number of reads with 1 putative protein-coding translations': 3},
         'histogram_n_coding_frames_per_read_percentages': {
@@ -170,6 +171,7 @@ def test_generate_coding_summary(
         'peptide_alphabet': 'protein',
         'peptide_ksize': 7,
         'jaccard_threshold': 0.5}
+
     assert test_summary == true_summary
 
 

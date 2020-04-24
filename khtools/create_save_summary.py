@@ -123,6 +123,8 @@ class CreateSaveSummary:
                   in unique_categories):
                 counts[
                     'Read length was shorter than 3 * peptide k-mer size'] += 1
+            elif len(unique_categories) == 1:
+                counts[unique_categories[0]] += 1
             else:
                 counts['Non-coding'] += 1
 
