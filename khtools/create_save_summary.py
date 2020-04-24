@@ -109,15 +109,21 @@ class CreateSaveSummary:
             categories_for_read_id = read_id_category[
                 read_id_category.read_id == read_id]
             unique_categories = categories_for_read_id.category.unique()
-            if len(unique_categories) == 1:
-                counts[unique_categories[0]] += 1
-            elif 'Coding' in unique_categories:
+
+            # If any of the frames is coding, then that read is called coding,
+            # the remaining are non-coding, unless the reads too short
+            # in nucleotide or peptide space.
+            if 'Coding' in unique_categories:
                 counts['Coding'] += 1
             elif ('Translation is shorter than peptide k-mer size + 1'
                   in unique_categories):
                 counts[
                     'Translation is shorter than peptide k-mer size + 1'] += 1
-            elif 'Non-coding' in unique_categories:
+            elif ('Read length was shorter than 3 * peptide k-mer size'
+                  in unique_categories):
+                counts[
+                    'Read length was shorter than 3 * peptide k-mer size'] += 1
+            else:
                 counts['Non-coding'] += 1
 
         # Convert to series to make percentage calculation easy
