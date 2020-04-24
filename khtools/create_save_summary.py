@@ -54,8 +54,8 @@ class CreateSaveSummary:
                     "75%": None,
                     "max": None
                 },
-                'classification_value_counts': empty_coding_categories,
-                'classification_percentages': empty_coding_categories,
+                'categorization_counts': empty_coding_categories,
+                'categorization_percentages': empty_coding_categories,
                 'histogram_n_coding_frames_per_read': {
                     str(i): 0 for i in range(len(empty_coding_categories))},
                 'histogram_n_coding_frames_per_read_percentages': {
@@ -76,18 +76,18 @@ class CreateSaveSummary:
 
         files = coding_scores.filename.unique().tolist()
 
-        classification_percentages, classification_value_counts = \
-            self.get_n_per_coding_classification(coding_scores)
+        categorization_percentages, categorization_counts = \
+            self.get_n_per_coding_category(coding_scores)
 
         # Get Jaccard distributions, count, min, max, mean, stddev, median
         jaccard_info = coding_scores.jaccard_in_peptide_db.describe().to_dict()
         summary = {
             'input_files': files,
             'jaccard_info': jaccard_info,
-            'classification_value_counts':
-                classification_value_counts,
-            'classification_percentages':
-                classification_percentages,
+            'categorization_counts':
+                categorization_counts,
+            'categorization_percentages':
+                categorization_percentages,
             'histogram_n_coding_frames_per_read':
                 translation_frame_counts,
             'histogram_n_coding_frames_per_read_percentages':
@@ -99,18 +99,33 @@ class CreateSaveSummary:
         }
         return summary
 
-    def get_n_per_coding_classification(self, coding_scores):
+    def get_n_per_coding_category(self, coding_scores):
         # Initialize to all zeros
         counts = self.make_empty_coding_categories()
-        # Replace with observed sequences
-        counts.update(
-            coding_scores.classification.value_counts().to_dict())
+        read_id_category = coding_scores.filter(["read_id", "category"])
+        read_ids = coding_scores.read_id.unique()
+
+        for read_id in read_ids:
+            categories_for_read_id = read_id_category[
+                read_id_category.read_id == read_id]
+            unique_categories = categories_for_read_id.category.unique()
+            if len(unique_categories) == 1:
+                counts[unique_categories[0]] += 1
+            elif 'Coding' in unique_categories:
+                counts['Coding'] += 1
+            elif ('Translation is shorter than peptide k-mer size + 1'
+                  in unique_categories):
+                counts[
+                    'Translation is shorter than peptide k-mer size + 1'] += 1
+            elif 'Non-coding' in unique_categories:
+                counts['Non-coding'] += 1
+
         # Convert to series to make percentage calculation easy
-        classifications = pd.Series(counts)
+        categories = pd.Series(counts)
 
         # Initialize to all zeros
         percentages = self.make_empty_coding_categories()
-        percentages_series = 100 * classifications / classifications.sum()
+        percentages_series = 100 * categories / categories.sum()
         # Replace with observations
         percentages.update(percentages_series.to_dict())
         return percentages, counts
@@ -118,7 +133,7 @@ class CreateSaveSummary:
     def get_n_translated_frames_per_read(self, coding_scores):
         """Of all coding sequences, get number of possible translations"""
         col = 'n_translated_frames'
-        predicted_coding = coding_scores.query('classification == "Coding"')
+        predicted_coding = coding_scores.query('category == "Coding"')
 
         n_coding_per_read = predicted_coding.read_id.value_counts()
         n_coding_per_read.index = n_coding_per_read.index.astype(str)

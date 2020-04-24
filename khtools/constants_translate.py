@@ -21,7 +21,7 @@ SEQTYPE_TO_ANNOUNCEMENT = {
 }
 SCORING_DF_COLUMNS = [
     'read_id', 'jaccard_in_peptide_db', 'n_kmers',
-    'classification', 'translation_frame'
+    'category', 'translation_frame'
 ]
 
 LOW_COMPLEXITY_PER_ALIAS = [

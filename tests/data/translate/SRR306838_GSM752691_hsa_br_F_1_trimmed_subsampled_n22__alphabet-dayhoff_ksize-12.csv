@@ -1,4 +1,4 @@
-read_id,jaccard_in_peptide_db,n_kmers,classification,translation_frame,filename
+read_id,jaccard_in_peptide_db,n_kmers,category,translation_frame,filename
 SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1,,,Translation frame has stop codon(s),1,/Users/pranathivemuri/czbiohub/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1,0.0,11.0,Non-coding,2,/Users/pranathivemuri/czbiohub/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
 SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1,,,Translation frame has stop codon(s),3,/Users/pranathivemuri/czbiohub/kh-tools/tests/./data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq
