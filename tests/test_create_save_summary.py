@@ -11,14 +11,14 @@ from khtools.constants_translate import (
 def coding_scores_empty():
     coding_scores = pd.DataFrame(
         columns=['read_id', 'jaccard_in_peptide_db',
-                 'n_kmers', 'classification',
+                 'n_kmers', 'category',
                  'filename'])
     return coding_scores
 
 
 @pytest.fixture()
 def coding_scores_nonempty():
-    # Make fake dataframe with "read_id" and "classification" columns only
+    # Make fake dataframe with "read_id" and "category" columns only
     # for testing
     data = {
         'read_id':
@@ -31,7 +31,7 @@ def coding_scores_nonempty():
              'read6', 'read7', 'read8', 'read9', 'read10'],
     }
     df = pd.DataFrame(data)
-    df['classification'] = "Coding"
+    df['category'] = "Coding"
     return df
 
 
@@ -86,7 +86,7 @@ def test_get_n_translated_frames_per_read(
         'Number of reads with 3 putative protein-coding translations': 9.090909090909092}
 
 
-def test_get_n_per_coding_classification(
+def test_get_n_per_coding_category(
         coding_scores_nonempty, alphabet,
         peptide_bloom_filter_path, peptide_ksize, jaccard_threshold):
     from khtools.sequence_encodings import ALIAS_TO_ALPHABET
@@ -95,29 +95,29 @@ def test_get_n_per_coding_classification(
         peptide_bloom_filter_path,
         alphabet, peptide_ksize, jaccard_threshold)
     data = [
-        ['read1', 'All translations shorter than peptide k-mer size + 1'],
-        ['read2', 'All translation frames have stop codons'],
+        ['read1', 'Translation is shorter than peptide k-mer size + 1'],
+        ['read2', 'Translation frame has stop codon(s)'],
         ['read3', 'Coding'],
         ['read4', 'Non-coding'],
         ['read5', 'Low complexity nucleotide'],
         ['read6', 'Read length was shorter than 3 * peptide k-mer size'],
         ['read7', LOW_COMPLEXITY_CATEGORIES[alphabet]],
     ]
-    df = pd.DataFrame(data, columns=['read_id', 'classification'])
+    df = pd.DataFrame(data, columns=['read_id', 'category'])
 
     test_counts, test_percentages = \
-        create_ss.get_n_per_coding_classification(df)
+        create_ss.get_n_per_coding_category(df)
     canonical_alphabet = ALIAS_TO_ALPHABET[alphabet]
     true_counts = {
-        'All translations shorter than peptide k-mer size + 1': 14.285714285714286,
-        'All translation frames have stop codons': 14.285714285714286,
+        'Translation is shorter than peptide k-mer size + 1': 14.285714285714286,
+        'Translation frame has stop codon(s)': 14.285714285714286,
         'Coding': 14.285714285714286, 'Non-coding': 14.285714285714286,
         'Low complexity nucleotide': 14.285714285714286,
         'Read length was shorter than 3 * peptide k-mer size': 14.285714285714286,
         f'Low complexity peptide in {canonical_alphabet} alphabet': 14.285714285714286}
     true_percentages = {
-        'All translations shorter than peptide k-mer size + 1': 1,
-        'All translation frames have stop codons': 1, 'Coding': 1,
+        'Translation is shorter than peptide k-mer size + 1': 1,
+        'Translation frame has stop codon(s)': 1, 'Coding': 1,
         'Non-coding': 1, 'Low complexity nucleotide': 1,
         'Read length was shorter than 3 * peptide k-mer size': 1,
         f'Low complexity peptide in {canonical_alphabet} alphabet': 1}
@@ -136,7 +136,8 @@ def test_generate_coding_summary(
         single_alphabet_ksize_true_scores)
     print(test_summary)
     true_summary = {
-        'input_files': ['SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
+        'input_files': [
+            'SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq'],
         'jaccard_info': {
             'count': 44.0,
             'mean': 0.085830733808675,
@@ -146,19 +147,19 @@ def test_generate_coding_summary(
             '50%': 0.0,
             '75%': 0.05882352941176471,
             'max': 1.0},
-        'classification_value_counts': {
-            'All translations shorter than peptide k-mer size + 1': 0,
-            'All translation frames have stop codons': 76,
+        'categorization_counts': {
+            'Translation is shorter than peptide k-mer size + 1': 0,
+            'Translation frame has stop codon(s)': 3,
             'Coding': 3,
-            'Non-coding': 41,
+            'Non-coding': 14,
             'Low complexity nucleotide': 0,
-            'Read length was shorter than 3 * peptide k-mer size': 12,
-            'Low complexity peptide in protein20 alphabet': 6},
-        'classification_percentages': {
-            'All translations shorter than peptide k-mer size + 1': 0.0,
-            'All translation frames have stop codons': 55.072463768115945,
-            'Coding': 2.1739130434782608,
-            'Non-coding': 29.71014492753623,
+            'Read length was shorter than 3 * peptide k-mer size': 2,
+            'Low complexity peptide in protein20 alphabet': 1},
+        'categorization_percentages': {
+            'Translation is shorter than peptide k-mer size + 1': 0.0,
+            'Translation frame has stop codon(s)': 13.043478260869565,
+            'Coding': 13.043478260869565,
+            'Non-coding': 60.869565217391305,
             'Low complexity nucleotide': 0.0,
             'Read length was shorter than 3 * peptide k-mer size': 8.695652173913043,
             'Low complexity peptide in protein20 alphabet': 4.3478260869565215},
@@ -170,6 +171,7 @@ def test_generate_coding_summary(
         'peptide_alphabet': 'protein',
         'peptide_ksize': 7,
         'jaccard_threshold': 0.5}
+
     assert test_summary == true_summary
 
 
@@ -189,8 +191,8 @@ def test_make_empty_coding_categories():
         'bloom_filter.nodegraph',
         "protein", 7, 0.5)
     test_coding_categories = {
-        'All translations shorter than peptide k-mer size + 1': 0,
-        'All translation frames have stop codons': 0,
+        'Translation is shorter than peptide k-mer size + 1': 0,
+        'Translation frame has stop codon(s)': 0,
         'Coding': 0,
         'Non-coding': 0,
         'Low complexity nucleotide': 0,
