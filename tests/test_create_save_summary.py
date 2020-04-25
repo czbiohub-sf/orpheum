@@ -95,7 +95,9 @@ def test_get_n_per_coding_category(
         peptide_bloom_filter_path,
         alphabet, peptide_ksize, jaccard_threshold)
     data = [
-        ['read1', 'Translation is shorter than peptide k-mer size + 1'],
+        ['read1', 'Non-coding'],
+        ['read1', 'Coding'],
+        ['read1', 'Non-coding'],
         ['read2', 'Translation frame has stop codon(s)'],
         ['read3', 'Coding'],
         ['read4', 'Non-coding'],
@@ -108,16 +110,17 @@ def test_get_n_per_coding_category(
     test_counts, test_percentages = \
         create_ss.get_n_per_coding_category(df)
     canonical_alphabet = ALIAS_TO_ALPHABET[alphabet]
+    # read1 and read3 are coding, there is zero too_short_peptide
     true_counts = {
-        'Translation is shorter than peptide k-mer size + 1': 14.285714285714286,
+        'Translation is shorter than peptide k-mer size + 1': 0.0,
         'Translation frame has stop codon(s)': 14.285714285714286,
-        'Coding': 14.285714285714286, 'Non-coding': 14.285714285714286,
+        'Coding': 28.571428571428573, 'Non-coding': 14.285714285714286,
         'Low complexity nucleotide': 14.285714285714286,
         'Read length was shorter than 3 * peptide k-mer size': 14.285714285714286,
         f'Low complexity peptide in {canonical_alphabet} alphabet': 14.285714285714286}
     true_percentages = {
-        'Translation is shorter than peptide k-mer size + 1': 1,
-        'Translation frame has stop codon(s)': 1, 'Coding': 1,
+        'Translation is shorter than peptide k-mer size + 1': 0,
+        'Translation frame has stop codon(s)': 1, 'Coding': 2,
         'Non-coding': 1, 'Low complexity nucleotide': 1,
         'Read length was shorter than 3 * peptide k-mer size': 1,
         f'Low complexity peptide in {canonical_alphabet} alphabet': 1}

@@ -103,9 +103,9 @@ class CreateSaveSummary:
         # Initialize to all zeros
         counts = self.make_empty_coding_categories()
         read_id_category = coding_scores.filter(["read_id", "category"])
-        read_ids = coding_scores.read_id.unique()
 
-        for read_id in read_ids:
+        for read_id, categories_for_read_id in read_id_category.groupby(
+                'read_id'):
             categories_for_read_id = read_id_category[
                 read_id_category.read_id == read_id]
             unique_categories = categories_for_read_id.category.unique()
