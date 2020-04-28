@@ -8,7 +8,7 @@ import warnings
 conftest.py contains fixtures or functions-turned-variables that can be
 used in any test
 """
-from khtools.constants_index import DEFAULT_PROTEIN_KSIZE, \
+from sencha.constants_index import DEFAULT_PROTEIN_KSIZE, \
     DEFAULT_DAYHOFF_KSIZE, DEFAULT_HP_KSIZE
 
 
@@ -21,7 +21,7 @@ def reads(data_folder):
 
 @pytest.fixture
 def jaccard_threshold(alphabet):
-    from khtools.translate import get_jaccard_threshold
+    from sencha.translate import get_jaccard_threshold
     threshold = get_jaccard_threshold(None, alphabet)
     return threshold
 
@@ -121,12 +121,12 @@ def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
 @pytest.fixture
 def peptide_bloom_filter(peptide_bloom_filter_path, peptide_fasta, alphabet,
                          peptide_ksize):
-    from khtools.index import load_nodegraph
+    from sencha.index import load_nodegraph
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
         return load_nodegraph(peptide_bloom_filter_path)
     except (OSError):
-        from khtools.index import make_peptide_bloom_filter
+        from sencha.index import make_peptide_bloom_filter
 
         bloom_filter = make_peptide_bloom_filter(peptide_fasta,
                                                  peptide_ksize,

@@ -8,14 +8,14 @@ test:
 	py.test
 
 coverage:
-	coverage run --source khtools --omit="*/test*" --module py.test
+	coverage run --source sencha --omit="*/test*" --module py.test
 	coverage report --show-missing
 
 lint:
 	# ignore:
 	# E126 continuation line over-indented for hanging indent
 	# E127 continuation line over-indented for visual indent
-	flake8 --exclude docs,tests --ignore=E127,E126 khtools
+	flake8 --exclude docs,tests --ignore=E127,E126 sencha
 
 conda_install:
 	conda install --file conda_requirements.txt

@@ -50,7 +50,7 @@ def peptide_seq2():
 
 
 def test_kmerize(nucleotide_seq1, ksize):
-    from khtools.compare_kmer_content import kmerize
+    from sencha.compare_kmer_content import kmerize
 
     test = kmerize(nucleotide_seq1, ksize)
     true = {'ACA', 'ATT', 'GAT', 'TAC', 'TTA'}
@@ -58,7 +58,7 @@ def test_kmerize(nucleotide_seq1, ksize):
 
 
 def test_jaccardize(nucleotide_seq1):
-    from khtools.compare_kmer_content import jaccardize
+    from sencha.compare_kmer_content import jaccardize
 
     test = jaccardize({1, 2, 3, 4}, {3, 4, 5, 6})
     true = 0.5
@@ -66,7 +66,7 @@ def test_jaccardize(nucleotide_seq1):
 
 
 def test_kmer_comparison_table(nucleotide_seq1, nucleotide_seq2, ksizes):
-    from khtools.compare_kmer_content import kmer_comparison_table
+    from sencha.compare_kmer_content import kmer_comparison_table
 
     test = kmer_comparison_table('seq1',
                                  nucleotide_seq1,
@@ -84,7 +84,7 @@ seq1,seq2,4,0.25,nucleotide
 
 
 def test_compare_peptide_seqs(peptide_seq1, peptide_seq2, ksizes):
-    from khtools.compare_kmer_content import compare_peptide_seqs
+    from sencha.compare_kmer_content import compare_peptide_seqs
     id_seq1 = "seq1", peptide_seq1
     id_seq2 = "seq2", peptide_seq2
 
@@ -119,7 +119,7 @@ def test_compare_peptide_seqs(peptide_seq1, peptide_seq2, ksizes):
 
 
 def test_compare_nucleotide_seqs(nucleotide_seq1, nucleotide_seq2, ksizes):
-    from khtools.compare_kmer_content import compare_nucleotide_seqs
+    from sencha.compare_kmer_content import compare_nucleotide_seqs
     id_seq1 = "seq1", nucleotide_seq1
     id_seq2 = "seq2", nucleotide_seq2
 
@@ -305,7 +305,7 @@ def true_comparison_df(true_comparison_csv_kmax3):
 
 def test_cli(true_protein_coding_fasta_path, ksize_args,
              true_comparison_csv_kmax3):
-    from khtools.compare_kmer_content import cli
+    from sencha.compare_kmer_content import cli
 
     runner = CliRunner()
     args = ksize_args + [true_protein_coding_fasta_path]
@@ -315,7 +315,7 @@ def test_cli(true_protein_coding_fasta_path, ksize_args,
 
 
 def test_cli_no_input():
-    from khtools.compare_kmer_content import cli
+    from sencha.compare_kmer_content import cli
 
     runner = CliRunner()
     result = runner.invoke(cli)
@@ -327,7 +327,7 @@ def test_cli_no_input():
 
 def test_cli_parquet_no_csv(tmpdir, true_protein_coding_fasta_path, ksize_args,
                             true_comparison_csv_kmax3, true_comparison_df):
-    from khtools.compare_kmer_content import cli
+    from sencha.compare_kmer_content import cli
 
     parquet = os.path.join(tmpdir, 'coding_scores.parquet')
 
