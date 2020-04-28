@@ -209,7 +209,7 @@ latex_elements = {
 # [howto/manual]).
 latex_documents = [
     ('index', 'sencha.tex',
-     u'Kmer-hashing tools Documentation',
+     u'sencha Documentation',
      u'Chan Zuckerberg Biohub', 'manual'),
 ]
 
@@ -240,7 +240,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'sencha',
-     u'Kmer-hashing tools Documentation',
+     u'Sencha Documentation',
      [u'Chan Zuckerberg Biohub'], 1)
 ]
 
@@ -255,10 +255,10 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents= [
     ('index', 'sencha',
-     u'Kmer-hashing tools Documentation',
+     u'Sencha Documentation',
      u'Chan Zuckerberg Biohub',
      'sencha',
-     'One line description of project.',
+     'Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.',
      'Miscellaneous'),
 ]
 

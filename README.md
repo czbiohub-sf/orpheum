@@ -1,4 +1,4 @@
-Kmer-hashing tools
+sencha
 ================================
 ![Tests](https://github.com/czbiohub/sencha/workflows/Pytest/badge.svg)
 ![Linting](https://github.com/czbiohub/sencha/workflows/Lint%20with%20flake8/badge.svg)
@@ -7,7 +7,7 @@ Kmer-hashing tools
 What is sencha?
 -------------------------------------
 
-Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices
+Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.
 
 -   Free software: MIT license
 -   Documentation: <https://>czbiohub.github.io/sencha
