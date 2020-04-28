@@ -24,7 +24,7 @@ test_requirements = [
 setup(
     name='sencha',
     version='0.1.0',
-    description="Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices",
+    description="Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
     long_description=readme + '\n\n' + history,
     author="Olga Botvinnik",
     author_email='olga.botvinnik@czbiohub.org',
