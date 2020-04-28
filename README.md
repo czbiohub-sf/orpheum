@@ -1,16 +1,20 @@
-Kmer-hashing tools
+sencha
 ================================
-![Tests](https://github.com/czbiohub/kh-tools/workflows/Pytest/badge.svg)
-![Linting](https://github.com/czbiohub/kh-tools/workflows/Lint%20with%20flake8/badge.svg)
-[![codecov](https://codecov.io/gh/czbiohub/kh-tools/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/kh-tools)
+![Tests](https://github.com/czbiohub/sencha/workflows/Pytest/badge.svg)
+![Linting](https://github.com/czbiohub/sencha/workflows/Lint%20with%20flake8/badge.svg)
+[![codecov](https://codecov.io/gh/czbiohub/sencha/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/sencha)
 
-What is khtools?
+What is sencha?
 -------------------------------------
 
-Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices
+Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.
 
 -   Free software: MIT license
--   Documentation: <https://>czbiohub.github.io/khtools
+-   Documentation: <https://>czbiohub.github.io/sencha
+
+The name is inspired from the naming pattern of ([sourmash]((https://github.com/dib-lab/sourmash))
+combined with @olgabot's love of tea.
+([Sencha](https://en.wikipedia.org/wiki/Sencha) is a Japanese green tea.)
 
 Installation
 ------------
@@ -18,8 +22,8 @@ Installation
 To install this code, clone this github repository and use pip to install
 
 ```
-git clone <https://github.com/>czbiohub/khtools.git
-cd khtools
+git clone <https://github.com/>czbiohub/sencha.git
+cd sencha
 
 # The "." means "install *this*, the folder where I am now"
 pip install .
@@ -32,7 +36,7 @@ Usage
 
 
 ```
-khtools translate peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+sencha translate peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the "coding scores" to a csv
@@ -45,7 +49,7 @@ score is the maximum Jaccard index across all reading frames. If you'd like to
 see the coding scores for all reads, use the `--csv` flag.
 
 ```
-khtools translate --csv coding_scores.csv peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+sencha translate --csv coding_scores.csv peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 
@@ -55,7 +59,7 @@ By default, only the coding *peptides* are output. If you'd like to also output
 the underlying *nucleotide* sequence, then use the flag `--coding-nucleotide-fasta`
 
 ```
-khtools translate --coding-nucleotide-fasta coding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+sencha translate --coding-nucleotide-fasta coding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the *non*-coding nucleotides to a fasta
@@ -64,7 +68,7 @@ To see the sequence of reads which were deemed non-coding, use the flag
 `--noncoding-nucleotide-fasta`.
 
 ```
-khtools translate --noncoding-nucleotide-fasta noncoding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+sencha translate --noncoding-nucleotide-fasta noncoding_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the low complexity nucleotides to a fasta
@@ -80,7 +84,7 @@ would be considered low complexity. While this sequence has many nucleotide
 k-mers, it is likely a result of a sequencing error and we ignore it.
 
 ```
-khtools translate --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+sencha translate --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the low complexity peptides to a fasta
@@ -103,7 +107,7 @@ sequence of low-complexity peptides to a fasta, use the flag
 `--low-complexity-peptides-fasta`.
 
 ```
-khtools translate --low-complexity-peptides-fasta low_complexity_peptides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
+sencha translate --low-complexity-peptides-fasta low_complexity_peptides.fasta peptides.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 

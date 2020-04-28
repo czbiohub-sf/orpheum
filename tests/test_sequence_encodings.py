@@ -5,7 +5,7 @@ Tests for re-encoding biological sequence data
 """
 import pytest
 
-from khtools.sequence_encodings import VALID_PEPTIDE_MOLECULES
+from sencha.sequence_encodings import VALID_PEPTIDE_MOLECULES
 
 # Fixtures are functions-turned-variables that can be used across multiple
 # tests. conftest.py contains fixtures that can be used by any test file
@@ -30,7 +30,7 @@ def reduced_alphabet(request):
 
 
 def test_translations():
-    from khtools.sequence_encodings import DAYHOFF_MAPPING, HP_MAPPING, \
+    from sencha.sequence_encodings import DAYHOFF_MAPPING, HP_MAPPING, \
         BOTVINNIK_MAPPING, AMINO_ACID_SINGLE_LETTERS, DNA_ALPHABET, \
         AMINO_KETO_MAPPING, PURINE_PYRIMIDINE_MAPPING, WEAK_STRONG_MAPPING
 
@@ -45,7 +45,7 @@ def test_translations():
 
 # -------------------- Test nucleotide encodings ---------------------------- #
 def test_amino_keto_ize(nucleotide_string):
-    from khtools.sequence_encodings import amino_keto_ize
+    from sencha.sequence_encodings import amino_keto_ize
 
     test = amino_keto_ize(nucleotide_string)
     true = 'KMKKMMM'
@@ -53,7 +53,7 @@ def test_amino_keto_ize(nucleotide_string):
 
 
 def test_weak_strong_ize(nucleotide_string):
-    from khtools.sequence_encodings import weak_strong_ize
+    from sencha.sequence_encodings import weak_strong_ize
 
     test = weak_strong_ize(nucleotide_string)
     true = 'SWWWWSW'
@@ -61,7 +61,7 @@ def test_weak_strong_ize(nucleotide_string):
 
 
 def test_purine_pyrimidize(nucleotide_string):
-    from khtools.sequence_encodings import purine_pyrimidize
+    from sencha.sequence_encodings import purine_pyrimidize
 
     test = purine_pyrimidize(nucleotide_string)
     true = 'RRYYRYR'
@@ -72,7 +72,7 @@ def test_purine_pyrimidize(nucleotide_string):
 
 
 def test_dayhoffize(peptide_string):
-    from khtools.sequence_encodings import dayhoffize
+    from sencha.sequence_encodings import dayhoffize
 
     test = dayhoffize(peptide_string)
     true = 'bbbdbfecdac'
@@ -80,7 +80,7 @@ def test_dayhoffize(peptide_string):
 
 
 def test_dayhoff_v2_ize(peptide_string):
-    from khtools.sequence_encodings import dayhoff_v2_ize
+    from sencha.sequence_encodings import dayhoff_v2_ize
 
     test = dayhoff_v2_ize(peptide_string)
     true = 'BbBdbfecdac'
@@ -88,7 +88,7 @@ def test_dayhoff_v2_ize(peptide_string):
 
 
 def test_hpize(peptide_string):
-    from khtools.sequence_encodings import hpize
+    from sencha.sequence_encodings import hpize
 
     test = hpize(peptide_string)
     true = 'phpphhhpppp'
@@ -96,7 +96,7 @@ def test_hpize(peptide_string):
 
 
 def test_botvinnikize(peptide_string):
-    from khtools.sequence_encodings import botvinnikize
+    from sencha.sequence_encodings import botvinnikize
 
     test = botvinnikize(peptide_string)
     true = 'dadkacbfghf'
@@ -104,7 +104,7 @@ def test_botvinnikize(peptide_string):
 
 
 def test_peptide_constants():
-    from khtools.sequence_encodings import PEPTIDE_MAPPINGS, \
+    from sencha.sequence_encodings import PEPTIDE_MAPPINGS, \
         AMINO_ACID_SINGLE_LETTERS
 
     for key, mapping in PEPTIDE_MAPPINGS.items():
@@ -118,7 +118,7 @@ def test_peptide_constants():
 
 
 def test_encode_peptide(peptide_string, reduced_alphabet):
-    from khtools.sequence_encodings import encode_peptide
+    from sencha.sequence_encodings import encode_peptide
 
     test = encode_peptide(peptide_string, reduced_alphabet)
     true = peptide_string

@@ -22,13 +22,13 @@ test_requirements = [
 ]
 
 setup(
-    name='khtools',
+    name='sencha',
     version='0.1.0',
-    description="Kmer hashing tools contains data cleaning and visualization code for analyzing kmer-hashing similarity matrices",
+    description="Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
     long_description=readme + '\n\n' + history,
     author="Olga Botvinnik",
     author_email='olga.botvinnik@czbiohub.org',
-    url='https://github.com/czbiohub/khtools',
+    url='https://github.com/czbiohub/sencha',
     packages=find_packages(
         exclude=[
             "tests",
@@ -40,7 +40,7 @@ setup(
     install_requires=requirements,
     license="MIT",
     zip_safe=False,
-    keywords='khtools',
+    keywords='sencha',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -49,9 +49,8 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
     ],
     entry_points={
-        'console_scripts': ['khtools = khtools.commandline:cli']},
+        'console_scripts': ['sencha = sencha.commandline:cli']},
     test_suite='tests',
     tests_require=test_requirements)

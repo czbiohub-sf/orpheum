@@ -2,8 +2,8 @@ import os
 import warnings
 import pytest
 import pandas as pd
-from khtools.create_save_summary import CreateSaveSummary
-from khtools.constants_translate import (
+from sencha.create_save_summary import CreateSaveSummary
+from sencha.constants_translate import (
     DEFAULT_JACCARD_THRESHOLD, LOW_COMPLEXITY_CATEGORIES)
 
 
@@ -89,7 +89,7 @@ def test_get_n_translated_frames_per_read(
 def test_get_n_per_coding_category(
         coding_scores_nonempty, alphabet,
         peptide_bloom_filter_path, peptide_ksize, jaccard_threshold):
-    from khtools.sequence_encodings import ALIAS_TO_ALPHABET
+    from sencha.sequence_encodings import ALIAS_TO_ALPHABET
     create_ss = CreateSaveSummary(
         ['nonexistent.fa'], True, True,
         peptide_bloom_filter_path,

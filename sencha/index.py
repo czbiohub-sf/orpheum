@@ -7,11 +7,11 @@ import screed
 from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
-from khtools.compare_kmer_content import kmerize
-from khtools.sequence_encodings import encode_peptide, BEST_KSIZES, \
+from sencha.compare_kmer_content import kmerize
+from sencha.sequence_encodings import encode_peptide, BEST_KSIZES, \
     ALPHABET_SIZES
-import khtools.constants_index as constants_index
-from khtools.log_utils import get_logger
+import sencha.constants_index as constants_index
+from sencha.log_utils import get_logger
 
 logger = get_logger(__file__)
 

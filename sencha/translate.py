@@ -14,15 +14,15 @@ import pandas as pd
 import screed
 from tqdm import tqdm
 from sourmash._minhash import hash_murmur
-from khtools.log_utils import get_logger
-from khtools.sequence_encodings import encode_peptide
-from khtools.compare_kmer_content import kmerize
-from khtools.create_save_summary import CreateSaveSummary
-from khtools.index import (maybe_make_peptide_bloom_filter,
+from sencha.log_utils import get_logger
+from sencha.sequence_encodings import encode_peptide
+from sencha.compare_kmer_content import kmerize
+from sencha.create_save_summary import CreateSaveSummary
+from sencha.index import (maybe_make_peptide_bloom_filter,
                            maybe_save_peptide_bloom_filter)
-import khtools.constants_index as constants_index
-import khtools.constants_translate as constants_translate
-from khtools.translate_single_seq import TranslateSingleSeq
+import sencha.constants_index as constants_index
+import sencha.constants_translate as constants_translate
+from sencha.translate_single_seq import TranslateSingleSeq
 
 
 logger = get_logger(__file__)

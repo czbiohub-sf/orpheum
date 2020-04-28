@@ -1,6 +1,6 @@
 .. _tutorial:
 
-khtools Tutorial
+sencha Tutorial
 =================
 
 Installation

@@ -4,7 +4,7 @@ import pytest
 
 
 def test_per_translation_false_positive_rate():
-    from khtools.index import per_translation_false_positive_rate
+    from sencha.index import per_translation_false_positive_rate
 
     n_kmers_in_translation = 14
     n_total_kmers = 4e7
@@ -14,7 +14,7 @@ def test_per_translation_false_positive_rate():
 
 
 def test_per_read_false_positive_coding_rate():
-    from khtools.index import per_read_false_positive_coding_rate
+    from sencha.index import per_read_false_positive_coding_rate
 
     read_length = 60
     peptide_ksize = 7
@@ -24,7 +24,7 @@ def test_per_read_false_positive_coding_rate():
 
 def test_make_peptide_bloom_filter(variable_peptide_fasta,
                                    alphabet, peptide_ksize):
-    from khtools.index import make_peptide_bloom_filter
+    from sencha.index import make_peptide_bloom_filter
 
     test = make_peptide_bloom_filter(variable_peptide_fasta,
                                      peptide_ksize,
@@ -60,7 +60,7 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
 
 def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
                                          alphabet, peptide_ksize):
-    from khtools.index import maybe_make_peptide_bloom_filter
+    from sencha.index import maybe_make_peptide_bloom_filter
 
     maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
                                     peptide_ksize,
@@ -71,7 +71,7 @@ def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
 
 
 def test_cli_minimum(peptide_fasta):
-    from khtools.index import cli
+    from sencha.index import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
@@ -81,7 +81,7 @@ def test_cli_minimum(peptide_fasta):
 
 
 def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
-    from khtools.index import cli
+    from sencha.index import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, [
@@ -93,8 +93,8 @@ def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
 
 
 def test_get_peptide_ksize_default(alphabet):
-    from khtools.index import get_peptide_ksize
-    from khtools.constants_index import \
+    from sencha.index import get_peptide_ksize
+    from sencha.constants_index import \
         DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
 
     test = get_peptide_ksize(alphabet, peptide_ksize=None)
@@ -107,7 +107,7 @@ def test_get_peptide_ksize_default(alphabet):
 
 
 def test_get_peptide_ksize_with_ksize(alphabet):
-    from khtools.index import get_peptide_ksize
+    from sencha.index import get_peptide_ksize
 
     peptide_ksize = 123
     test = get_peptide_ksize(alphabet, peptide_ksize)
@@ -115,7 +115,7 @@ def test_get_peptide_ksize_with_ksize(alphabet):
 
 
 def test_get_peptide_ksize_with_bad_alphabet():
-    from khtools.index import get_peptide_ksize
+    from sencha.index import get_peptide_ksize
 
     with pytest.raises(ValueError):
         get_peptide_ksize("not a real alphabet type", None)
