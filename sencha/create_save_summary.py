@@ -1,9 +1,9 @@
 import json
 
 import pandas as pd
-from khtools.constants_translate import (
+from sencha.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES, PROTEIN_CODING_CATEGORIES)
-from khtools.log_utils import get_logger
+from sencha.log_utils import get_logger
 
 logger = get_logger(__file__)
 

@@ -5,15 +5,15 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
-from khtools.translate import cli
+from sencha.translate import cli
 from click.testing import CliRunner
 
-import khtools.translate as translate
-import khtools.constants_translate as constants_translate
-import khtools.constants_index as constants_index
+import sencha.translate as translate
+import sencha.constants_translate as constants_translate
+import sencha.constants_index as constants_index
 
 
-KHTOOLS = "khtools"
+KHTOOLS = "sencha"
 TRANSLATE = "translate"
 CMD = KHTOOLS + " " + TRANSLATE
 

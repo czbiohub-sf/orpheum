@@ -1,5 +1,5 @@
 import pytest
-from khtools.translate_single_seq import TranslateSingleSeq
+from sencha.translate_single_seq import TranslateSingleSeq
 
 
 class TestTranslateSingleSeq:

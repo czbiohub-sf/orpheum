@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ easy_install khtools
+    $ easy_install sencha
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv khtools
-    $ pip install khtools
+    $ mkvirtualenv sencha
+    $ pip install sencha

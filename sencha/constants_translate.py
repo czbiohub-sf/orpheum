@@ -1,7 +1,7 @@
 import itertools
 from collections import namedtuple
 
-from khtools.sequence_encodings import ALPHABET_ALIASES
+from sencha.sequence_encodings import ALPHABET_ALIASES
 
 DEFAULT_JACCARD_THRESHOLD = 0.5
 DEFAULT_HP_JACCARD_THRESHOLD = 0.8
