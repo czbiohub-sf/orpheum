@@ -13,7 +13,7 @@ Kmer hashing tools contains data cleaning and visualization code for analyzing k
 -   Documentation: <https://>czbiohub.github.io/sencha
 
 The name is inspired from the naming pattern of ([sourmash]((https://github.com/dib-lab/sourmash))
-combined with @olabot's love of tea.
+combined with @olgabot's love of tea.
 ([Sencha](https://en.wikipedia.org/wiki/Sencha) is a Japanese green tea.)
 
 Installation
