@@ -1,8 +1,8 @@
 Kmer-hashing tools
 ================================
-![Tests](https://github.com/czbiohub/kh-tools/workflows/Pytest/badge.svg)
-![Linting](https://github.com/czbiohub/kh-tools/workflows/Lint%20with%20flake8/badge.svg)
-[![codecov](https://codecov.io/gh/czbiohub/kh-tools/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/kh-tools)
+![Tests](https://github.com/czbiohub/sencha/workflows/Pytest/badge.svg)
+![Linting](https://github.com/czbiohub/sencha/workflows/Lint%20with%20flake8/badge.svg)
+[![codecov](https://codecov.io/gh/czbiohub/sencha/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/sencha)
 
 What is sencha?
 -------------------------------------
