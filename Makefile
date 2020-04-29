@@ -28,3 +28,5 @@ install:
 
 dist: FORCE
 	python setup.py sdist
+
+FORCE:
