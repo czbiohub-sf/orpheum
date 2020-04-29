@@ -5,3 +5,8 @@ History
 ---------------------
 
 -   First release on PyPI.
+
+1.0.0 (2020-04-28)
+---------------------
+
+-   Sencha release on PyPI.
