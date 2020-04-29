@@ -25,3 +25,6 @@ conda_install:
 install:
 	pip install -r requirements.txt
 	pip install .
+
+dist: FORCE
+	python setup.py sdist
