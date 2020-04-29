@@ -23,7 +23,6 @@ test_requirements = [
 
 setup(
     name='sencha',
-    version='1.0.0',
     description="Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
     long_description=readme + '\n\n' + history,
     author="Olga Botvinnik",
@@ -52,5 +51,7 @@ setup(
     ],
     entry_points={
         'console_scripts': ['sencha = sencha.commandline:cli']},
+    use_scm_version={
+        'write_to': 'sourmash/version.py'},
     test_suite='tests',
     tests_require=test_requirements)
