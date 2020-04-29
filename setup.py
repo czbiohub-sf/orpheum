@@ -49,9 +49,13 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
+    setup_requires=[
+        "setuptools>=38.6.0",
+        "setuptools_scm",
+        'setuptools_scm_git_archive'],
     entry_points={
         'console_scripts': ['sencha = sencha.commandline:cli']},
     use_scm_version={
-        'write_to': 'sourmash/version.py'},
+        'write_to': 'sencha/version.py'},
     test_suite='tests',
     tests_require=test_requirements)
