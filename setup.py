@@ -23,7 +23,7 @@ test_requirements = [
 
 setup(
     name='sencha',
-    version='0.1.0',
+    version='1.0.0',
     description="Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
     long_description=readme + '\n\n' + history,
     author="Olga Botvinnik",
