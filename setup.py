@@ -25,6 +25,7 @@ setup(
     name='sencha',
     description="Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
     long_description=readme + '\n\n' + history,
+    long_description_content_type="text/markdown",
     author="Olga Botvinnik",
     author_email='olga.botvinnik@czbiohub.org',
     url='https://github.com/czbiohub/sencha',
