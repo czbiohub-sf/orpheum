@@ -69,6 +69,10 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
     else:
         return adversarial_peptide_fasta
 
+@pytest.fixture
+def peptides_dir(data_folder):
+    filename = os.path.join(data_folder, "index", "index_dir")
+    return filename
 
 # Tie the alphabet name to its default ksize to make sure we keep getting the
 # right sequences

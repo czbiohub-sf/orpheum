@@ -74,54 +74,56 @@ def load_nodegraph(*args, **kwargs):
 
 
 def make_peptide_bloom_filter(
-        peptide_fasta,
+        peptide_fasta_files,
         peptide_ksize,
         molecule,
         n_tables=constants_index.DEFAULT_N_TABLES,
         tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
+
     """Create a bloom filter out of peptide sequences"""
     peptide_bloom_filter = khmer.Nodegraph(peptide_ksize,
                                            tablesize,
                                            n_tables=n_tables)
 
-    with screed.open(peptide_fasta) as records:
-        for record in tqdm(records):
-            if '*' in record['sequence']:
-                continue
-            sequence = encode_peptide(record['sequence'], molecule)
-            try:
-                kmers = kmerize(sequence, peptide_ksize)
-                for kmer in kmers:
-                    # Convert the k-mer into an integer
-                    hashed = hash_murmur(kmer)
+    for peptide_fasta in peptide_fasta_files:
+        with screed.open(peptide_fasta) as records:
+            for record in tqdm(records):
+                if '*' in record['sequence']:
+                    continue
+                sequence = encode_peptide(record['sequence'], molecule)
+                try:
+                    kmers = kmerize(sequence, peptide_ksize)
+                    for kmer in kmers:
+                        # Convert the k-mer into an integer
+                        hashed = hash_murmur(kmer)
 
-                    # .add can take the hashed integer so we can hash the
-                    #  peptide kmer and add it directly
-                    peptide_bloom_filter.add(hashed)
-            except ValueError:
-                # Sequence length is smaller than k-mer size
-                continue
+                        # .add can take the hashed integer so we can hash the
+                        #  peptide kmer and add it directly
+                        peptide_bloom_filter.add(hashed)
+                except ValueError:
+                    # Sequence length is smaller than k-mer size
+                    continue
     return peptide_bloom_filter
 
 
-def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
+def make_peptide_set(peptide_fasta_files, peptide_ksize, molecule):
     """Create a python set out of peptide sequence k-mers
 
     For comparing to the bloom filter in storage and performance
     """
     peptide_set = set([])
-
-    with screed.open(peptide_fasta) as records:
-        for record in tqdm(records):
-            if '*' in record['sequence']:
-                continue
-            sequence = encode_peptide(record['sequence'], molecule)
-            try:
-                kmers = kmerize(sequence, peptide_ksize)
-                peptide_set.update(kmers)
-            except ValueError:
-                # Sequence length is smaller than k-mer size
-                continue
+    for peptide_fasta in peptide_fasta_files:
+        with screed.open(peptide_fasta) as records:
+            for record in tqdm(records):
+                if '*' in record['sequence']:
+                    continue
+                sequence = encode_peptide(record['sequence'], molecule)
+                try:
+                    kmers = kmerize(sequence, peptide_ksize)
+                    peptide_set.update(kmers)
+                except ValueError:
+                    # Sequence length is smaller than k-mer size
+                    continue
     return peptide_set
 
 
@@ -145,10 +147,18 @@ def maybe_make_peptide_bloom_filter(
                                  f"equal")
     else:
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-        logger.info(
-            f"Creating peptide bloom filter with file: {peptides}\n"
-            f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
-            f"...")
+        if len(peptides) ==1:
+            logger.info(
+                f"Creating peptide bloom filter with file: {peptides[0]}\n"
+                f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
+                f"...")
+        else:
+            index_dir= os.path.dirname(peptides[0])
+            logger.info(
+                f"Creating peptide bloom filter from files in directory: {index_dir}\n"
+                f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
+                f"...")
+
         peptide_bloom_filter = make_peptide_bloom_filter(
             peptides, peptide_ksize, molecule=molecule,
             n_tables=n_tables, tablesize=tablesize)
@@ -166,7 +176,12 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
         else:
             suffix = f'.alphabet-{molecule}_ksize-{ksize}.bloomfilter.' \
                      f'nodegraph'
-            filename = os.path.splitext(peptides)[0] + suffix
+            if len(peptides) ==1:
+                filename = os.path.splitext(peptides[0])[0] + suffix
+            else:
+                dirname = os.path.dirname(peptides[0]) # get index dir
+                basename = os.path.basename(dirname) # user index dir name as basename
+                filename = os.path.join(dirname, basename + suffix)
 
         logger.info(f"Writing peptide bloom filter to {filename}")
         peptide_bloom_filter.save(filename)
@@ -199,10 +214,16 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
 @click.option('--n-tables', type=int,
               default=constants_index.DEFAULT_N_TABLES,
               help='Size of the bloom filter table to use')
+@click.option('--index-from-dir',
+              is_flag=True,
+              default=False,
+              help='Build peptide bloom filter from a directory of peptide fasta files')
+
 def cli(peptides, peptide_ksize=None, alphabet='protein',
         save_as=None,
         tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
-        n_tables=constants_index.DEFAULT_N_TABLES):
+        n_tables=constants_index.DEFAULT_N_TABLES,
+        index_from_dir=False):
     """Make a peptide bloom filter for your peptides
 
     \b
@@ -214,6 +235,8 @@ def cli(peptides, peptide_ksize=None, alphabet='protein',
         Sequence file of peptides
     peptide_ksize : int
         Number of characters in amino acid words
+    index_from_dir : bool
+        peptides is a directory containing peptide sequence files
     long_reads
     verbose
 
@@ -223,6 +246,12 @@ def cli(peptides, peptide_ksize=None, alphabet='protein',
 
     """
     # \b above prevents rewrapping of paragraph
+
+    if index_from_dir:
+        # need file checking here, not this hacky ".fa.gz" or ".faa.gz" business
+        peptides = [os.path.join(peptides, p) for p in os.listdir(peptides) if p.endswith(".fa.gz") or p.endswith(".faa.gz") or p.endswith(".fa")]
+    else:
+        peptides = [peptides]
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
                                                      alphabet,

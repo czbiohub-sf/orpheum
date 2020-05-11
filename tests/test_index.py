@@ -26,7 +26,7 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
                                    alphabet, peptide_ksize):
     from sencha.index import make_peptide_bloom_filter
 
-    test = make_peptide_bloom_filter(variable_peptide_fasta,
+    test = make_peptide_bloom_filter([variable_peptide_fasta],
                                      peptide_ksize,
                                      alphabet,
                                      n_tables=4,
@@ -91,6 +91,23 @@ def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
     ])
     assert result.exit_code == 0
 
+def test_cli_index_from_dir(peptides_dir, alphabet, peptide_ksize):
+    from sencha.index import cli
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [
+        '--peptide-ksize', peptide_ksize, '--alphabet', alphabet,
+        "--tablesize", "1e4",
+        "--index-from-dir",
+        peptides_dir,
+    ])
+    assert result.exit_code == 0
+
+
+def test_get_peptide_ksize_default(alphabet):
+    from sencha.index import get_peptide_ksize
+    from sencha.constants_index import \
+        DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
 
 def test_get_peptide_ksize_default(alphabet):
     from sencha.index import get_peptide_ksize
