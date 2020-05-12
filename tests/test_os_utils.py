@@ -20,8 +20,8 @@ def folder():
 def test_sanitize_path():
     from sencha.os_utils import sanitize_path
 
-    test = sanitize_path('.')
-    true = os.path.abspath('.')
+    test = sanitize_path(".")
+    true = os.path.abspath(".")
     assert test == true
 
 
@@ -29,22 +29,22 @@ def test_maybe_add_slash(folder):
     from sencha.os_utils import maybe_add_slash
 
     test = maybe_add_slash(folder)
-    assert test == 'test-folder/'
+    assert test == "test-folder/"
 
 
 def test_get_stdout_from_command():
     from sencha.os_utils import get_stdout_from_command
-    command = ['echo', 'asdf']
+
+    command = ["echo", "asdf"]
     stdout = get_stdout_from_command(command)
-    assert stdout == ['asdf']
+    assert stdout == ["asdf"]
 
 
-@pytest.mark.skipif(not sys.platform.startswith("darwin"),
-                    reason="computers are hard")
+@pytest.mark.skipif(not sys.platform.startswith("darwin"), reason="computers are hard")
 def test_get_stdout_stderr_from_command():
     from sencha.os_utils import get_stdout_stderr_from_command
 
-    command = ['sed', 'asdf']
+    command = ["sed", "asdf"]
     stdout, stderr = get_stdout_stderr_from_command(command)
     assert stdout == []
     assert stderr == ['sed: 1: "asdf": command a expects \\ followed by text']

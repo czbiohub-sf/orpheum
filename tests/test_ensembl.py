@@ -27,18 +27,17 @@ def make_pickled_test_data(ensembl_id, responses):
     import pickle
 
     ts = time.time()
-    time_generated = datetime.fromtimestamp(ts).strftime(
-        '%Y-%m-%d %H:%M:%S')
+    time_generated = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
 
     d = {}
     for key, value in responses.items():
         d[key] = value
-    d['time_generated'] = time_generated
-    d['status_code'] = 200
+    d["time_generated"] = time_generated
+    d["status_code"] = 200
 
-    folder = os.path.join(os.path.dirname(__file__), 'data')
+    folder = os.path.join(os.path.dirname(__file__), "data")
     filename = os.path.join(folder, f"{ensembl_id}.pkl")
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         pickle.dump(d, f)
 
 
@@ -59,18 +58,21 @@ def ensembl_gene_id():
 
 @all_requests
 def ensembl_mock(url, request):
-    match = re.match(r'.*/(.*?)$', url.path)
+    match = re.match(r".*/(.*?)$", url.path)
 
     if match is None:
-        raise ValueError(f"URL {url} doesn't end in an Ensembl ID. Is this a "
-                         "valid Ensembl REST URL?")
+        raise ValueError(
+            f"URL {url} doesn't end in an Ensembl ID. Is this a "
+            "valid Ensembl REST URL?"
+        )
 
     ensembl_id = match.group(1)
 
     try:
-        filename = os.path.join(pytest.config.rootdir,
-                                f'sencha/tests/data/{ensembl_id}.pkl')
-        with open(filename, 'rb') as testing_file:
+        filename = os.path.join(
+            pytest.config.rootdir, f"sencha/tests/data/{ensembl_id}.pkl"
+        )
+        with open(filename, "rb") as testing_file:
             testing_data = pickle.load(testing_file)
     except FileNotFoundError:
         raise ValueError(f"Testing file for {ensembl_id} not found")
@@ -78,15 +80,14 @@ def ensembl_mock(url, request):
     print(f"Loaded test data for {ensembl_id}")
     print(f"Test data generated on {testing_data['time_generated']}")
 
-    if 'sequence' in url.path:
-        return testing_data['sequence_response']
-    elif 'lookup' in url.path:
-        return testing_data['lookup_response']
-    elif 'homology' in url.path:
-        return testing_data['homology_response']
+    if "sequence" in url.path:
+        return testing_data["sequence_response"]
+    elif "lookup" in url.path:
+        return testing_data["lookup_response"]
+    elif "homology" in url.path:
+        return testing_data["homology_response"]
     else:
-        raise NotImplementedError(f"Endpoint {url.path} not implemented for "
-                                  "mocking")
+        raise NotImplementedError(f"Endpoint {url.path} not implemented for " "mocking")
 
 
 @pytest.mark.skip
@@ -106,7 +107,7 @@ def test_lookup_expand_true(ensembl_transcript_id):
 
     with HTTMock(ensembl_mock):
         test = lookup(ensembl_transcript_id, expand=True)
-        s = '''{"Exon": [{"assembly_name": "GRCh38",
+        s = """{"Exon": [{"assembly_name": "GRCh38",
            "db_type": "core",
            "end": 4262,
            "id": "ENSE00001435714",
@@ -139,7 +140,7 @@ def test_lookup_expand_true(ensembl_transcript_id):
  "species": "homo_sapiens",
  "start": 3307,
  "strand": 1,
- "version": 2}'''
+ "version": 2}"""
         true = json.loads(s)
         assert test == true
 
@@ -149,8 +150,8 @@ def test_get_orthologues(ensembl_gene_id):
     from sencha.ensembl import get_orthologues
 
     with HTTMock(ensembl_mock):
-        test = get_orthologues(ensembl_gene_id, 'mouse')
-        s = '''{"data": [{"id": "ENSG00000198888",
+        test = get_orthologues(ensembl_gene_id, "mouse")
+        s = """{"data": [{"id": "ENSG00000198888",
    "homologies": [{"method_link_type": "ENSEMBL_ORTHOLOGUES",
      "type": "ortholog_one2one",
      "source": {"id": "ENSG00000198888",
@@ -170,6 +171,6 @@ def test_get_orthologues(ensembl_gene_id):
       "align_seq": "MFFINILTLLVPILIAMAFLTLVERKILGYMQLRKGPNIVGPYGILQPFADAMKLFMKEPMRPLTTSMSLFIIAPTLSLTLALSLWVPLPMPHPLINLNLGILFILATSSLSVYSILWSGWASNSKYSLFGALRAVAQTISYEVTMAIILLSVLLMNGSYSLQTLITTQEHMWLLLPAWPMAMMWFISTLAETNRAPFDLTEGESELVSGFNVEYAAGPFALFFMAEYTNIILMNALTTIIFLGPLYYINLPELYSTNFMMEALLLSSTFLWIRASYPRFRYDQLMHLLWKNFLPLTLALCMWHISLPIFTAGVPPYM",
       "taxon_id": 10090},
      "taxonomy_level": "Euarchontoglires",
-     "dn_ds": null}]}]}'''
+     "dn_ds": null}]}]}"""
         true = json.loads(s)
         assert test == true
