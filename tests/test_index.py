@@ -8,8 +8,7 @@ def test_per_translation_false_positive_rate():
 
     n_kmers_in_translation = 14
     n_total_kmers = 4e7
-    test = per_translation_false_positive_rate(n_kmers_in_translation,
-                                               n_total_kmers)
+    test = per_translation_false_positive_rate(n_kmers_in_translation, n_total_kmers)
     assert test == 3.275785921922898e-06
 
 
@@ -22,16 +21,13 @@ def test_per_read_false_positive_coding_rate():
     assert test == 3.884682410293139e-05
 
 
-def test_make_peptide_bloom_filter(variable_peptide_fasta,
-                                   alphabet, peptide_ksize):
+def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksize):
     from sencha.index import make_peptide_bloom_filter
 
-    test = make_peptide_bloom_filter([variable_peptide_fasta],
-                                     peptide_ksize,
-                                     alphabet,
-                                     n_tables=4,
-                                     tablesize=1e6)
-    if 'first1000lines' in variable_peptide_fasta:
+    test = make_peptide_bloom_filter(
+        [variable_peptide_fasta], peptide_ksize, alphabet, n_tables=4, tablesize=1e6
+    )
+    if "first1000lines" in variable_peptide_fasta:
         TRUE_N_UNIQUE_KMERS = {
             ("protein", 7): 13966,
             ("dayhoff", 7): 10090,
@@ -39,7 +35,7 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
             ("dayhoff", 12): 13816,
             ("hydrophobic-polar", 31): 12888,
             ("hydrophobic-polar", 21): 13076,
-            ("hydrophobic-polar", 7): 136
+            ("hydrophobic-polar", 7): 136,
         }
     else:
         TRUE_N_UNIQUE_KMERS = {
@@ -49,23 +45,25 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
             ("dayhoff", 12): 488469,
             ("hydrophobic-polar", 31): 515863,
             ("hydrophobic-polar", 21): 434810,
-            ("hydrophobic-polar", 7): 170
+            ("hydrophobic-polar", 7): 170,
         }
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet, peptide_ksize)]
 
     # For now, assert that the number of kmers is within 0.1% of the true value
-    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers,
-                               rtol=0.001)
+    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=0.001)
 
 
-def test_maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
-                                         alphabet, peptide_ksize):
+def test_maybe_make_peptide_bloom_filter(
+    peptide_bloom_filter_path, alphabet, peptide_ksize
+):
     from sencha.index import maybe_make_peptide_bloom_filter
 
-    maybe_make_peptide_bloom_filter(peptide_bloom_filter_path,
-                                    peptide_ksize,
-                                    alphabet,
-                                    peptides_are_bloom_filter=True)
+    maybe_make_peptide_bloom_filter(
+        peptide_bloom_filter_path,
+        peptide_ksize,
+        alphabet,
+        peptides_are_bloom_filter=True,
+    )
     # No assertion, just check that it ran
     # assert isinstance(test, khmer.Nodegraph)
 
@@ -74,9 +72,7 @@ def test_cli_minimum(peptide_fasta):
     from sencha.index import cli
 
     runner = CliRunner()
-    result = runner.invoke(cli, [
-        peptide_fasta,
-    ])
+    result = runner.invoke(cli, [peptide_fasta,])
     assert result.exit_code == 0
 
 
@@ -84,42 +80,64 @@ def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
     from sencha.index import cli
 
     runner = CliRunner()
-    result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, '--alphabet', alphabet,
-        "--tablesize", "1e4",
-        peptide_fasta,
-    ])
+    result = runner.invoke(
+        cli,
+        [
+            "--peptide-ksize",
+            peptide_ksize,
+            "--alphabet",
+            alphabet,
+            "--tablesize",
+            "1e4",
+            peptide_fasta,
+        ],
+    )
     assert result.exit_code == 0
+
 
 def test_cli_index_from_dir(peptides_dir, alphabet, peptide_ksize):
     from sencha.index import cli
 
     runner = CliRunner()
-    result = runner.invoke(cli, [
-        '--peptide-ksize', peptide_ksize, '--alphabet', alphabet,
-        "--tablesize", "1e4",
-        "--index-from-dir",
-        peptides_dir,
-    ])
+    result = runner.invoke(
+        cli,
+        [
+            "--peptide-ksize",
+            peptide_ksize,
+            "--alphabet",
+            alphabet,
+            "--tablesize",
+            "1e4",
+            "--index-from-dir",
+            peptides_dir,
+        ],
+    )
     assert result.exit_code == 0
 
 
 def test_get_peptide_ksize_default(alphabet):
     from sencha.index import get_peptide_ksize
-    from sencha.constants_index import \
-        DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
+    from sencha.constants_index import (
+        DEFAULT_PROTEIN_KSIZE,
+        DEFAULT_HP_KSIZE,
+        DEFAULT_DAYHOFF_KSIZE,
+    )
+
 
 def test_get_peptide_ksize_default(alphabet):
     from sencha.index import get_peptide_ksize
-    from sencha.constants_index import \
-        DEFAULT_PROTEIN_KSIZE, DEFAULT_HP_KSIZE, DEFAULT_DAYHOFF_KSIZE
+    from sencha.constants_index import (
+        DEFAULT_PROTEIN_KSIZE,
+        DEFAULT_HP_KSIZE,
+        DEFAULT_DAYHOFF_KSIZE,
+    )
 
     test = get_peptide_ksize(alphabet, peptide_ksize=None)
-    if alphabet == 'protein':
+    if alphabet == "protein":
         assert test == DEFAULT_PROTEIN_KSIZE
-    elif alphabet == 'dayhoff':
+    elif alphabet == "dayhoff":
         assert test == DEFAULT_DAYHOFF_KSIZE
-    elif alphabet == 'hydrophobic-polar':
+    elif alphabet == "hydrophobic-polar":
         assert test == DEFAULT_HP_KSIZE
 
 

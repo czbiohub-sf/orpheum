@@ -8,8 +8,11 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from sencha.compare_kmer_content import kmerize
-from sencha.sequence_encodings import encode_peptide, BEST_KSIZES, \
-    ALPHABET_SIZES
+from sencha.sequence_encodings import (
+    encode_peptide,
+    BEST_KSIZES,
+    ALPHABET_SIZES,
+)
 import sencha.constants_index as constants_index
 from sencha.log_utils import get_logger
 
@@ -17,11 +20,12 @@ logger = get_logger(__file__)
 
 
 def per_translation_false_positive_rate(
-        n_kmers_in_translation,
-        n_total_kmers=1e7,
-        n_hash_functions=constants_index.DEFAULT_N_TABLES,
-        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
-    exponent = - n_hash_functions * n_total_kmers / tablesize
+    n_kmers_in_translation,
+    n_total_kmers=1e7,
+    n_hash_functions=constants_index.DEFAULT_N_TABLES,
+    tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+):
+    exponent = -n_hash_functions * n_total_kmers / tablesize
     print(f"exponent: {exponent}")
 
     # Probability that a single k-mer is randomly in the data
@@ -29,7 +33,7 @@ def per_translation_false_positive_rate(
 
     # Use built-in `exp1m` = exp - 1
     # - (exp - 1) = 1 - exp
-    per_kmer_fpr = math.pow(- math.expm1(exponent), n_hash_functions)
+    per_kmer_fpr = math.pow(-math.expm1(exponent), n_hash_functions)
     print(f"per kmer false positive rate: {per_kmer_fpr}")
 
     # Probability that the number of k-mers in the read are all false positives
@@ -38,10 +42,13 @@ def per_translation_false_positive_rate(
 
 
 def per_read_false_positive_coding_rate(
-        read_length, peptide_ksize,
-        n_total_kmers=4e7, alphabet='protein',
-        n_hash_functions=constants_index.DEFAULT_N_TABLES,
-        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
+    read_length,
+    peptide_ksize,
+    n_total_kmers=4e7,
+    alphabet="protein",
+    n_hash_functions=constants_index.DEFAULT_N_TABLES,
+    tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+):
     """Compute the false positive rate that a translated k-mer randomly
     appears in the database"""
 
@@ -53,9 +60,10 @@ def per_read_false_positive_coding_rate(
         translated_length = math.floor((read_length - frame) / 3)
         n_kmers_in_translation = translated_length - peptide_ksize + 1
         frame_fpr = per_translation_false_positive_rate(
-            n_kmers_in_translation, n_kmers_of_size,
+            n_kmers_in_translation,
+            n_kmers_of_size,
             n_hash_functions=n_hash_functions,
-            tablesize=tablesize
+            tablesize=tablesize,
         )
         # multiply by two for both forward and reverse translation frames
         frame_fpr = 2 * frame_fpr
@@ -74,23 +82,24 @@ def load_nodegraph(*args, **kwargs):
 
 
 def make_peptide_bloom_filter(
-        peptide_fasta_files,
-        peptide_ksize,
-        molecule,
-        n_tables=constants_index.DEFAULT_N_TABLES,
-        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
+    peptide_fasta_files,
+    peptide_ksize,
+    molecule,
+    n_tables=constants_index.DEFAULT_N_TABLES,
+    tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+):
 
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = khmer.Nodegraph(peptide_ksize,
-                                           tablesize,
-                                           n_tables=n_tables)
+    peptide_bloom_filter = khmer.Nodegraph(
+        peptide_ksize, tablesize, n_tables=n_tables
+    )
 
     for peptide_fasta in peptide_fasta_files:
         with screed.open(peptide_fasta) as records:
             for record in tqdm(records):
-                if '*' in record['sequence']:
+                if "*" in record["sequence"]:
                     continue
-                sequence = encode_peptide(record['sequence'], molecule)
+                sequence = encode_peptide(record["sequence"], molecule)
                 try:
                     kmers = kmerize(sequence, peptide_ksize)
                     for kmer in kmers:
@@ -115,9 +124,9 @@ def make_peptide_set(peptide_fasta_files, peptide_ksize, molecule):
     for peptide_fasta in peptide_fasta_files:
         with screed.open(peptide_fasta) as records:
             for record in tqdm(records):
-                if '*' in record['sequence']:
+                if "*" in record["sequence"]:
                     continue
-                sequence = encode_peptide(record['sequence'], molecule)
+                sequence = encode_peptide(record["sequence"], molecule)
                 try:
                     kmers = kmerize(sequence, peptide_ksize)
                     peptide_set.update(kmers)
@@ -128,45 +137,58 @@ def make_peptide_set(peptide_fasta_files, peptide_ksize, molecule):
 
 
 def maybe_make_peptide_bloom_filter(
-        peptides, peptide_ksize, molecule,
-        peptides_are_bloom_filter,
-        n_tables=constants_index.DEFAULT_N_TABLES,
-        tablesize=constants_index.DEFAULT_MAX_TABLESIZE):
+    peptides,
+    peptide_ksize,
+    molecule,
+    peptides_are_bloom_filter,
+    n_tables=constants_index.DEFAULT_N_TABLES,
+    tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+):
     if peptides_are_bloom_filter:
         logger.info(
             f"Loading existing bloom filter from {peptides} and "
-            f"making sure the ksizes match")
+            f"making sure the ksizes match"
+        )
         peptide_bloom_filter = load_nodegraph(peptides)
         if peptide_ksize is not None:
             try:
                 assert peptide_ksize == peptide_bloom_filter.ksize()
             except AssertionError:
-                raise ValueError(f"Given peptide ksize ({peptide_ksize}) and "
-                                 f"ksize found in bloom filter "
-                                 f"({peptide_bloom_filter.ksize()}) are not"
-                                 f"equal")
+                raise ValueError(
+                    f"Given peptide ksize ({peptide_ksize}) and "
+                    f"ksize found in bloom filter "
+                    f"({peptide_bloom_filter.ksize()}) are not"
+                    f"equal"
+                )
     else:
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-        if len(peptides) ==1:
+        if len(peptides) == 1:
             logger.info(
                 f"Creating peptide bloom filter with file: {peptides[0]}\n"
                 f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
-                f"...")
+                f"..."
+            )
         else:
-            index_dir= os.path.dirname(peptides[0])
+            index_dir = os.path.dirname(peptides[0])
             logger.info(
                 f"Creating peptide bloom filter from files in directory: {index_dir}\n"
                 f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
-                f"...")
+                f"..."
+            )
 
         peptide_bloom_filter = make_peptide_bloom_filter(
-            peptides, peptide_ksize, molecule=molecule,
-            n_tables=n_tables, tablesize=tablesize)
+            peptides,
+            peptide_ksize,
+            molecule=molecule,
+            n_tables=n_tables,
+            tablesize=tablesize,
+        )
     return peptide_bloom_filter
 
 
-def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
-                                    save_peptide_bloom_filter):
+def maybe_save_peptide_bloom_filter(
+    peptides, peptide_bloom_filter, molecule, save_peptide_bloom_filter
+):
     if save_peptide_bloom_filter:
         ksize = peptide_bloom_filter.ksize()
 
@@ -174,13 +196,16 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
             filename = save_peptide_bloom_filter
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
-            suffix = f'.alphabet-{molecule}_ksize-{ksize}.bloomfilter.' \
-                     f'nodegraph'
-            if len(peptides) ==1:
+            suffix = (
+                f".alphabet-{molecule}_ksize-{ksize}.bloomfilter." f"nodegraph"
+            )
+            if len(peptides) == 1:
                 filename = os.path.splitext(peptides[0])[0] + suffix
             else:
-                dirname = os.path.dirname(peptides[0]) # get index dir
-                basename = os.path.basename(dirname) # user index dir name as basename
+                dirname = os.path.dirname(peptides[0])  # get index dir
+                basename = os.path.basename(
+                    dirname
+                )  # user index dir name as basename
                 filename = os.path.join(dirname, basename + suffix)
 
         logger.info(f"Writing peptide bloom filter to {filename}")
@@ -190,40 +215,58 @@ def maybe_save_peptide_bloom_filter(peptides, peptide_bloom_filter, molecule,
 
 
 @click.command()
-@click.argument('peptides')
-@click.option('--peptide-ksize',
-              default=None, type=int,
-              help="K-mer size of the peptide sequence to use. Defaults for"
-              " different molecules are, "
-              f"protein: {constants_index.DEFAULT_PROTEIN_KSIZE}"
-              f", dayhoff: {constants_index.DEFAULT_DAYHOFF_KSIZE},"
-              f" hydrophobic-polar: {constants_index.DEFAULT_HP_KSIZE}")
-@click.option('--alphabet', '--molecule',
-              default='protein',
-              help="The type of amino acid alphabet/encoding to use. Default "
-                   "is 'protein', but 'dayhoff' or 'hydrophobic-polar' can "
-                   "be used")
-@click.option('--save-as',
-              default=None,
-              help='If provided, save peptide bloom filter as this filename. '
-              'Otherwise, add ksize and alphabet name to input filename.')
-@click.option('--tablesize',
-              type=constants_index.BASED_INT,
-              default="1e8",
-              help='Size of the bloom filter table to use')
-@click.option('--n-tables', type=int,
-              default=constants_index.DEFAULT_N_TABLES,
-              help='Size of the bloom filter table to use')
-@click.option('--index-from-dir',
-              is_flag=True,
-              default=False,
-              help='Build peptide bloom filter from a directory of peptide fasta files')
-
-def cli(peptides, peptide_ksize=None, alphabet='protein',
-        save_as=None,
-        tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
-        n_tables=constants_index.DEFAULT_N_TABLES,
-        index_from_dir=False):
+@click.argument("peptides")
+@click.option(
+    "--peptide-ksize",
+    default=None,
+    type=int,
+    help="K-mer size of the peptide sequence to use. Defaults for"
+    " different molecules are, "
+    f"protein: {constants_index.DEFAULT_PROTEIN_KSIZE}"
+    f", dayhoff: {constants_index.DEFAULT_DAYHOFF_KSIZE},"
+    f" hydrophobic-polar: {constants_index.DEFAULT_HP_KSIZE}",
+)
+@click.option(
+    "--alphabet",
+    "--molecule",
+    default="protein",
+    help="The type of amino acid alphabet/encoding to use. Default "
+    "is 'protein', but 'dayhoff' or 'hydrophobic-polar' can "
+    "be used",
+)
+@click.option(
+    "--save-as",
+    default=None,
+    help="If provided, save peptide bloom filter as this filename. "
+    "Otherwise, add ksize and alphabet name to input filename.",
+)
+@click.option(
+    "--tablesize",
+    type=constants_index.BASED_INT,
+    default="1e8",
+    help="Size of the bloom filter table to use",
+)
+@click.option(
+    "--n-tables",
+    type=int,
+    default=constants_index.DEFAULT_N_TABLES,
+    help="Size of the bloom filter table to use",
+)
+@click.option(
+    "--index-from-dir",
+    is_flag=True,
+    default=False,
+    help="Build peptide bloom filter from a directory of peptide fasta files",
+)
+def cli(
+    peptides,
+    peptide_ksize=None,
+    alphabet="protein",
+    save_as=None,
+    tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    n_tables=constants_index.DEFAULT_N_TABLES,
+    index_from_dir=False,
+):
     """Make a peptide bloom filter for your peptides
 
     \b
@@ -249,14 +292,23 @@ def cli(peptides, peptide_ksize=None, alphabet='protein',
 
     if index_from_dir:
         # need file checking here, not this hacky ".fa.gz" or ".faa.gz" business
-        peptides = [os.path.join(peptides, p) for p in os.listdir(peptides) if p.endswith(".fa.gz") or p.endswith(".faa.gz") or p.endswith(".fa")]
+        peptides = [
+            os.path.join(peptides, p)
+            for p in os.listdir(peptides)
+            if p.endswith(".fa.gz")
+            or p.endswith(".faa.gz")
+            or p.endswith(".fa")
+        ]
     else:
         peptides = [peptides]
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
-    peptide_bloom_filter = make_peptide_bloom_filter(peptides, peptide_ksize,
-                                                     alphabet,
-                                                     n_tables=n_tables,
-                                                     tablesize=tablesize)
+    peptide_bloom_filter = make_peptide_bloom_filter(
+        peptides,
+        peptide_ksize,
+        alphabet,
+        n_tables=n_tables,
+        tablesize=tablesize,
+    )
     logger.info("\tDone!")
 
     save_peptide_bloom_filter = save_as if save_as is not None else True
@@ -264,7 +316,8 @@ def cli(peptides, peptide_ksize=None, alphabet='protein',
         peptides,
         peptide_bloom_filter,
         alphabet,
-        save_peptide_bloom_filter=save_peptide_bloom_filter)
+        save_peptide_bloom_filter=save_peptide_bloom_filter,
+    )
 
 
 def get_peptide_ksize(molecule, peptide_ksize=None):
@@ -272,7 +325,9 @@ def get_peptide_ksize(molecule, peptide_ksize=None):
         try:
             peptide_ksize = BEST_KSIZES[molecule]
         except KeyError:
-            raise ValueError(f"{molecule} does not have a default k-mer size! "
-                             f"Only 'protein', 'hydrophobic-polar', or"
-                             f" 'dayhoff' have a default protein ksize")
+            raise ValueError(
+                f"{molecule} does not have a default k-mer size! "
+                f"Only 'protein', 'hydrophobic-polar', or"
+                f" 'dayhoff' have a default protein ksize"
+            )
     return peptide_ksize
