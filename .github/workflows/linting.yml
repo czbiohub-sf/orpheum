@@ -16,6 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: black
-        uses: lgeiger/black-action@v1.0.1
-        with:
-          args: ". --check"
+      uses: lgeiger/black-action@v1.0.1
+      with:
+        args: ". --check"
