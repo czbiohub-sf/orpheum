@@ -77,6 +77,15 @@ def load_nodegraph(*args, **kwargs):
         return khmer.Nodegraph.load(*args, **kwargs)
 
 
+def maybe_read_peptide_file(peptide_file):
+    records=[]
+    try:
+        records = screed.open(peptide_file)
+    except:
+        pass
+    return records
+
+
 def make_peptide_bloom_filter(
     peptide_fasta_files,
     peptide_ksize,
@@ -88,23 +97,25 @@ def make_peptide_bloom_filter(
     peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     for peptide_fasta in peptide_fasta_files:
-        with screed.open(peptide_fasta) as records:
-            for record in tqdm(records):
-                if "*" in record["sequence"]:
-                    continue
-                sequence = encode_peptide(record["sequence"], molecule)
-                try:
-                    kmers = kmerize(sequence, peptide_ksize)
-                    for kmer in kmers:
-                        # Convert the k-mer into an integer
-                        hashed = hash_murmur(kmer)
+        #peptide_bloom_filter = maybe_read_peptide_file(peptide_fasta, peptide_bloom_filter)
+        records = maybe_read_peptide_file(peptide_fasta)
+        for record in tqdm(records):
+            if "*" in record["sequence"]:
+                continue
+            sequence = encode_peptide(record["sequence"], molecule)
+            try:
+                kmers = kmerize(sequence, peptide_ksize)
+                for kmer in kmers:
+                    # Convert the k-mer into an integer
+                    hashed = hash_murmur(kmer)
 
-                        # .add can take the hashed integer so we can hash the
-                        #  peptide kmer and add it directly
-                        peptide_bloom_filter.add(hashed)
-                except ValueError:
-                    # Sequence length is smaller than k-mer size
-                    continue
+                    # .add can take the hashed integer so we can hash the
+                    #  peptide kmer and add it directly
+                    peptide_bloom_filter.add(hashed)
+            except ValueError:
+                print("seq length!")
+                # Sequence length is smaller than k-mer size
+                continue
     return peptide_bloom_filter
 
 
@@ -115,17 +126,17 @@ def make_peptide_set(peptide_fasta_files, peptide_ksize, molecule):
     """
     peptide_set = set([])
     for peptide_fasta in peptide_fasta_files:
-        with screed.open(peptide_fasta) as records:
-            for record in tqdm(records):
-                if "*" in record["sequence"]:
-                    continue
-                sequence = encode_peptide(record["sequence"], molecule)
-                try:
-                    kmers = kmerize(sequence, peptide_ksize)
-                    peptide_set.update(kmers)
-                except ValueError:
-                    # Sequence length is smaller than k-mer size
-                    continue
+        records = maybe_read_peptide_file(peptide_fasta)
+        for record in tqdm(records):
+            if "*" in record["sequence"]:
+                continue
+            sequence = encode_peptide(record["sequence"], molecule)
+            try:
+                kmers = kmerize(sequence, peptide_ksize)
+                peptide_set.update(kmers)
+            except ValueError:
+                # Sequence length is smaller than k-mer size
+                continue
     return peptide_set
 
 
@@ -280,12 +291,9 @@ def cli(
     # \b above prevents rewrapping of paragraph
 
     if index_from_dir:
-        # need file checking here, not this hacky ".fa.gz" or ".faa.gz" business
         peptides = [
             os.path.join(peptides, p)
-            for p in os.listdir(peptides)
-            if p.endswith(".fa.gz") or p.endswith(".faa.gz") or p.endswith(".fa")
-        ]
+            for p in os.listdir(peptides)]
     else:
         peptides = [peptides]
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)

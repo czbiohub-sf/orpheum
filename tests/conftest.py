@@ -79,7 +79,7 @@ def variable_peptide_fasta(request, peptide_fasta, adversarial_peptide_fasta):
 
 @pytest.fixture
 def peptides_dir(data_folder):
-    filename = os.path.join(data_folder, "index", "index_dir")
+    filename = os.path.join(data_folder, "index")
     return filename
 
 
