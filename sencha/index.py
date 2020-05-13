@@ -97,7 +97,6 @@ def make_peptide_bloom_filter(
     peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     for peptide_fasta in peptide_fasta_files:
-        # peptide_bloom_filter = maybe_read_peptide_file(peptide_fasta, peptide_bloom_filter)
         records = maybe_read_peptide_file(peptide_fasta)
         for record in tqdm(records):
             if "*" in record["sequence"]:
