@@ -78,7 +78,7 @@ def load_nodegraph(*args, **kwargs):
 
 
 def maybe_read_peptide_file(peptide_file):
-    records=[]
+    records = []
     try:
         records = screed.open(peptide_file)
     except:
@@ -97,7 +97,7 @@ def make_peptide_bloom_filter(
     peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     for peptide_fasta in peptide_fasta_files:
-        #peptide_bloom_filter = maybe_read_peptide_file(peptide_fasta, peptide_bloom_filter)
+        # peptide_bloom_filter = maybe_read_peptide_file(peptide_fasta, peptide_bloom_filter)
         records = maybe_read_peptide_file(peptide_fasta)
         for record in tqdm(records):
             if "*" in record["sequence"]:
@@ -291,9 +291,7 @@ def cli(
     # \b above prevents rewrapping of paragraph
 
     if index_from_dir:
-        peptides = [
-            os.path.join(peptides, p)
-            for p in os.listdir(peptides)]
+        peptides = [os.path.join(peptides, p) for p in os.listdir(peptides)]
     else:
         peptides = [peptides]
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
