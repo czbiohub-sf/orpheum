@@ -8,11 +8,7 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from sencha.compare_kmer_content import kmerize
-from sencha.sequence_encodings import (
-    encode_peptide,
-    BEST_KSIZES,
-    ALPHABET_SIZES,
-)
+from sencha.sequence_encodings import encode_peptide, BEST_KSIZES, ALPHABET_SIZES
 import sencha.constants_index as constants_index
 from sencha.log_utils import get_logger
 
@@ -88,11 +84,8 @@ def make_peptide_bloom_filter(
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
 ):
-
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = khmer.Nodegraph(
-        peptide_ksize, tablesize, n_tables=n_tables
-    )
+    peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     for peptide_fasta in peptide_fasta_files:
         with screed.open(peptide_fasta) as records:
@@ -196,16 +189,12 @@ def maybe_save_peptide_bloom_filter(
             filename = save_peptide_bloom_filter
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
-            suffix = (
-                f".alphabet-{molecule}_ksize-{ksize}.bloomfilter." f"nodegraph"
-            )
+            suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter." f"nodegraph"
             if len(peptides) == 1:
                 filename = os.path.splitext(peptides[0])[0] + suffix
             else:
                 dirname = os.path.dirname(peptides[0])  # get index dir
-                basename = os.path.basename(
-                    dirname
-                )  # user index dir name as basename
+                basename = os.path.basename(dirname)  # user index dir name as basename
                 filename = os.path.join(dirname, basename + suffix)
 
         logger.info(f"Writing peptide bloom filter to {filename}")
@@ -295,19 +284,13 @@ def cli(
         peptides = [
             os.path.join(peptides, p)
             for p in os.listdir(peptides)
-            if p.endswith(".fa.gz")
-            or p.endswith(".faa.gz")
-            or p.endswith(".fa")
+            if p.endswith(".fa.gz") or p.endswith(".faa.gz") or p.endswith(".fa")
         ]
     else:
         peptides = [peptides]
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(
-        peptides,
-        peptide_ksize,
-        alphabet,
-        n_tables=n_tables,
-        tablesize=tablesize,
+        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize,
     )
     logger.info("\tDone!")
 

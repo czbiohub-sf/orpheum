@@ -53,7 +53,7 @@ def test_kmerize(nucleotide_seq1, ksize):
     from sencha.compare_kmer_content import kmerize
 
     test = kmerize(nucleotide_seq1, ksize)
-    true = {'ACA', 'ATT', 'GAT', 'TAC', 'TTA'}
+    true = {"ACA", "ATT", "GAT", "TAC", "TTA"}
     assert test == true
 
 
@@ -68,12 +68,9 @@ def test_jaccardize(nucleotide_seq1):
 def test_kmer_comparison_table(nucleotide_seq1, nucleotide_seq2, ksizes):
     from sencha.compare_kmer_content import kmer_comparison_table
 
-    test = kmer_comparison_table('seq1',
-                                 nucleotide_seq1,
-                                 'seq2',
-                                 nucleotide_seq2,
-                                 'nucleotide',
-                                 ksizes=ksizes)
+    test = kmer_comparison_table(
+        "seq1", nucleotide_seq1, "seq2", nucleotide_seq2, "nucleotide", ksizes=ksizes
+    )
     s = """id1,id2,ksize,jaccard,alphabet
 seq1,seq2,2,1.0,nucleotide
 seq1,seq2,3,0.8,nucleotide
@@ -85,41 +82,45 @@ seq1,seq2,4,0.25,nucleotide
 
 def test_compare_peptide_seqs(peptide_seq1, peptide_seq2, ksizes):
     from sencha.compare_kmer_content import compare_peptide_seqs
+
     id_seq1 = "seq1", peptide_seq1
     id_seq2 = "seq2", peptide_seq2
 
     test = compare_peptide_seqs(id_seq1, id_seq2, ksizes)
-    data = [['seq1', 'seq2', 2, 1.0, 'peptide20'],
-            ['seq1', 'seq2', 3, 0.8888888888888888, 'peptide20'],
-            ['seq1', 'seq2', 4, 0.75, 'peptide20'],
-            ['seq1', 'seq2', 2, 1.0, 'hsdm17'],
-            ['seq1', 'seq2', 3, 0.8888888888888888, 'hsdm17'],
-            ['seq1', 'seq2', 4, 0.75, 'hsdm17'],
-            ['seq1', 'seq2', 2, 1.0, 'sdm12'],
-            ['seq1', 'seq2', 3, 0.8888888888888888, 'sdm12'],
-            ['seq1', 'seq2', 4, 0.75, 'sdm12'],
-            ['seq1', 'seq2', 2, 1.0, 'aa9'],
-            ['seq1', 'seq2', 3, 0.8888888888888888, 'aa9'],
-            ['seq1', 'seq2', 4, 0.75, 'aa9'],
-            ['seq1', 'seq2', 2, 1.0, 'botvinnik8'],
-            ['seq1', 'seq2', 3, 0.8888888888888888, 'botvinnik8'],
-            ['seq1', 'seq2', 4, 0.75, 'botvinnik8'],
-            ['seq1', 'seq2', 2, 1.0, 'dayhoff6'],
-            ['seq1', 'seq2', 3, 0.8888888888888888, 'dayhoff6'],
-            ['seq1', 'seq2', 4, 0.75, 'dayhoff6'],
-            ['seq1', 'seq2', 2, 1.0, 'gbmr4'],
-            ['seq1', 'seq2', 3, 1.0, 'gbmr4'],
-            ['seq1', 'seq2', 4, 0.7142857142857143, 'gbmr4'],
-            ['seq1', 'seq2', 2, 1.0, 'hp2'], ['seq1', 'seq2', 3, 1.0, 'hp2'],
-            ['seq1', 'seq2', 4, 1.0, 'hp2']]
+    data = [
+        ["seq1", "seq2", 2, 1.0, "peptide20"],
+        ["seq1", "seq2", 3, 0.8888888888888888, "peptide20"],
+        ["seq1", "seq2", 4, 0.75, "peptide20"],
+        ["seq1", "seq2", 2, 1.0, "hsdm17"],
+        ["seq1", "seq2", 3, 0.8888888888888888, "hsdm17"],
+        ["seq1", "seq2", 4, 0.75, "hsdm17"],
+        ["seq1", "seq2", 2, 1.0, "sdm12"],
+        ["seq1", "seq2", 3, 0.8888888888888888, "sdm12"],
+        ["seq1", "seq2", 4, 0.75, "sdm12"],
+        ["seq1", "seq2", 2, 1.0, "aa9"],
+        ["seq1", "seq2", 3, 0.8888888888888888, "aa9"],
+        ["seq1", "seq2", 4, 0.75, "aa9"],
+        ["seq1", "seq2", 2, 1.0, "botvinnik8"],
+        ["seq1", "seq2", 3, 0.8888888888888888, "botvinnik8"],
+        ["seq1", "seq2", 4, 0.75, "botvinnik8"],
+        ["seq1", "seq2", 2, 1.0, "dayhoff6"],
+        ["seq1", "seq2", 3, 0.8888888888888888, "dayhoff6"],
+        ["seq1", "seq2", 4, 0.75, "dayhoff6"],
+        ["seq1", "seq2", 2, 1.0, "gbmr4"],
+        ["seq1", "seq2", 3, 1.0, "gbmr4"],
+        ["seq1", "seq2", 4, 0.7142857142857143, "gbmr4"],
+        ["seq1", "seq2", 2, 1.0, "hp2"],
+        ["seq1", "seq2", 3, 1.0, "hp2"],
+        ["seq1", "seq2", 4, 1.0, "hp2"],
+    ]
 
-    true = pd.DataFrame(data,
-                        columns=['id1', 'id2', 'ksize', 'jaccard', 'alphabet'])
+    true = pd.DataFrame(data, columns=["id1", "id2", "ksize", "jaccard", "alphabet"])
     pdt.assert_equal(test, true)
 
 
 def test_compare_nucleotide_seqs(nucleotide_seq1, nucleotide_seq2, ksizes):
     from sencha.compare_kmer_content import compare_nucleotide_seqs
+
     id_seq1 = "seq1", nucleotide_seq1
     id_seq2 = "seq2", nucleotide_seq2
 
@@ -145,7 +146,7 @@ seq1,seq2,4,0.75,amino_keto
 
 @pytest.fixture
 def ksize_args():
-    return ['--ksize-max', '3']
+    return ["--ksize-max", "3"]
 
 
 @pytest.fixture
@@ -303,8 +304,7 @@ def true_comparison_df(true_comparison_csv_kmax3):
     return pd.read_csv(StringIO(true_comparison_csv_kmax3))
 
 
-def test_cli(true_protein_coding_fasta_path, ksize_args,
-             true_comparison_csv_kmax3):
+def test_cli(true_protein_coding_fasta_path, ksize_args, true_comparison_csv_kmax3):
     from sencha.compare_kmer_content import cli
 
     runner = CliRunner()
@@ -320,20 +320,28 @@ def test_cli_no_input():
     runner = CliRunner()
     result = runner.invoke(cli)
     assert result.exit_code != 0
-    error_message = "No sequence files provided! Argument 'fastas' is " \
-                    "required!"
+    error_message = "No sequence files provided! Argument 'fastas' is " "required!"
     assert error_message in result.exception.args[0]
 
 
-def test_cli_parquet_no_csv(tmpdir, true_protein_coding_fasta_path, ksize_args,
-                            true_comparison_csv_kmax3, true_comparison_df):
+def test_cli_parquet_no_csv(
+    tmpdir,
+    true_protein_coding_fasta_path,
+    ksize_args,
+    true_comparison_csv_kmax3,
+    true_comparison_df,
+):
     from sencha.compare_kmer_content import cli
 
-    parquet = os.path.join(tmpdir, 'coding_scores.parquet')
+    parquet = os.path.join(tmpdir, "coding_scores.parquet")
 
     runner = CliRunner()
-    args = ksize_args + ['--parquet', parquet, '--no-csv',
-                         true_protein_coding_fasta_path]
+    args = ksize_args + [
+        "--parquet",
+        parquet,
+        "--no-csv",
+        true_protein_coding_fasta_path,
+    ]
     result = runner.invoke(cli, args)
     assert result.exit_code == 0
 

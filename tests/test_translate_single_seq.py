@@ -14,72 +14,57 @@ def translation(seq):
 
 def test_three_frame_translation(translation):
     test = [str(x) for x in translation.translate_ss.three_frame_translation()]
-    true = [
-        'RLLNTDINNIRKIAI*L*ILFC', 'ACLILTSIILGKSQYNCKSCSV',
-        'LA*Y*HQ*Y*ENRNITVNPVL'
-    ]
+    true = ["RLLNTDINNIRKIAI*L*ILFC", "ACLILTSIILGKSQYNCKSCSV", "LA*Y*HQ*Y*ENRNITVNPVL"]
     assert test == true
 
 
 def test_three_frame_fwd_translation(translation):
     test = {
         k: str(v)
-        for k, v in translation.translate_ss.three_frame_translation_no_stops(
-            1).items()
+        for k, v in translation.translate_ss.three_frame_translation_no_stops(1).items()
     }
-    true = {2: 'ACLILTSIILGKSQYNCKSCSV'}
+    true = {2: "ACLILTSIILGKSQYNCKSCSV"}
     assert test == true
 
 
 def test_three_frame_rev_translation(translation):
     result = translation.translate_ss.three_frame_translation_no_stops(-1)
-    test = {
-        k: str(
-            v) for k, v in result.items()}
-    true = {
-        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
-        -3: 'QNRIYSYIAIFLILLMSVLSK'
-    }
+    test = {k: str(v) for k, v in result.items()}
+    true = {-2: "TEQDLQLYCDFPNIIDVSIKQA", -3: "QNRIYSYIAIFLILLMSVLSK"}
     assert test == true
 
 
 def test_six_frame_translation_no_stops(translation):
     result = translation.translate_ss.six_frame_translation_no_stops()
-    test = {
-        k: str(
-            v) for k, v in result.items()}
+    test = {k: str(v) for k, v in result.items()}
     true = {
-        2: 'ACLILTSIILGKSQYNCKSCSV',
-        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
-        -3: 'QNRIYSYIAIFLILLMSVLSK'
+        2: "ACLILTSIILGKSQYNCKSCSV",
+        -2: "TEQDLQLYCDFPNIIDVSIKQA",
+        -3: "QNRIYSYIAIFLILLMSVLSK",
     }
     assert test == true
 
 
 def test_three_frame_translation_stops(translation):
     result = translation.translate_ss.three_frame_translation_stops(-1)
-    test = {
-        k: str(
-            v) for k, v in result.items()}
+    test = {k: str(v) for k, v in result.items()}
     true = {
-        -1: 'DRTGFTVILRFS*YY*CQY*AS',
-        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
-        -3: 'QNRIYSYIAIFLILLMSVLSK'
+        -1: "DRTGFTVILRFS*YY*CQY*AS",
+        -2: "TEQDLQLYCDFPNIIDVSIKQA",
+        -3: "QNRIYSYIAIFLILLMSVLSK",
     }
     assert test == true
 
 
 def test_six_frame_translation_stops(translation):
     result = translation.translate_ss.six_frame_translation()
-    test = {
-        k: str(
-            v) for k, v in result.items()}
+    test = {k: str(v) for k, v in result.items()}
     true = {
-        1: 'RLLNTDINNIRKIAI*L*ILFC',
-        2: 'ACLILTSIILGKSQYNCKSCSV',
-        3: 'LA*Y*HQ*Y*ENRNITVNPVL',
-        -1: 'DRTGFTVILRFS*YY*CQY*AS',
-        -2: 'TEQDLQLYCDFPNIIDVSIKQA',
-        -3: 'QNRIYSYIAIFLILLMSVLSK'
+        1: "RLLNTDINNIRKIAI*L*ILFC",
+        2: "ACLILTSIILGKSQYNCKSCSV",
+        3: "LA*Y*HQ*Y*ENRNITVNPVL",
+        -1: "DRTGFTVILRFS*YY*CQY*AS",
+        -2: "TEQDLQLYCDFPNIIDVSIKQA",
+        -3: "QNRIYSYIAIFLILLMSVLSK",
     }
     assert test == true

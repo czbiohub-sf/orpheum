@@ -9,14 +9,14 @@ class TranslateSingleSeq:
 
     def three_frame_translation(self):
         from Bio import BiopythonWarning
+
         with warnings.catch_warnings():
-            warnings.simplefilter('ignore', BiopythonWarning)
+            warnings.simplefilter("ignore", BiopythonWarning)
             for frame in range(3):
                 if self.sign == 1:
                     translation = self.seq[frame:].translate()
                 elif self.sign == -1:
-                    translation = self.seq.reverse_complement()[
-                        frame:].translate()
+                    translation = self.seq.reverse_complement()[frame:].translate()
                 yield translation
 
     def three_frame_translation_no_stops(self, sign):
@@ -26,7 +26,7 @@ class TranslateSingleSeq:
         return {
             self.sign * (i + 1): t
             for i, t in enumerate(self.three_frame_translation())
-            if '*' not in t
+            if "*" not in t
         }
 
     def three_frame_translation_stops(self, sign):
@@ -34,8 +34,7 @@ class TranslateSingleSeq:
         keep track of reading frame"""
         self.sign = sign
         return {
-            self.sign * (i + 1): t
-            for i, t in enumerate(self.three_frame_translation())
+            self.sign * (i + 1): t for i, t in enumerate(self.three_frame_translation())
         }
 
     def six_frame_translation_no_stops(self):
