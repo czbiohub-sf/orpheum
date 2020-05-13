@@ -59,7 +59,7 @@ def test_maybe_make_peptide_bloom_filter(
     from sencha.index import maybe_make_peptide_bloom_filter
 
     maybe_make_peptide_bloom_filter(
-        peptide_bloom_filter_path,
+        [peptide_bloom_filter_path],
         peptide_ksize,
         alphabet,
         peptides_are_bloom_filter=True,

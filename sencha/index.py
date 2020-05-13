@@ -148,6 +148,7 @@ def maybe_make_peptide_bloom_filter(
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
 ):
     if peptides_are_bloom_filter:
+        peptides = peptides[0]
         logger.info(
             f"Loading existing bloom filter from {peptides} and "
             f"making sure the ksizes match"
