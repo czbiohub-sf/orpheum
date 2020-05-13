@@ -15,12 +15,12 @@ from sencha.index import cli as index
 
 click.option = partial(click.option, show_default=True)
 
-settings = dict(help_option_names=['-h', '--help'])
+settings = dict(help_option_names=["-h", "--help"])
 
 
-@click.group(options_metavar='',
-             subcommand_metavar='<command>',
-             context_settings=settings)
+@click.group(
+    options_metavar="", subcommand_metavar="<command>", context_settings=settings
+)
 def cli():
     """
     Kmer hashing tools contains data cleaning and visualization code for
@@ -31,9 +31,9 @@ def cli():
     pass
 
 
-cli.add_command(compare_kmers, name='compare-kmers')
-cli.add_command(index, name='index')
-cli.add_command(translate, name='translate')
+cli.add_command(compare_kmers, name="compare-kmers")
+cli.add_command(index, name="index")
+cli.add_command(translate, name="translate")
 
 if __name__ == "__main__":
     cli()

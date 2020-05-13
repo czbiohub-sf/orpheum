@@ -18,8 +18,8 @@ class BasedIntParamType(click.ParamType):
         try:
             if isinstance(value, int):
                 return value
-            if 'e' in value:
-                sigfig, exponent = value.split('e')
+            if "e" in value:
+                sigfig, exponent = value.split("e")
                 sigfig = float(sigfig)
                 exponent = int(exponent)
                 return int(sigfig * 10 ** exponent)

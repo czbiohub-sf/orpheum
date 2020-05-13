@@ -14,60 +14,87 @@ from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
-from sencha.sequence_encodings import amino_keto_ize, \
-    weak_strong_ize, purine_pyrimidize, encode_peptide
+from sencha.sequence_encodings import (
+    amino_keto_ize,
+    weak_strong_ize,
+    purine_pyrimidize,
+    encode_peptide,
+)
 
-MOLECULES_TO_COMPARE = 'peptide20', 'hsdm17', 'sdm12', 'aa9', 'botvinnik8', \
-                       'dayhoff6', 'gbmr4', 'hp2'
+MOLECULES_TO_COMPARE = (
+    "peptide20",
+    "hsdm17",
+    "sdm12",
+    "aa9",
+    "botvinnik8",
+    "dayhoff6",
+    "gbmr4",
+    "hp2",
+)
 
-divergence_estimates = pd.Series({"Amniota": 312,
-                                  'Bilateria': 824,
-                                  "Boreoeutheria": 96,
-
-                                  # Old world monkeys
-                                  'Catarrhini': 29.4,
-                                  "Euarchontoglires": 76,
-
-                                  # Bony vertebrates
-                                  'Euteleostomi': 435,
-                                  'Eutheria': 105,
-
-                                  # Jawed vertebrates
-                                  'Gnathostomata': 473,
-
-                                  # A primate suborder
-                                  'Haplorrhini': 67,
-
-                                  # Great apes (includes orangutan)
-                                  'Hominidae': 15.8,
-
-                                  # Gorilla, human, chimp
-                                  'Homininae': 9.1,
-
-                                  # Apes (includes gibbons)
-                                  'Hominoidea': 20.2,
-
-                                  'Mammalia': 177,
-                                  "Opisthokonta": 1105,
-                                  'Primates': 74,
-
-                                  # tetrapods and the lobe-finned fishes
-                                  'Sarcopterygii': 413,
-                                  'Simiiformes': 43,
-
-                                  # Tetrapods - 4-limbed
-                                  'Tetrapoda': 352,
-
-                                  # Includes Eutheria (placental mammals) and
-                                  # Metatheria (maruspials)
-                                  'Theria': 159,
-
-                                  'NA': 0})
+divergence_estimates = pd.Series(
+    {
+        "Amniota": 312,
+        "Bilateria": 824,
+        "Boreoeutheria": 96,
+        # Old world monkeys
+        "Catarrhini": 29.4,
+        "Euarchontoglires": 76,
+        # Bony vertebrates
+        "Euteleostomi": 435,
+        "Eutheria": 105,
+        # Jawed vertebrates
+        "Gnathostomata": 473,
+        # A primate suborder
+        "Haplorrhini": 67,
+        # Great apes (includes orangutan)
+        "Hominidae": 15.8,
+        # Gorilla, human, chimp
+        "Homininae": 9.1,
+        # Apes (includes gibbons)
+        "Hominoidea": 20.2,
+        "Mammalia": 177,
+        "Opisthokonta": 1105,
+        "Primates": 74,
+        # tetrapods and the lobe-finned fishes
+        "Sarcopterygii": 413,
+        "Simiiformes": 43,
+        # Tetrapods - 4-limbed
+        "Tetrapoda": 352,
+        # Includes Eutheria (placental mammals) and
+        # Metatheria (maruspials)
+        "Theria": 159,
+        "NA": 0,
+    }
+)
 divergence_estimates = divergence_estimates.sort_values()
 
-KSIZES = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, \
-    21, 23, 24, 25
-COLUMNS = 'id1', 'id2', 'ksize', 'jaccard'
+KSIZES = (
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    23,
+    24,
+    25,
+)
+COLUMNS = "id1", "id2", "ksize", "jaccard"
 
 
 # Hydrophobic/hydrophilic mapping
@@ -82,13 +109,13 @@ def sanitize_id(value):
 
     Cribbed from https://stackoverflow.com/a/295466/1628971
     """
-    value = value.split()[0].replace('|', '__')
+    value = value.split()[0].replace("|", "__")
     return value
 
 
 def kmerize(seq, ksize):
     """Return the set of unique k-mers from the sequence"""
-    return set(seq[i:i + ksize] for i in range(len(seq) - ksize + 1))
+    return set(seq[i : i + ksize] for i in range(len(seq) - ksize + 1))
 
 
 def jaccardize(set1, set2):
@@ -101,8 +128,8 @@ def jaccardize(set1, set2):
 
 
 def kmerize_and_jaccard(seq1, seq2, ksize, debug=False):
-    kmers1 = set(seq1[i:i + ksize] for i in range(len(seq1) - ksize + 1))
-    kmers2 = set(seq2[i:i + ksize] for i in range(len(seq2) - ksize + 1))
+    kmers1 = set(seq1[i : i + ksize] for i in range(len(seq1) - ksize + 1))
+    kmers2 = set(seq2[i : i + ksize] for i in range(len(seq2) - ksize + 1))
     jaccard = jaccardize(kmers1, kmers2)
     if debug:
         print("len(kmers1):", len(kmers1))
@@ -121,17 +148,17 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
         else:
             # If jaccard=0 at a small ksize, then all future jaccards will also
             # be 0 --> break and exit
-            remaining_lines = [[id1, id2, k, 0] for k in
-                               range(ksize, max(ksizes) + 1)]
+            remaining_lines = [[id1, id2, k, 0] for k in range(ksize, max(ksizes) + 1)]
             lines.extend(remaining_lines)
             break
     df = pd.DataFrame(lines, columns=COLUMNS)
-    df['alphabet'] = molecule_name
+    df["alphabet"] = molecule_name
     return df
 
 
-def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
-                         alphabets=MOLECULES_TO_COMPARE):
+def compare_peptide_seqs(
+    id1_seq1, id2_seq2, ksizes=KSIZES, alphabets=MOLECULES_TO_COMPARE
+):
     # Unpack the tuples
     id1, seq1 = id1_seq1
     id2, seq2 = id2_seq2
@@ -141,9 +168,9 @@ def compare_peptide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES,
         reencoded1 = encode_peptide(seq1, alphabet)
         reencoded2 = encode_peptide(seq2, alphabet)
 
-        df = kmer_comparison_table(id1, reencoded1, id2, reencoded2,
-                                   molecule_name=alphabet,
-                                   ksizes=ksizes)
+        df = kmer_comparison_table(
+            id1, reencoded1, id2, reencoded2, molecule_name=alphabet, ksizes=ksizes
+        )
         dfs.append(df)
 
     df = pd.concat(dfs, ignore_index=True)
@@ -159,40 +186,49 @@ def compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes=KSIZES):
     purine_pyrimidine2 = purine_pyrimidize(seq2)
 
     purine_primimdine_df = kmer_comparison_table(
-        id1, purine_pyrimidine1, id2, purine_pyrimidine2,
-        molecule_name='purine_pyrimidine', ksizes=ksizes)
+        id1,
+        purine_pyrimidine1,
+        id2,
+        purine_pyrimidine2,
+        molecule_name="purine_pyrimidine",
+        ksizes=ksizes,
+    )
 
     weak_strong1 = weak_strong_ize(seq1)
     weak_strong2 = weak_strong_ize(seq2)
 
     weak_strong_df = kmer_comparison_table(
-        id1, weak_strong1, id2, weak_strong2,
-        molecule_name='weak_strong', ksizes=ksizes)
+        id1, weak_strong1, id2, weak_strong2, molecule_name="weak_strong", ksizes=ksizes
+    )
 
     amino_keto1 = amino_keto_ize(seq1)
     amino_keto2 = amino_keto_ize(seq2)
 
     amino_keto_df = kmer_comparison_table(
-        id1, amino_keto1, id2, amino_keto2,
-        molecule_name='amino_keto', ksizes=ksizes)
+        id1, amino_keto1, id2, amino_keto2, molecule_name="amino_keto", ksizes=ksizes
+    )
 
-    nucleotide_df = kmer_comparison_table(id1, seq1, id2, seq2,
-                                          molecule_name='nucleotide',
-                                          ksizes=ksizes)
+    nucleotide_df = kmer_comparison_table(
+        id1, seq1, id2, seq2, molecule_name="nucleotide", ksizes=ksizes
+    )
 
-    df = pd.concat([purine_primimdine_df, nucleotide_df,
-                    weak_strong_df, amino_keto_df], ignore_index=True)
+    df = pd.concat(
+        [purine_primimdine_df, nucleotide_df, weak_strong_df, amino_keto_df],
+        ignore_index=True,
+    )
     return df
 
 
-def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype='protein'):
-    if moltype == 'protein':
+def compare_seqs(id1_seq1, id2_seq2, ksizes=KSIZES, moltype="protein"):
+    if moltype == "protein":
         return compare_peptide_seqs(id1_seq1, id2_seq2, ksizes)
-    elif moltype.lower() == 'dna':
+    elif moltype.lower() == "dna":
         return compare_nucleotide_seqs(id1_seq1, id2_seq2, ksizes)
     else:
-        raise ValueError(f"{moltype} is not a valid molecule type! Only "
-                         f"'protein' and 'dna' are supported")
+        raise ValueError(
+            f"{moltype} is not a valid molecule type! Only "
+            f"'protein' and 'dna' are supported"
+        )
 
 
 def compare_args_unpack(args, ksizes, moltype):
@@ -201,13 +237,19 @@ def compare_args_unpack(args, ksizes, moltype):
     return compare_seqs(*args, ksizes=ksizes, moltype=moltype)
 
 
-def get_comparison_at_index(index, seqlist1, seqlist2=None,
-                            ksizes=KSIZES, n_background=100,
-                            moltype='protein', verbose=False,
-                            paired_seqlists=True,
-                            intermediate_csv=False,
-                            intermediate_parquet=False,
-                            no_final_concatenation=False):
+def get_comparison_at_index(
+    index,
+    seqlist1,
+    seqlist2=None,
+    ksizes=KSIZES,
+    n_background=100,
+    moltype="protein",
+    verbose=False,
+    paired_seqlists=True,
+    intermediate_csv=False,
+    intermediate_parquet=False,
+    no_final_concatenation=False,
+):
     """Returns similarities of all combinations of seqlist1 seqlist2 at index
 
     Parameters
@@ -252,33 +294,31 @@ def get_comparison_at_index(index, seqlist1, seqlist2=None,
     csv = id1_sanitized + ".csv"
     parquet = id1_sanitized + ".parquet"
     if os.path.exists(parquet):
-        notify(
-            f"Found {parquet} already exists for {id1}, skipping",
-            end='\r')
+        notify(f"Found {parquet} already exists for {id1}, skipping", end="\r")
         return []
     if os.path.exists(csv):
-        notify(
-            f"Found {csv} already exists for {id1}, skipping",
-            end='\r')
+        notify(f"Found {csv} already exists for {id1}, skipping", end="\r")
         return []
 
     if seqlist2 is not None:
         if paired_seqlists:
-            seq_iterator = get_paired_seq_iterator(index, n_background,
-                                                   seqlist1, seqlist2, verbose)
+            seq_iterator = get_paired_seq_iterator(
+                index, n_background, seqlist1, seqlist2, verbose
+            )
         else:
             seq_iterator = itertools.product([seqlist1[index]], seqlist2)
     else:
-        seq_iterator = itertools.product(
-            [seqlist1[index]], seqlist1[index + 1:])
+        seq_iterator = itertools.product([seqlist1[index]], seqlist1[index + 1 :])
 
     func = partial(compare_args_unpack, ksizes=ksizes, moltype=moltype)
     comparision_df_list = list(map(func, seq_iterator))
     notify(
         "comparison for index {} (id: {}) done in {:.5f} seconds",
-        index, id1,
+        index,
+        id1,
         time.time() - startt,
-        end='\n')
+        end="\n",
+    )
 
     if intermediate_csv or intermediate_parquet:
         df = pd.concat(comparision_df_list)
@@ -329,18 +369,25 @@ def get_paired_seq_iterator(index, n_background, seqlist1, seqlist2, verbose):
     if verbose:
         print("background_pairs:")
         pprint(background_pairs)
-    seq_iterator = list(
-        itertools.chain(*[pairs_iterator, background_pairs]))
+    seq_iterator = list(itertools.chain(*[pairs_iterator, background_pairs]))
     if verbose:
         print("seq_iterator:")
         pprint(seq_iterator)
     return seq_iterator
 
 
-def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
-                     moltype='protein', n_background=100,
-                     paired_seqlists=True, intermediate_csv=False,
-                     intermediate_parquet=False, no_final_concatenation=False):
+def compare_all_seqs(
+    seqlist1,
+    seqlist2=None,
+    n_jobs=4,
+    ksizes=KSIZES,
+    moltype="protein",
+    n_background=100,
+    paired_seqlists=True,
+    intermediate_csv=False,
+    intermediate_parquet=False,
+    no_final_concatenation=False,
+):
     """Compare k-mer content of sequences across k-mer sizes and alphabets
 
     Parameters
@@ -388,8 +435,10 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     """
     if seqlist2 is not None:
         if paired_seqlists and len(seqlist1) != len(seqlist2):
-            raise ValueError("When comparing pairs of sequences, can only "
-                             "compare two sequences of equal length")
+            raise ValueError(
+                "When comparing pairs of sequences, can only "
+                "compare two sequences of equal length"
+            )
         elif not paired_seqlists:
             # Want seqlist1 to be shorter so that there are fewer, bigger jobs
             # to minimize thread spawning costs
@@ -442,8 +491,7 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
     result = pool.imap(func, range(len_seqlist1), chunksize=chunksize)
     notify("Initialized multiprocessing pool.imap")
 
-    peptide_kmer_comparisons = pd.concat(
-        itertools.chain(*result), ignore_index=True)
+    peptide_kmer_comparisons = pd.concat(itertools.chain(*result), ignore_index=True)
 
     notify(f"Total time: {time.time() - t0}")
     return peptide_kmer_comparisons
@@ -451,69 +499,91 @@ def compare_all_seqs(seqlist1, seqlist2=None, n_jobs=4, ksizes=KSIZES,
 
 @click.command()
 @click.argument("fastas", nargs=-1)
-@click.option("--fastas2", default=None,
-              help="Optional. Instead of doing an all-by-all comparison of "
-                   "the provided fasta arguments, do fastas2 vs fastas "
-                   "arguments")
-@click.option("--alphabets",
-              default=','.join(MOLECULES_TO_COMPARE),
-              help="Which protein-coding alphabet to use for comparisons")
-@click.option("--ksize-min",
-              default=2, type=click.INT,
-              help="k-mer sizes to use for comparison")
-@click.option("--ksize-max",
-              default=25, type=click.INT,
-              help="k-mer sizes to use for comparison")
-@click.option("--ksize-step",
-              default=1, type=click.INT,
-              help="k-mer sizes to use for comparison")
-@click.option("--parquet",
-              default=None,
-              help="If provided, save table to a space-efficient and fast-IO "
-                   "Apache Parquet format file of this name. This format is "
-                   "compatible with Python/Pandas and R.")
-@click.option("--no-csv",
-              is_flag=True,
-              default=False,
-              help="Don't output csv to stdout")
-@click.option("--paired-seqlists",
-              is_flag=True,
-              default=False,
-              help="Fastas are paired 1:1 by item, so compare item 1 in "
-                   "fasta1 to item 1 in fasta2")
-@click.option("--intermediate-parquet",
-              is_flag=True, default=False,
-              help="If provided, write a parquet file for each individual "
-                   "comparison at index i, in current directory")
-@click.option("--intermediate-csv",
-              is_flag=True, default=False,
-              help="If provided, write a csv file for each individual "
-                   "comparison at index i, in current directory")
-@click.option("--no-final-concatenation",
-              is_flag=True, default=False,
-              help="If provided, then don't concatenate ")
-@click.option('--processes',
-              '-p',
-              default=2,
-              type=click.INT,
-              help="Number of processes to use for parallelization")
-def cli(fastas,
-        fastas2,
-        alphabets,
-        ksize_min,
-        ksize_max,
-        ksize_step,
-        parquet,
-        no_csv=False,
-        paired_seqlists=False,
-        intermediate_csv=False,
-        intermediate_parquet=False,
-        no_final_concatenation=False,
-        processes=2):
+@click.option(
+    "--fastas2",
+    default=None,
+    help="Optional. Instead of doing an all-by-all comparison of "
+    "the provided fasta arguments, do fastas2 vs fastas "
+    "arguments",
+)
+@click.option(
+    "--alphabets",
+    default=",".join(MOLECULES_TO_COMPARE),
+    help="Which protein-coding alphabet to use for comparisons",
+)
+@click.option(
+    "--ksize-min", default=2, type=click.INT, help="k-mer sizes to use for comparison"
+)
+@click.option(
+    "--ksize-max", default=25, type=click.INT, help="k-mer sizes to use for comparison"
+)
+@click.option(
+    "--ksize-step", default=1, type=click.INT, help="k-mer sizes to use for comparison"
+)
+@click.option(
+    "--parquet",
+    default=None,
+    help="If provided, save table to a space-efficient and fast-IO "
+    "Apache Parquet format file of this name. This format is "
+    "compatible with Python/Pandas and R.",
+)
+@click.option(
+    "--no-csv", is_flag=True, default=False, help="Don't output csv to stdout"
+)
+@click.option(
+    "--paired-seqlists",
+    is_flag=True,
+    default=False,
+    help="Fastas are paired 1:1 by item, so compare item 1 in "
+    "fasta1 to item 1 in fasta2",
+)
+@click.option(
+    "--intermediate-parquet",
+    is_flag=True,
+    default=False,
+    help="If provided, write a parquet file for each individual "
+    "comparison at index i, in current directory",
+)
+@click.option(
+    "--intermediate-csv",
+    is_flag=True,
+    default=False,
+    help="If provided, write a csv file for each individual "
+    "comparison at index i, in current directory",
+)
+@click.option(
+    "--no-final-concatenation",
+    is_flag=True,
+    default=False,
+    help="If provided, then don't concatenate ",
+)
+@click.option(
+    "--processes",
+    "-p",
+    default=2,
+    type=click.INT,
+    help="Number of processes to use for parallelization",
+)
+def cli(
+    fastas,
+    fastas2,
+    alphabets,
+    ksize_min,
+    ksize_max,
+    ksize_step,
+    parquet,
+    no_csv=False,
+    paired_seqlists=False,
+    intermediate_csv=False,
+    intermediate_parquet=False,
+    no_final_concatenation=False,
+    processes=2,
+):
     """Compute k-mer similarity of all pairwise sequences"""
     if len(fastas) == 0:
-        raise ValueError("No sequence files provided! "
-                         "Argument 'fastas' is required!")
+        raise ValueError(
+            "No sequence files provided! " "Argument 'fastas' is required!"
+        )
     seqlist = parse_fastas(fastas)
     if fastas2 is not None:
         seqlist2 = parse_fastas([fastas2])
@@ -522,9 +592,11 @@ def cli(fastas,
 
     if no_final_concatenation:
         if not intermediate_parquet or not intermediate_csv:
-            raise Exception("--no-final-concatenation provided but neither "
-                            "--intermediate-parquet nor --intermediate-csv "
-                            "provided, so no output will be created!")
+            raise Exception(
+                "--no-final-concatenation provided but neither "
+                "--intermediate-parquet nor --intermediate-csv "
+                "provided, so no output will be created!"
+            )
 
     # add 1 to max since range is not inclusive of last interval
     ksizes = list(range(ksize_min, ksize_max + 1, ksize_step))
@@ -534,11 +606,12 @@ def cli(fastas,
         seqlist2=seqlist2,
         n_jobs=processes,
         ksizes=ksizes,
-        moltype='protein',
+        moltype="protein",
         paired_seqlists=paired_seqlists,
         intermediate_csv=intermediate_csv,
         intermediate_parquet=intermediate_parquet,
-        no_final_concatenation=no_final_concatenation)
+        no_final_concatenation=no_final_concatenation,
+    )
 
     # Only write the final output if there is a final concatenation
     if not no_final_concatenation:
@@ -566,13 +639,13 @@ def parse_fastas(fastas: Sequence):
     for fasta in fastas:
         with screed.open(fasta) as records:
             for record in records:
-                seq_id = record['name']
-                seq = record['sequence']
+                seq_id = record["name"]
+                seq = record["sequence"]
                 seqlist.append((seq_id, seq))
     if len(seqlist) == 0:
         raise ValueError(f"No sequences found in files: {' '.join(fastas)}!")
     return seqlist
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()

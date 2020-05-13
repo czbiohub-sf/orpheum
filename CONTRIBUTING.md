@@ -65,13 +65,14 @@ local development.
 
     Now you can make your changes locally.
 
-5.  When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox:
+5.  When you're done making changes, format your files with `black` and check that your code passes the tests, including testing other Python versions with tox:
 
-        $ flake8 sencha tests
+        $ black . --check    # see reformatting changes that would happen
+        # black .            # reformat as necessary
         $ py.test
         $ tox
 
-    To get flake8 and tox, just pip install them into your virtualenv.
+    To get black and tox, just pip install them into your virtualenv. Note: run formatting commands from the top sencha directory.
 
 6.  Commit your changes and push your branch to GitHub:
 
