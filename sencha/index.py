@@ -82,7 +82,9 @@ def maybe_read_peptide_file(peptide_file):
     try:
         records = screed.open(peptide_file)
     except:
-        pass
+        logger.info(
+            f"File {peptide_file} is not valid fasta format, skipping. \n" f"..."
+        )
     return records
 
 
@@ -112,7 +114,6 @@ def make_peptide_bloom_filter(
                     #  peptide kmer and add it directly
                     peptide_bloom_filter.add(hashed)
             except ValueError:
-                print("seq length!")
                 # Sequence length is smaller than k-mer size
                 continue
     return peptide_bloom_filter
@@ -200,7 +201,7 @@ def maybe_save_peptide_bloom_filter(
             filename = save_peptide_bloom_filter
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
-            suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter." f"nodegraph"
+            suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter.nodegraph"
             if len(peptides) == 1:
                 filename = os.path.splitext(peptides[0])[0] + suffix
             else:
