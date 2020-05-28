@@ -25,7 +25,8 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksi
     from sencha.index import make_peptide_bloom_filter
 
     test = make_peptide_bloom_filter(
-        variable_peptide_fasta, peptide_ksize, alphabet, n_tables=4, tablesize=1e6
+        variable_peptide_fasta, peptide_ksize_index, alphabet_index,
+        n_tables=4, tablesize=1e6
     )
     if "first1000lines" in variable_peptide_fasta:
         TRUE_N_UNIQUE_KMERS = {
@@ -47,10 +48,21 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksi
             ("hydrophobic-polar", 21): 434810,
             ("hydrophobic-polar", 7): 170,
         }
-    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet, peptide_ksize)]
+    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet_index, peptide_ksize_index)]
 
     # For now, assert that the number of kmers is within 0.1% of the true value
     np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=0.001)
+
+
+def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
+    from sencha.index import make_peptide_bloom_filter
+    with pytest.raises(SystemExit) as pytest_wrapped_error:
+        make_peptide_bloom_filter(
+            adversarial_peptide_fasta, peptide_ksize=9, molecule='protein',
+            n_tables=2, tablesize=1e2
+        )
+        assert pytest_wrapped_error.type == SystemExit
+        assert pytest_wrapped_error.value.code == 42
 
 
 def test_maybe_make_peptide_bloom_filter(
