@@ -33,7 +33,7 @@ def test_per_read_false_positive_coding_rate():
     params=[
         ("protein", DEFAULT_PROTEIN_KSIZE),
         ("dayhoff", DEFAULT_DAYHOFF_KSIZE),
-        ("hydrophobic-polar", DEFAULT_HP_KSIZE)
+        ("hydrophobic-polar", DEFAULT_HP_KSIZE),
     ],
     ids=[
         f"protein_ksize{DEFAULT_PROTEIN_KSIZE}",
@@ -55,14 +55,17 @@ def alphabet_index(alphabet_ksize_index):
     return alphabet_ksize_index[0]
 
 
-def test_make_peptide_index(variable_peptide_fasta,
-                            alphabet_index,
-                            peptide_ksize_index):
+def test_make_peptide_index(
+    variable_peptide_fasta, alphabet_index, peptide_ksize_index
+):
     from sencha.index import make_peptide_index
 
     test = make_peptide_index(
-        variable_peptide_fasta, peptide_ksize_index, alphabet_index,
-        n_tables=4, tablesize=1e6
+        variable_peptide_fasta,
+        peptide_ksize_index,
+        alphabet_index,
+        n_tables=4,
+        tablesize=1e6,
     )
     if "first1000lines" in variable_peptide_fasta:
         # This is the adversarial fasta with short sequences
@@ -81,16 +84,19 @@ def test_make_peptide_index(variable_peptide_fasta,
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet_index, peptide_ksize_index)]
 
     # For now, assert that the number of kmers is within 0.001% of the true value
-    np.testing.assert_allclose(test.n_unique_kmers(),
-                               true_n_unique_kmers, rtol=1e-4)
+    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=1e-4)
 
 
 def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
     from sencha.index import make_peptide_index
+
     with pytest.raises(SystemExit) as pytest_wrapped_error:
         make_peptide_index(
-            adversarial_peptide_fasta, peptide_ksize=9, molecule='protein',
-            n_tables=2, tablesize=1e2
+            adversarial_peptide_fasta,
+            peptide_ksize=9,
+            molecule="protein",
+            n_tables=2,
+            tablesize=1e2,
         )
         assert pytest_wrapped_error.type == SystemExit
         assert pytest_wrapped_error.value.code == 42
@@ -98,23 +104,22 @@ def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
 
 def test_error_if_too_many_observed_kmers(peptide_fasta,):
     from sencha.index import make_peptide_index
+
     with pytest.raises(ValueError):
         make_peptide_index(
-            peptide_fasta, peptide_ksize=7, molecule='dayhoff',
-            n_tables=4, tablesize=1e6,
+            peptide_fasta,
+            peptide_ksize=7,
+            molecule="dayhoff",
+            n_tables=4,
+            tablesize=1e6,
         )
 
 
-def test_maybe_make_peptide_index(
-    peptide_bloom_filter_path, alphabet, peptide_ksize
-):
+def test_maybe_make_peptide_index(peptide_bloom_filter_path, alphabet, peptide_ksize):
     from sencha.index import maybe_make_peptide_index
 
     maybe_make_peptide_index(
-        peptide_bloom_filter_path,
-        peptide_ksize,
-        alphabet,
-        peptides_are_index=True,
+        peptide_bloom_filter_path, peptide_ksize, alphabet, peptides_are_index=True,
     )
     # No assertion, just check that it ran
     # assert isinstance(test, khmer.Nodegraph)

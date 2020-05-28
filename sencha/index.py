@@ -17,7 +17,7 @@ logger = get_logger(__file__)
 # '*' = stop codon
 # 'X' = unknown amino acid
 # 'U' = Selenocystine amino acids
-RESIDUES_TO_IGNORE = '*', 'X', 'U'
+RESIDUES_TO_IGNORE = "*", "X", "U"
 
 
 def per_translation_false_positive_rate(
@@ -100,8 +100,10 @@ def make_peptide_index(
                 for kmer in kmers:
                     # Ignore the k-mer if there are any illegal characters
                     if any(x in kmer for x in RESIDUES_TO_IGNORE):
-                        logger.info(f'{record["name"]} a k-mer ({kmer}) with an '
-                                    f'illegal character, skipping this k-mer')
+                        logger.info(
+                            f'{record["name"]} a k-mer ({kmer}) with an '
+                            f"illegal character, skipping this k-mer"
+                        )
                         continue
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
@@ -110,18 +112,22 @@ def make_peptide_index(
                     #  peptide kmer and add it directly
                     peptide_bloom_filter.add(hashed)
             else:
-                logger.info(f'{record["name"]} sequence is shorter than the k-mer '
-                            f'size {peptide_ksize}, skipping')
+                logger.info(
+                    f'{record["name"]} sequence is shorter than the k-mer '
+                    f"size {peptide_ksize}, skipping"
+                )
     khmer.calc_expected_collisions(peptide_bloom_filter)
 
     n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
     n_observed_kmers = peptide_bloom_filter.n_unique_kmers()
-    if n_observed_kmers/n_theoretical_kmers > 1e-1:
-        raise ValueError(f"The number of observed length {peptide_ksize} k-mers "
-                         f"is greater than 1% of the total possible theoretical k-mers,"
-                         f" which doesn't leave enough room for predicting protein "
-                         f"coding sequence. The current table size is {tablesize}, "
-                         f"please increase by an order of magnitude and rerun.")
+    if n_observed_kmers / n_theoretical_kmers > 1e-1:
+        raise ValueError(
+            f"The number of observed length {peptide_ksize} k-mers "
+            f"is greater than 1% of the total possible theoretical k-mers,"
+            f" which doesn't leave enough room for predicting protein "
+            f"coding sequence. The current table size is {tablesize}, "
+            f"please increase by an order of magnitude and rerun."
+        )
     return peptide_bloom_filter
 
 
@@ -280,10 +286,7 @@ def cli(
 
     save_peptide_index = save_as if save_as is not None else True
     maybe_save_peptide_index(
-        peptides,
-        peptide_index,
-        alphabet,
-        save_peptide_index=save_peptide_index,
+        peptides, peptide_index, alphabet, save_peptide_index=save_peptide_index,
     )
 
 
