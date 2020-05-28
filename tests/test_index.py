@@ -59,12 +59,12 @@ def alphabet_index(alphabet_ksize):
     return alphabet_ksize[0]
 
 
-def test_make_peptide_bloom_filter(variable_peptide_fasta,
-                                   alphabet_index,
-                                   peptide_ksize_index):
-    from sencha.index import make_peptide_bloom_filter
+def test_make_peptide_index(variable_peptide_fasta,
+                            alphabet_index,
+                            peptide_ksize_index):
+    from sencha.index import make_peptide_index
 
-    test = make_peptide_bloom_filter(
+    test = make_peptide_index(
         variable_peptide_fasta, peptide_ksize_index, alphabet_index,
         n_tables=4, tablesize=1e6
     )
@@ -95,9 +95,9 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta,
 
 
 def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
-    from sencha.index import make_peptide_bloom_filter
+    from sencha.index import make_peptide_index
     with pytest.raises(SystemExit) as pytest_wrapped_error:
-        make_peptide_bloom_filter(
+        make_peptide_index(
             adversarial_peptide_fasta, peptide_ksize=9, molecule='protein',
             n_tables=2, tablesize=1e2
         )

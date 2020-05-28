@@ -82,7 +82,7 @@ def load_nodegraph(*args, **kwargs):
         return khmer.Nodegraph.load(*args, **kwargs)
 
 
-def make_peptide_bloom_filter(
+def make_peptide_index(
     peptide_fasta,
     peptide_ksize,
     molecule,
@@ -168,7 +168,7 @@ def maybe_make_peptide_bloom_filter(
             f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
             f"..."
         )
-        peptide_bloom_filter = make_peptide_bloom_filter(
+        peptide_bloom_filter = make_peptide_index(
             peptides,
             peptide_ksize,
             molecule=molecule,
@@ -264,7 +264,7 @@ def cli(
     """
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
-    peptide_bloom_filter = make_peptide_bloom_filter(
+    peptide_bloom_filter = make_peptide_index(
         peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize
     )
     logger.info("\tDone!")
