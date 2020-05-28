@@ -90,7 +90,7 @@ def make_peptide_index(
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
 ):
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+    peptide_index = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
@@ -110,16 +110,16 @@ def make_peptide_index(
 
                     # .add can take the hashed integer so we can hash the
                     #  peptide kmer and add it directly
-                    peptide_bloom_filter.add(hashed)
+                    peptide_index.add(hashed)
             else:
                 logger.info(
                     f'{record["name"]} sequence is shorter than the k-mer '
                     f"size {peptide_ksize}, skipping"
                 )
-    khmer.calc_expected_collisions(peptide_bloom_filter)
+    khmer.calc_expected_collisions(peptide_index)
 
     n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
-    n_observed_kmers = peptide_bloom_filter.n_unique_kmers()
+    n_observed_kmers = peptide_index.n_unique_kmers()
     if n_observed_kmers / n_theoretical_kmers > 1e-1:
         raise ValueError(
             f"The number of observed length {peptide_ksize} k-mers "
@@ -128,7 +128,7 @@ def make_peptide_index(
             f"coding sequence. The current table size is {tablesize}, "
             f"please increase by an order of magnitude and rerun."
         )
-    return peptide_bloom_filter
+    return peptide_index
 
 
 def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
