@@ -109,7 +109,10 @@ def make_peptide_bloom_filter(
                     # .add can take the hashed integer so we can hash the
                     #  peptide kmer and add it directly
                     peptide_bloom_filter.add(hashed)
-
+            else:
+                logger.info(f'{record["name"]} sequence is shorter than the k-mer '
+                            f'size {peptide_ksize}, skipping')
+    khmer.calc_expected_collisions(peptide_bloom_filter)
     return peptide_bloom_filter
 
 
