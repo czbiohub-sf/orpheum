@@ -105,12 +105,21 @@ def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
         assert pytest_wrapped_error.value.code == 42
 
 
-def test_maybe_make_peptide_bloom_filter(
+def test_error_if_too_many_observed_kmers(peptide_fasta,):
+    from sencha.index import make_peptide_index
+    with pytest.raises(ValueError):
+        make_peptide_index(
+            peptide_fasta, peptide_ksize=7, molecule='dayhoff',
+            n_tables=4, tablesize=1e6,
+        )
+
+
+def test_maybe_make_peptide_index(
     peptide_bloom_filter_path, alphabet, peptide_ksize
 ):
-    from sencha.index import maybe_make_peptide_bloom_filter
+    from sencha.index import maybe_make_peptide_index
 
-    maybe_make_peptide_bloom_filter(
+    maybe_make_peptide_index(
         peptide_bloom_filter_path,
         peptide_ksize,
         alphabet,
