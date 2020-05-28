@@ -2,6 +2,12 @@ from click.testing import CliRunner
 import numpy as np
 import pytest
 
+from sencha.constants_index import (
+    DEFAULT_PROTEIN_KSIZE,
+    DEFAULT_DAYHOFF_KSIZE,
+    DEFAULT_HP_KSIZE,
+)
+
 
 def test_per_translation_false_positive_rate():
     from sencha.index import per_translation_false_positive_rate
@@ -21,7 +27,41 @@ def test_per_read_false_positive_coding_rate():
     assert test == 3.884682410293139e-05
 
 
-def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksize):
+# Tie the alphabet name to its default ksize to make sure we keep getting the
+# right sequences
+@pytest.fixture(
+    params=[
+        ("protein", DEFAULT_PROTEIN_KSIZE),
+        ("dayhoff", DEFAULT_DAYHOFF_KSIZE),
+        ("dayhoff", DEFAULT_PROTEIN_KSIZE),
+        ("hydrophobic-polar", DEFAULT_HP_KSIZE),
+        ("hydrophobic-polar", DEFAULT_PROTEIN_KSIZE)
+    ],
+    ids=[
+        "protein_default_ksize",
+        "dayhoff_default_ksize",
+        "dayhoff_protein_ksize_xfail",
+        "hp_default_ksize",
+        "hp_protein_ksize_xfail",
+    ],
+)
+def alphabet_ksize_index(request):
+    return request.param
+
+
+@pytest.fixture
+def peptide_ksize_index(alphabet_ksize):
+    return alphabet_ksize[1]
+
+
+@pytest.fixture
+def alphabet_index(alphabet_ksize):
+    return alphabet_ksize[0]
+
+
+def test_make_peptide_bloom_filter(variable_peptide_fasta,
+                                   alphabet_index,
+                                   peptide_ksize_index):
     from sencha.index import make_peptide_bloom_filter
 
     test = make_peptide_bloom_filter(
