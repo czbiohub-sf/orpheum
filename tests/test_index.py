@@ -33,16 +33,12 @@ def test_per_read_false_positive_coding_rate():
     params=[
         ("protein", DEFAULT_PROTEIN_KSIZE),
         ("dayhoff", DEFAULT_DAYHOFF_KSIZE),
-        ("dayhoff", DEFAULT_PROTEIN_KSIZE),
-        ("hydrophobic-polar", DEFAULT_HP_KSIZE),
-        ("hydrophobic-polar", DEFAULT_PROTEIN_KSIZE)
+        ("hydrophobic-polar", DEFAULT_HP_KSIZE)
     ],
     ids=[
-        "protein_default_ksize",
-        "dayhoff_default_ksize",
-        "dayhoff_protein_ksize_xfail",
-        "hp_default_ksize",
-        "hp_protein_ksize_xfail",
+        f"protein_ksize{DEFAULT_PROTEIN_KSIZE}",
+        f"dayhoff_ksize{DEFAULT_DAYHOFF_KSIZE}",
+        f"hp_ksize{DEFAULT_HP_KSIZE}",
     ],
 )
 def alphabet_ksize_index(request):
@@ -50,13 +46,13 @@ def alphabet_ksize_index(request):
 
 
 @pytest.fixture
-def peptide_ksize_index(alphabet_ksize):
-    return alphabet_ksize[1]
+def peptide_ksize_index(alphabet_ksize_index):
+    return alphabet_ksize_index[1]
 
 
 @pytest.fixture
-def alphabet_index(alphabet_ksize):
-    return alphabet_ksize[0]
+def alphabet_index(alphabet_ksize_index):
+    return alphabet_ksize_index[0]
 
 
 def test_make_peptide_index(variable_peptide_fasta,
@@ -69,29 +65,24 @@ def test_make_peptide_index(variable_peptide_fasta,
         n_tables=4, tablesize=1e6
     )
     if "first1000lines" in variable_peptide_fasta:
+        # This is the adversarial fasta with short sequences
         TRUE_N_UNIQUE_KMERS = {
-            ("protein", 7): 13966,
-            ("dayhoff", 7): 10090,
-            ("dayhoff", 11): 13605,
-            ("dayhoff", 12): 13816,
-            ("hydrophobic-polar", 31): 12888,
-            ("hydrophobic-polar", 21): 13076,
-            ("hydrophobic-polar", 7): 136,
+            ("protein", DEFAULT_PROTEIN_KSIZE): 18423,
+            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 17964,
+            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 16437,
         }
     else:
+        # This is the "normal" fasta
         TRUE_N_UNIQUE_KMERS = {
-            ("protein", 7): 506352,
-            ("dayhoff", 7): 99863,
-            ("dayhoff", 11): 472197,
-            ("dayhoff", 12): 488469,
-            ("hydrophobic-polar", 31): 515863,
-            ("hydrophobic-polar", 21): 434810,
-            ("hydrophobic-polar", 7): 170,
+            ("protein", DEFAULT_PROTEIN_KSIZE): 506892,
+            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 488890,
+            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 516383,
         }
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet_index, peptide_ksize_index)]
 
-    # For now, assert that the number of kmers is within 0.1% of the true value
-    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=0.001)
+    # For now, assert that the number of kmers is within 0.001% of the true value
+    np.testing.assert_allclose(test.n_unique_kmers(),
+                               true_n_unique_kmers, rtol=1e-4)
 
 
 def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
