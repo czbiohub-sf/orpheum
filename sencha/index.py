@@ -14,6 +14,11 @@ from sencha.log_utils import get_logger
 
 logger = get_logger(__file__)
 
+# '*' = stop codon
+# 'X' = unknown amino acid
+# 'U' = Selenocystine amino acids
+RESIDUES_TO_IGNORE = '*', 'X', 'U'
+
 
 def per_translation_false_positive_rate(
     n_kmers_in_translation,
@@ -89,21 +94,22 @@ def make_peptide_bloom_filter(
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
-            if "*" in record["sequence"]:
-                continue
             sequence = encode_peptide(record["sequence"], molecule)
-            try:
+            if len(sequence) >= peptide_ksize:
                 kmers = kmerize(sequence, peptide_ksize)
                 for kmer in kmers:
+                    # Ignore the k-mer if there are any illegal characters
+                    if any(x in kmer for x in RESIDUES_TO_IGNORE):
+                        logger.info(f'{record["name"]} a k-mer ({kmer}) with an '
+                                    f'illegal character, skipping this k-mer')
+                        continue
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
 
                     # .add can take the hashed integer so we can hash the
                     #  peptide kmer and add it directly
                     peptide_bloom_filter.add(hashed)
-            except ValueError:
-                # Sequence length is smaller than k-mer size
-                continue
+
     return peptide_bloom_filter
 
 
