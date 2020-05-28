@@ -19,8 +19,8 @@ from sencha.sequence_encodings import encode_peptide
 from sencha.compare_kmer_content import kmerize
 from sencha.create_save_summary import CreateSaveSummary
 from sencha.index import (
-    maybe_make_peptide_bloom_filter,
-    maybe_save_peptide_bloom_filter,
+    maybe_make_peptide_index,
+    maybe_save_peptide_index,
 )
 import sencha.constants_index as constants_index
 import sencha.constants_translate as constants_translate
@@ -126,7 +126,7 @@ class Translate:
         self.jaccard_threshold = get_jaccard_threshold(
             self.jaccard_threshold, self.alphabet
         )
-        self.peptide_bloom_filter = maybe_make_peptide_bloom_filter(
+        self.peptide_bloom_filter = maybe_make_peptide_index(
             self.peptides,
             self.peptide_ksize,
             self.alphabet,
@@ -138,7 +138,7 @@ class Translate:
         logger.info("\tDone making peptide_bloom_filter!")
 
         if not self.peptides_are_bloom_filter:
-            self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
+            self.peptide_bloom_filter_filename = maybe_save_peptide_index(
                 self.peptides,
                 self.peptide_bloom_filter,
                 self.alphabet,

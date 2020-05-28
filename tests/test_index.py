@@ -114,7 +114,7 @@ def test_maybe_make_peptide_index(
         peptide_bloom_filter_path,
         peptide_ksize,
         alphabet,
-        peptides_are_bloom_filter=True,
+        peptides_are_index=True,
     )
     # No assertion, just check that it ran
     # assert isinstance(test, khmer.Nodegraph)

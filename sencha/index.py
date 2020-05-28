@@ -113,6 +113,15 @@ def make_peptide_index(
                 logger.info(f'{record["name"]} sequence is shorter than the k-mer '
                             f'size {peptide_ksize}, skipping')
     khmer.calc_expected_collisions(peptide_bloom_filter)
+
+    n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
+    n_observed_kmers = peptide_bloom_filter.n_unique_kmers()
+    if n_observed_kmers/n_theoretical_kmers > 1e-1:
+        raise ValueError(f"The number of observed length {peptide_ksize} k-mers "
+                         f"is greater than 1% of the total possible theoretical k-mers,"
+                         f" which doesn't leave enough room for predicting protein "
+                         f"coding sequence. The current table size is {tablesize}, "
+                         f"please increase by an order of magnitude and rerun.")
     return peptide_bloom_filter
 
 
@@ -137,28 +146,28 @@ def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
     return peptide_set
 
 
-def maybe_make_peptide_bloom_filter(
+def maybe_make_peptide_index(
     peptides,
     peptide_ksize,
     molecule,
-    peptides_are_bloom_filter,
+    peptides_are_index,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
 ):
-    if peptides_are_bloom_filter:
+    if peptides_are_index:
         logger.info(
             f"Loading existing bloom filter from {peptides} and "
             f"making sure the ksizes match"
         )
-        peptide_bloom_filter = load_nodegraph(peptides)
+        peptide_index = load_nodegraph(peptides)
         if peptide_ksize is not None:
             try:
-                assert peptide_ksize == peptide_bloom_filter.ksize()
+                assert peptide_ksize == peptide_index.ksize()
             except AssertionError:
                 raise ValueError(
                     f"Given peptide ksize ({peptide_ksize}) and "
                     f"ksize found in bloom filter "
-                    f"({peptide_bloom_filter.ksize()}) are not"
+                    f"({peptide_index.ksize()}) are not"
                     f"equal"
                 )
     else:
@@ -168,25 +177,25 @@ def maybe_make_peptide_bloom_filter(
             f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
             f"..."
         )
-        peptide_bloom_filter = make_peptide_index(
+        peptide_index = make_peptide_index(
             peptides,
             peptide_ksize,
             molecule=molecule,
             n_tables=n_tables,
             tablesize=tablesize,
         )
-    return peptide_bloom_filter
+    return peptide_index
 
 
-def maybe_save_peptide_bloom_filter(
-    peptides, peptide_bloom_filter, molecule, save_peptide_bloom_filter
+def maybe_save_peptide_index(
+    peptides, peptide_bloom_filter, molecule, save_peptide_index
 ):
-    if save_peptide_bloom_filter:
+    if save_peptide_index:
         ksize = peptide_bloom_filter.ksize()
 
-        if isinstance(save_peptide_bloom_filter, str):
-            filename = save_peptide_bloom_filter
-            peptide_bloom_filter.save(save_peptide_bloom_filter)
+        if isinstance(save_peptide_index, str):
+            filename = save_peptide_index
+            peptide_bloom_filter.save(save_peptide_index)
         else:
             suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter." f"nodegraph"
             filename = os.path.splitext(peptides)[0] + suffix
@@ -264,17 +273,17 @@ def cli(
     """
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
-    peptide_bloom_filter = make_peptide_index(
+    peptide_index = make_peptide_index(
         peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize
     )
     logger.info("\tDone!")
 
-    save_peptide_bloom_filter = save_as if save_as is not None else True
-    maybe_save_peptide_bloom_filter(
+    save_peptide_index = save_as if save_as is not None else True
+    maybe_save_peptide_index(
         peptides,
-        peptide_bloom_filter,
+        peptide_index,
         alphabet,
-        save_peptide_bloom_filter=save_peptide_bloom_filter,
+        save_peptide_index=save_peptide_index,
     )
 
 
