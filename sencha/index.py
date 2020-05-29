@@ -123,6 +123,8 @@ def make_peptide_index(
 
 
 def check_kmer_occupancy(max_observed_fraction, molecule, peptide_index, peptide_ksize):
+    """Ensure that the fraction of observed k-mers in the reference proteome is
+    substantially lower than the total number of theoretical k-mers given the k-mer size and alphabet size"""
     n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
     n_observed_kmers = peptide_index.n_unique_kmers()
     fraction_observed = n_observed_kmers / n_theoretical_kmers
@@ -141,6 +143,7 @@ def check_kmer_occupancy(max_observed_fraction, molecule, peptide_index, peptide
 
 
 def check_collisions(peptide_index, tablesize):
+    """Use khmer to check for bloom filter false positives"""
     collisions = khmer.calc_expected_collisions(peptide_index, force=True)
     if collisions > constants_index.MAX_BF_FALSE_POSITIVES:
         raise ValueError(
