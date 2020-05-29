@@ -15,6 +15,7 @@ class CreateSaveSummary:
         self,
         filenames,
         csv,
+        parquet,
         json_summary,
         peptide_bloom_filter_filename,
         alphabet,
@@ -23,6 +24,7 @@ class CreateSaveSummary:
     ):
         self.filenames = filenames
         self.csv = csv
+        self.parquet = parquet
         self.json_summary = json_summary
         self.peptide_bloom_filter_filename = peptide_bloom_filter_filename
         self.alphabet = alphabet
@@ -33,6 +35,11 @@ class CreateSaveSummary:
         if self.csv:
             logger.info("Writing coding scores of reads to {}".format(self.csv))
             coding_scores.to_csv(self.csv, index=False)
+
+    def maybe_write_parquet(self, coding_scores):
+        if self.parquet:
+            logger.info("Writing coding scores of reads to {}".format(self.parquet))
+            coding_scores.to_parquet(self.parquet, index=False)
 
     def make_empty_coding_categories(self):
         coding_categories = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)

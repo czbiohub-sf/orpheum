@@ -69,6 +69,17 @@ def true_scores_path(data_folder):
 
 
 @pytest.fixture
+def true_scores_parquet(data_folder):
+    true_scores_parquet = os.path.join(
+        data_folder,
+        "translate",
+        "SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22__"
+        "alphabet-protein_ksize-7.parquet",
+    )
+    return true_scores_parquet
+
+
+@pytest.fixture
 def single_alphabet_ksize_true_scores(true_scores_path):
     return pd.read_csv(true_scores_path)
 
@@ -78,6 +89,7 @@ def test_maybe_write_json_summary_empty(
 ):
     create_ss = CreateSaveSummary(
         ["nonexistent.fa"],
+        True,
         True,
         True,
         peptide_bloom_filter_path,
@@ -95,6 +107,7 @@ def test_get_n_translated_frames_per_read(
 ):
     create_ss = CreateSaveSummary(
         ["nonexistent.fa"],
+        True,
         True,
         True,
         peptide_bloom_filter_path,
@@ -134,6 +147,7 @@ def test_get_n_per_coding_category(
 
     create_ss = CreateSaveSummary(
         ["nonexistent.fa"],
+        True,
         True,
         True,
         peptide_bloom_filter_path,
@@ -181,7 +195,7 @@ def test_get_n_per_coding_category(
 
 def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_scores):
     create_ss = CreateSaveSummary(
-        reads, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
+        reads, True, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
     )
     test_summary = create_ss.generate_coding_summary(single_alphabet_ksize_true_scores)
     print(test_summary)
@@ -232,14 +246,37 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
 
 def test_maybe_write_csv(reads, single_alphabet_ksize_true_scores, true_scores_path):
     create_ss = CreateSaveSummary(
-        reads, true_scores_path, True, "bloom_filter.nodegraph", "protein", 7, 0.5
+        reads, true_scores_path, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
     )
     create_ss.maybe_write_csv(single_alphabet_ksize_true_scores)
 
 
+def test_maybe_write_parquet(
+    reads, single_alphabet_ksize_true_scores, true_scores_parquet
+):
+    create_ss = CreateSaveSummary(
+        reads,
+        True,
+        true_scores_parquet,
+        True,
+        "bloom_filter.nodegraph",
+        "protein",
+        7,
+        0.5,
+    )
+    create_ss.maybe_write_parquet(single_alphabet_ksize_true_scores)
+
+
 def test_make_empty_coding_categories():
     create_ss = CreateSaveSummary(
-        ["nonexistent.fa"], True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
+        ["nonexistent.fa"],
+        True,
+        True,
+        True,
+        "bloom_filter.nodegraph",
+        "protein",
+        7,
+        0.5,
     )
     test_coding_categories = {
         "Translation is shorter than peptide k-mer size + 1": 0,
