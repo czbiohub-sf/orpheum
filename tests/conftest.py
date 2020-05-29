@@ -124,7 +124,7 @@ def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
     filename = os.path.join(
         data_folder,
         "index",
-        "Homo_sapiens.GRCh38.pep.subset.alphabet-{}_".format(alphabet)
+        "Homo_sapiens.GRCh38.pep.subset.fa.alphabet-{}_".format(alphabet)
         + "ksize-{}.bloomfilter.nodegraph".format(peptide_ksize),
     )
     return filename
