@@ -48,19 +48,24 @@ A reference proteome *must* be supplied as the first argument.
 sencha translate reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
-#### Save the "coding scores" to a csv
+#### Save the "coding scores" to a csv or parquet file
 
 The "coding score" of each read is calculated by translating each read in six
 frames, then is calculatating the
 [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index) between any of the
 six translated frames of the read and the peptide database. The final coding
 score is the maximum Jaccard index across all reading frames. If you'd like to
-see the coding scores for all reads, use the `--csv` flag.
+see the coding scores for all reads, use the `--csv` flag or `--parquet` flag.
 
+csv:
 ```
 sencha translate --csv coding_scores.csv reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
+parquet:
+```
+sencha translate --parquet coding_scores.parquet reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+```
 
 #### Save the coding nucleotides to a fasta
 

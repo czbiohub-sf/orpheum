@@ -450,6 +450,12 @@ class Translate:
     help="Name of csv file to write with all sequence reads and " "their coding scores",
 )
 @click.option(
+    "--parquet",
+    default=False,
+    help="Name of parquet file to write with all sequence reads and "
+    "their coding scores",
+)
+@click.option(
     "--json-summary",
     default=False,
     help="Name of json file to write summarization of coding/"
@@ -501,6 +507,7 @@ def cli(
     jaccard_threshold=None,
     alphabet="protein",
     csv=False,
+    parquet=False,
     json_summary=False,
     coding_nucleotide_fasta=None,
     noncoding_nucleotide_fasta=None,
@@ -559,6 +566,8 @@ def cli(
             2. Polar (C, D, E, H, K, N, Q, R, S, T)
     csv : str
         Save the coding scores as a csv to this file
+    parquet : str
+        Save the coding scores as a parquet to this file
     long_reads : bool -- NOT IMPLEMENTED!!
         Input sequencing reads are long reads. Not implemented, but the plan
         is, instead of doing 6-frame translation as on the short reads, test
@@ -590,6 +599,7 @@ def cli(
     assemble_summary_obj = CreateSaveSummary(
         reads,
         csv,
+        parquet,
         json_summary,
         translate_obj.peptide_bloom_filter_filename,
         alphabet,
@@ -597,6 +607,7 @@ def cli(
         translate_obj.jaccard_threshold,
     )
     assemble_summary_obj.maybe_write_csv(coding_scores)
+    assemble_summary_obj.maybe_write_parquet(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
 
 

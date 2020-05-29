@@ -29,6 +29,7 @@ def translate_class(tmpdir, reads, peptide_fasta):
         jaccard_threshold=None,
         alphabet="protein",
         csv=False,
+        parquet=False,
         json_summary=False,
         coding_nucleotide_fasta=os.path.join(tmpdir, "coding_nucleotide_fasta.fa"),
         noncoding_nucleotide_fasta=os.path.join(
@@ -312,6 +313,45 @@ def test_cli_csv(
     true["filename"] = reads
 
     test_scores = pd.read_csv(csv)
+    pdt.assert_equal(test_scores, true)
+
+
+def test_cli_parquet(
+    tmpdir,
+    reads,
+    peptide_bloom_filter_path,
+    alphabet,
+    peptide_ksize,
+    true_protein_coding_fasta_string,
+    true_scores,
+):
+
+    parquet = os.path.join(tmpdir, "coding_scores.parquet")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--peptide-ksize",
+            peptide_ksize,
+            "--parquet",
+            parquet,
+            "--peptides-are-bloom-filter",
+            "--alphabet",
+            alphabet,
+            peptide_bloom_filter_path,
+            reads,
+        ],
+    )
+    assert result.exit_code == 0
+    assert true_protein_coding_fasta_string in result.output
+    assert os.path.exists(parquet)
+
+    # the CLI adds the filename to the scoring dataframe
+    true = true_scores.copy()
+    true["filename"] = reads
+
+    test_scores = pd.read_parquet(parquet)
     pdt.assert_equal(test_scores, true)
 
 
