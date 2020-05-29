@@ -16,7 +16,6 @@ from sencha.log_utils import get_logger
 logger = get_logger(__file__)
 
 
-
 def per_translation_false_positive_rate(
     n_kmers_in_translation,
     n_total_kmers=1e7,
@@ -95,7 +94,7 @@ def make_peptide_index(
             sequence = encode_peptide(record["sequence"], molecule)
             if len(sequence) >= peptide_ksize:
                 # Skip sequences with any stop codons
-                if '*' in sequence:
+                if "*" in sequence:
                     continue
                 kmers = kmerize(sequence, peptide_ksize)
                 for kmer in kmers:
@@ -119,11 +118,13 @@ def make_peptide_index(
                 )
     collisions = khmer.calc_expected_collisions(peptide_index, force=True)
     if collisions > constants_index.MAX_BF_FALSE_POSITIVES:
-        raise ValueError(f"The false positive rate in the bloom filter index is "
-                         f"{collisions}, which is greater than than the recommended "
-                         f"maximum of {constants_index.MAX_BF_FALSE_POSITIVES:.1f}. "
-                         f"The current table size is {tablesize:.1e}, please increase "
-                         f"by an order of magnitude and rerun.")
+        raise ValueError(
+            f"The false positive rate in the bloom filter index is "
+            f"{collisions}, which is greater than than the recommended "
+            f"maximum of {constants_index.MAX_BF_FALSE_POSITIVES:.1f}. "
+            f"The current table size is {tablesize:.1e}, please increase "
+            f"by an order of magnitude and rerun."
+        )
 
     n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
     n_observed_kmers = peptide_index.n_unique_kmers()
@@ -267,9 +268,9 @@ def maybe_save_peptide_index(
     type=float,
     default=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
     help="Maximum fraction of observed to theoretical k-mers to allow. Theoretical "
-         "k-mers are computed as the (alphabet size)^(peptide_ksize). This number "
-         "should be fairly small (e.g. 1e-4) to prevent false positive translation "
-         "results.",
+    "k-mers are computed as the (alphabet size)^(peptide_ksize). This number "
+    "should be fairly small (e.g. 1e-4) to prevent false positive translation "
+    "results.",
 )
 def cli(
     peptides,
@@ -302,8 +303,12 @@ def cli(
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_index = make_peptide_index(
-        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize,
-        max_observed_fraction=max_observed_fraction
+        peptides,
+        peptide_ksize,
+        alphabet,
+        n_tables=n_tables,
+        tablesize=tablesize,
+        max_observed_fraction=max_observed_fraction,
     )
     logger.info("\tDone!")
 

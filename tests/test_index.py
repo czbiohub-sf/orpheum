@@ -148,8 +148,8 @@ def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
             alphabet,
             "--tablesize",
             "1e7",
-            '--max-observed-fraction',
-            '1e-1',
+            "--max-observed-fraction",
+            "1e-1",
             peptide_fasta,
         ],
     )
