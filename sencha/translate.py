@@ -184,8 +184,13 @@ class Translate:
         return get_jaccard_threshold(self.jaccard_threshold, self.alphabet)
 
     def score_single_translation(self, translation):
-        """Score a single translation based on
-        fraction of kmers in peptide bloom filter"""
+        """Score a single translation based on fraction of kmers in peptide index
+
+        Parameters
+        ----------
+        translation : str
+            Single protein-coding translation of a reading frame
+        """
         encoded = encode_peptide(translation, self.alphabet)
         kmers = list(set(kmerize(str(encoded), self.peptide_ksize)))
         hashes = [hash_murmur(kmer) for kmer in kmers]
