@@ -8,16 +8,13 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from sencha.compare_kmer_content import kmerize
-from sencha.sequence_encodings import encode_peptide, BEST_KSIZES, ALPHABET_SIZES
+from sencha.sequence_encodings import encode_peptide, ALPHABET_SIZES
+from sencha.constants_index import BEST_KSIZES
 import sencha.constants_index as constants_index
 from sencha.log_utils import get_logger
 
 logger = get_logger(__file__)
 
-# '*' = stop codon
-# 'X' = unknown amino acid
-# 'U' = Selenocystine amino acids
-RESIDUES_TO_IGNORE = "*", "X", "U"
 
 
 def per_translation_false_positive_rate(
@@ -88,6 +85,7 @@ def make_peptide_index(
     molecule,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
 ):
     """Create a bloom filter out of peptide sequences"""
     peptide_index = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
@@ -96,10 +94,13 @@ def make_peptide_index(
         for record in tqdm(records):
             sequence = encode_peptide(record["sequence"], molecule)
             if len(sequence) >= peptide_ksize:
+                # Skip sequences with any stop codons
+                if '*' in sequence:
+                    continue
                 kmers = kmerize(sequence, peptide_ksize)
                 for kmer in kmers:
                     # Ignore the k-mer if there are any illegal characters
-                    if any(x in kmer for x in RESIDUES_TO_IGNORE):
+                    if any(x in kmer for x in constants_index.RESIDUES_TO_IGNORE):
                         logger.info(
                             f'{record["name"]} a k-mer ({kmer}) with an '
                             f"illegal character, skipping this k-mer"
@@ -116,17 +117,28 @@ def make_peptide_index(
                     f'{record["name"]} sequence is shorter than the k-mer '
                     f"size {peptide_ksize}, skipping"
                 )
-    khmer.calc_expected_collisions(peptide_index)
+    collisions = khmer.calc_expected_collisions(peptide_index, force=True)
+    if collisions > constants_index.MAX_BF_FALSE_POSITIVES:
+        raise ValueError(f"The false positive rate in the bloom filter index is "
+                         f"{collisions}, which is greater than than the recommended "
+                         f"maximum of {constants_index.MAX_BF_FALSE_POSITIVES:.1f}. "
+                         f"The current table size is {tablesize:.1e}, please increase "
+                         f"by an order of magnitude and rerun.")
 
     n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
     n_observed_kmers = peptide_index.n_unique_kmers()
-    if n_observed_kmers / n_theoretical_kmers > 1e-1:
+    fraction_observed = n_observed_kmers / n_theoretical_kmers
+    if fraction_observed > max_observed_fraction:
         raise ValueError(
-            f"The number of observed length {peptide_ksize} k-mers "
-            f"is greater than 1% of the total possible theoretical k-mers,"
-            f" which doesn't leave enough room for predicting protein "
-            f"coding sequence. The current table size is {tablesize}, "
-            f"please increase by an order of magnitude and rerun."
+            f"The number of observed length {peptide_ksize} k-mers compared to the "
+            f"possible theoretical k-mers "
+            f"is {n_observed_kmers} / {n_theoretical_kmers} = {fraction_observed:.2e} "
+            f"which is greater than the maximum observed fraction threshold, "
+            f"{max_observed_fraction:.2e}. "
+            f"This doesn't leave enough 'negative space' of non-observed protein "
+            f"k-mers for room for predicting true protein-coding sequence, which "
+            f"relies on seeing which protein k-mers are *not* present in the observed "
+            f"data. Please increase the k-mer size."
         )
     return peptide_index
 
@@ -250,6 +262,15 @@ def maybe_save_peptide_index(
     default=constants_index.DEFAULT_N_TABLES,
     help="Size of the bloom filter table to use",
 )
+@click.option(
+    "--max-observed-fraction",
+    type=float,
+    default=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    help="Maximum fraction of observed to theoretical k-mers to allow. Theoretical "
+         "k-mers are computed as the (alphabet size)^(peptide_ksize). This number "
+         "should be fairly small (e.g. 1e-4) to prevent false positive translation "
+         "results.",
+)
 def cli(
     peptides,
     peptide_ksize=None,
@@ -257,6 +278,7 @@ def cli(
     save_as=None,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     n_tables=constants_index.DEFAULT_N_TABLES,
+    max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
 ):
     """Make a peptide bloom filter for your peptides
 
@@ -280,7 +302,8 @@ def cli(
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_index = make_peptide_index(
-        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize
+        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize,
+        max_observed_fraction=max_observed_fraction
     )
     logger.info("\tDone!")
 

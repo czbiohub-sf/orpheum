@@ -391,31 +391,13 @@ ALPHABET_SIZES = {
     "botvinnik": 8,
     "botvinnik8": 8,
     "hydrophobic-polar": 2,
+    "hydrophobic-polar2": 2,
     "hp": 2,
     "hp2": 2,
     "aa9": 9,
     "gbmr4": 4,
     "sdm12": 12,
     "hsdm17": 17,
-}
-
-BEST_KSIZES = {
-    "protein": 7,
-    "peptide": 7,
-    "protein20": 7,
-    "peptide20": 7,
-    "aa20": 7,
-    "dayhoff": 12,
-    "dayhoff6": 12,
-    "botvinnik": 11,
-    "botvinnik8": 11,
-    "hydrophobic-polar": 31,
-    "hp": 31,
-    "hp2": 31,
-    "aa9": 10,
-    "gbmr4": 16,
-    "sdm12": 9,
-    "hsdm17": 8,
 }
 
 
