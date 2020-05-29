@@ -184,11 +184,12 @@ def test_translate_get_jaccard_threshold(translate_class):
 
 
 def test_score_single_translation(translations_for_single_seq, translate_class):
+    single_translation = translations_for_single_seq[2]
     fraction_in_peptide_db, n_kmers = translate_class.score_single_translation(
-        translations_for_single_seq
+        single_translation
     )
-    np.testing.assert_almost_equal(fraction_in_peptide_db, 0.19, 0.05)
-    assert n_kmers == 82
+    assert fraction_in_peptide_db == 0
+    assert n_kmers == 14
 
 
 def test_get_coding_score_line(translate_class, translations_for_single_seq):
