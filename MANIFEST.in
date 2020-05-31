@@ -1,9 +1,4 @@
-include AUTHORS.rst
-include CONTRIBUTING.rst
-include HISTORY.rst
-include LICENSE
-include README.rst
-include LICENSE Makefile README.md HISTORY.md requirements.txt
+include LICENSE Makefile README.md HISTORY.md CONTRIBUTING.md AUTHORS.md requirements.txt
 
 recursive-include sencha/tests *
 recursive-exclude * __pycache__
