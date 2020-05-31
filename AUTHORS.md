@@ -9,4 +9,5 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+-   Pranathi Vemuri &lt;pranathi.vemuri@czbiohub.org&gt;
+-   Tessa Pierce &lt;ntpierce@gmail.com&gt;
