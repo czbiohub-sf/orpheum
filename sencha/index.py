@@ -301,7 +301,8 @@ def maybe_save_peptide_index(
     type=bool,
     default=False,
     help="Force creation of the bloom filter index, even if the collision rate is high"
-    " or the table size is too small. Not recommended except for debugging!",
+    " or the k-mer size is too small for the number of observed vs theoretical k-mers. "
+    "Not recommended except for debugging!",
 )
 def cli(
     peptides,
