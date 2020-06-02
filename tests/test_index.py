@@ -123,8 +123,10 @@ def test_maybe_make_peptide_index(peptide_bloom_filter_path, alphabet, peptide_k
     test = maybe_make_peptide_index(
         peptide_bloom_filter_path, peptide_ksize, alphabet, peptides_are_index=True,
     )
-    # No assertion, just check that it ran
-    assert isinstance(test, khmer._oxli.graphs.Nodegraph)
+    # Can't do isinstance because of various legacy versions of khmer.Nodegraph
+    type_test = str(type(test))
+    assert 'khmer' in type_test
+    assert 'Nodegraph' in type_test
 
 
 def test_cli_minimum(peptide_fasta):
