@@ -125,8 +125,8 @@ def test_maybe_make_peptide_index(peptide_bloom_filter_path, alphabet, peptide_k
     )
     # Can't do isinstance because of various legacy versions of khmer.Nodegraph
     type_test = str(type(test))
-    assert 'khmer' in type_test
-    assert 'Nodegraph' in type_test
+    assert "khmer" in type_test
+    assert "Nodegraph" in type_test
 
 
 def test_cli_minimum(peptide_fasta):
