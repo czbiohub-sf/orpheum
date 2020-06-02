@@ -1,5 +1,6 @@
 import math
 import os
+import sys
 
 import click
 import khmer
@@ -85,6 +86,7 @@ def make_peptide_index(
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    force=False,
 ):
     """Create a bloom filter out of peptide sequences"""
     peptide_index = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
@@ -116,20 +118,24 @@ def make_peptide_index(
                     f'{record["name"]} sequence is shorter than the k-mer '
                     f"size {peptide_ksize}, skipping"
                 )
-    check_collisions(peptide_index, tablesize)
+    check_collisions(peptide_index, tablesize, force)
 
-    check_kmer_occupancy(max_observed_fraction, molecule, peptide_index, peptide_ksize)
+    check_kmer_occupancy(
+        max_observed_fraction, molecule, peptide_index, peptide_ksize, force
+    )
     return peptide_index
 
 
-def check_kmer_occupancy(max_observed_fraction, molecule, peptide_index, peptide_ksize):
+def check_kmer_occupancy(
+    max_observed_fraction, molecule, peptide_index, peptide_ksize, force
+):
     """Ensure that the fraction of observed k-mers in the reference proteome is
     substantially lower than the total number of theoretical k-mers given the k-mer size and alphabet size"""
     n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
     n_observed_kmers = peptide_index.n_unique_kmers()
     fraction_observed = n_observed_kmers / n_theoretical_kmers
     if fraction_observed > max_observed_fraction:
-        raise ValueError(
+        logger.error(
             f"The number of observed length {peptide_ksize} k-mers compared to the "
             f"possible theoretical k-mers "
             f"is {n_observed_kmers} / {n_theoretical_kmers} = {fraction_observed:.2e} "
@@ -140,19 +146,24 @@ def check_kmer_occupancy(max_observed_fraction, molecule, peptide_index, peptide
             f"relies on seeing which protein k-mers are *not* present in the observed "
             f"data. Please increase the k-mer size."
         )
+        if not force:
+            # TODO: Is this best practices?
+            sys.exit(1)
 
 
-def check_collisions(peptide_index, tablesize):
+def check_collisions(peptide_index, tablesize, force):
     """Use khmer to check for bloom filter false positives"""
     collisions = khmer.calc_expected_collisions(peptide_index, force=True)
     if collisions > constants_index.MAX_BF_FALSE_POSITIVES:
-        raise ValueError(
+        logger.error(
             f"The false positive rate in the bloom filter index is "
             f"{collisions}, which is greater than than the recommended "
             f"maximum of {constants_index.MAX_BF_FALSE_POSITIVES:.1f}. "
             f"The current table size is {tablesize:.1e}, please increase "
             f"by an order of magnitude and rerun."
         )
+        if not force:
+            sys.exit(1)
 
 
 def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
@@ -183,6 +194,7 @@ def maybe_make_peptide_index(
     peptides_are_index,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    force=False,
 ):
     if peptides_are_index:
         logger.info(
@@ -213,6 +225,7 @@ def maybe_make_peptide_index(
             molecule=molecule,
             n_tables=n_tables,
             tablesize=tablesize,
+            force=force,
         )
     return peptide_index
 
@@ -283,6 +296,13 @@ def maybe_save_peptide_index(
     "should be fairly small (e.g. 1e-4) to prevent false positive translation "
     "results.",
 )
+@click.option(
+    "--force",
+    type=bool,
+    default=False,
+    help="Force creation of the bloom filter index, even if the collision rate is high"
+    " or the table size is too small. Not recommended except for debugging!",
+)
 def cli(
     peptides,
     peptide_ksize=None,
@@ -291,6 +311,7 @@ def cli(
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     n_tables=constants_index.DEFAULT_N_TABLES,
     max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    force=False,
 ):
     """Make a peptide bloom filter for your peptides
 
@@ -320,6 +341,7 @@ def cli(
         n_tables=n_tables,
         tablesize=tablesize,
         max_observed_fraction=max_observed_fraction,
+        force=force,
     )
     logger.info("\tDone!")
 

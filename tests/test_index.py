@@ -56,6 +56,11 @@ def alphabet_index(alphabet_ksize_index):
     return alphabet_ksize_index[0]
 
 
+@pytest.fixture(params=[True, False])
+def force(request):
+    return request.param
+
+
 def test_make_peptide_index(
     variable_peptide_fasta, alphabet_index, peptide_ksize_index
 ):
@@ -89,32 +94,56 @@ def test_make_peptide_index(
     np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=1e-4)
 
 
-def test_error_if_index_tables_too_small(adversarial_peptide_fasta,):
+def test_error_if_index_tables_too_small(adversarial_peptide_fasta, force):
     from sencha.index import make_peptide_index
 
-    with pytest.raises(ValueError) as pytest_wrapped_error:
+    if force:
         make_peptide_index(
             adversarial_peptide_fasta,
             peptide_ksize=9,
             molecule="protein",
             n_tables=2,
             tablesize=1e2,
+            force=force,
         )
-        assert pytest_wrapped_error.type == ValueError
-        assert pytest_wrapped_error.value.code == 42
+    else:
+        with pytest.raises(SystemExit) as pytest_wrapped_error:
+            make_peptide_index(
+                adversarial_peptide_fasta,
+                peptide_ksize=9,
+                molecule="protein",
+                n_tables=2,
+                tablesize=1e2,
+                force=force,
+            )
+            assert pytest_wrapped_error.type == SystemExit
+            assert pytest_wrapped_error.value.code == 1
 
 
-def test_error_if_too_many_observed_kmers(peptide_fasta):
+def test_error_if_too_many_observed_kmers(peptide_fasta, force):
     from sencha.index import make_peptide_index
 
-    with pytest.raises(ValueError):
+    if force:
         make_peptide_index(
             peptide_fasta,
             peptide_ksize=7,
             molecule="dayhoff",
             n_tables=4,
             tablesize=1e6,
+            force=force,
         )
+    else:
+        with pytest.raises(SystemExit) as pytest_wrapped_error:
+            make_peptide_index(
+                peptide_fasta,
+                peptide_ksize=7,
+                molecule="dayhoff",
+                n_tables=4,
+                tablesize=1e6,
+                force=force,
+            )
+            assert pytest_wrapped_error.type == SystemExit
+            assert pytest_wrapped_error.value.code == 1
 
 
 def test_maybe_make_peptide_index(peptide_bloom_filter_path, alphabet, peptide_ksize):
