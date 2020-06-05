@@ -1,4 +1,5 @@
 import math
+import logging
 import os
 import sys
 
@@ -9,7 +10,11 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from sencha.compare_kmer_content import kmerize
-from sencha.sequence_encodings import encode_peptide, ALPHABET_SIZES
+from sencha.sequence_encodings import (
+    encode_peptide,
+    ALPHABET_SIZES,
+    AMINO_ACID_SINGLE_LETTERS,
+)
 from sencha.constants_index import BEST_KSIZES
 import sencha.constants_index as constants_index
 from sencha.log_utils import get_logger
@@ -86,10 +91,14 @@ def make_peptide_index(
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    debug=False,
     force=False,
 ):
     """Create a bloom filter out of peptide sequences"""
     peptide_index = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+
+    if debug:
+        logger.setLevel(logging.DEBUG)
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
@@ -107,6 +116,12 @@ def make_peptide_index(
                             f"illegal character, skipping this k-mer"
                         )
                         continue
+                    if not all(x in AMINO_ACID_SINGLE_LETTERS for x in kmer):
+                        logger.debug(
+                            f'The k-mer "{kmer}" contained non-amino acid '
+                            f"characters, skipping"
+                        )
+
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
 
