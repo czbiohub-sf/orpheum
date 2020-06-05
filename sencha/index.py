@@ -110,20 +110,16 @@ def make_peptide_index(
                 kmers = kmerize(sequence, peptide_ksize)
                 for kmer in kmers:
                     # Ignore the k-mer if there are any illegal characters
-                    if any(x in kmer for x in constants_index.RESIDUES_TO_IGNORE):
-                        logger.info(
-                            f'{record["name"]} a k-mer ({kmer}) with an '
-                            f"illegal character, skipping this k-mer"
-                        )
-                        continue
                     if not all(x in AMINO_ACID_SINGLE_LETTERS for x in kmer):
                         bad_residues = [
                             x for x in kmer if x not in AMINO_ACID_SINGLE_LETTERS
                         ]
                         bad_residues_str = ", ".join(bad_residues)
                         logger.debug(
-                            f'The k-mer "{kmer}" contained non-amino acid '
-                            f"characters: {bad_residues_str}, skipping"
+                            f'The sequence with ID "{record["name"]}"\n'
+                            f'contained a k-mer "{kmer}" '
+                            f"with non-amino acid "
+                            f"characters:\n{bad_residues_str}, skipping"
                         )
                         continue
 
