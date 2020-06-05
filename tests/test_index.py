@@ -78,15 +78,15 @@ def test_make_peptide_index(
         # This is the adversarial fasta with short sequences
         TRUE_N_UNIQUE_KMERS = {
             ("protein", DEFAULT_PROTEIN_KSIZE): 14448,
-            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 14094,
-            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 12244,
+            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 13976,
+            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 12133,
         }
     else:
         # This is the "normal" fasta
         TRUE_N_UNIQUE_KMERS = {
             ("protein", DEFAULT_PROTEIN_KSIZE): 517240,
-            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 506018,
-            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 522461,
+            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 504058,
+            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 519832,
         }
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet_index, peptide_ksize_index)]
 
