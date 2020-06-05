@@ -102,25 +102,24 @@ def make_peptide_index(
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
-            sequence = encode_peptide(record["sequence"], molecule)
-            if len(sequence) >= peptide_ksize:
-                # Skip sequences with any stop codons
-                if "*" in sequence:
-                    continue
-                # Ignore the whole sequence if there are any illegal characters
-                if not all(x in AMINO_ACID_SINGLE_LETTERS for x in sequence):
-                    bad_residues = [
-                        x for x in kmer if x not in AMINO_ACID_SINGLE_LETTERS
-                    ]
-                    bad_residues_str = ", ".join(bad_residues)
-                    logger.debug(
-                        f'The sequence with ID "{record["name"]}"\n'
-                        f"contained non-amino acid "
-                        f"characters:\n{bad_residues_str}, skipping"
-                    )
-                    continue
+            sequence = record["sequence"]
+            # Ignore the whole sequence if there are any illegal characters
+            if not all(x in AMINO_ACID_SINGLE_LETTERS for x in sequence):
+                bad_residues = [
+                    x for x in sequence if x not in AMINO_ACID_SINGLE_LETTERS
+                ]
+                bad_residues_str = ", ".join(bad_residues)
+                logger.debug(
+                    f'The sequence with ID "{record["name"]}"\n'
+                    f"contained non-amino acid "
+                    f"characters:\n{bad_residues_str}, skipping"
+                )
+                continue
 
-                kmers = kmerize(sequence, peptide_ksize)
+            encoded = encode_peptide(sequence, molecule)
+            if len(encoded) >= peptide_ksize:
+                # Skip sequences with any stop codons
+                kmers = kmerize(encoded, peptide_ksize)
                 for kmer in kmers:
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
