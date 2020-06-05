@@ -151,7 +151,7 @@ def check_kmer_occupancy(
     fraction_observed = n_observed_kmers / n_theoretical_kmers
     if fraction_observed > max_observed_fraction:
         logger.error(
-            f"The number of observed length {peptide_ksize} k-mers compared to the\n"
+            f"\nThe number of observed length {peptide_ksize} k-mers compared to the\n"
             f"possible theoretical k-mers "
             f"is {n_observed_kmers} / {n_theoretical_kmers} = {fraction_observed:.2e}\n"
             f"which is greater than the maximum observed fraction threshold, "
@@ -171,7 +171,7 @@ def check_collisions(peptide_index, tablesize, force):
     collisions = khmer.calc_expected_collisions(peptide_index, force=True)
     if collisions > constants_index.MAX_BF_FALSE_POSITIVES:
         logger.error(
-            f"The false positive rate in the bloom filter index is\n"
+            f"\nThe false positive rate in the bloom filter index is\n"
             f"{collisions}, which is greater than than the recommended\n"
             f"maximum of {constants_index.MAX_BF_FALSE_POSITIVES:.1f}.\n"
             f"The current table size is {tablesize:.1e}, please increase\n"
