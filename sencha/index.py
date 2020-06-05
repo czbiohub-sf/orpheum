@@ -117,10 +117,15 @@ def make_peptide_index(
                         )
                         continue
                     if not all(x in AMINO_ACID_SINGLE_LETTERS for x in kmer):
+                        bad_residues = [
+                            x for x in kmer if x not in AMINO_ACID_SINGLE_LETTERS
+                        ]
+                        bad_residues_str = ", ".join(bad_residues)
                         logger.debug(
                             f'The k-mer "{kmer}" contained non-amino acid '
-                            f"characters, skipping"
+                            f"characters: {bad_residues_str}, skipping"
                         )
+                        continue
 
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
