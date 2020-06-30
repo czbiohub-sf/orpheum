@@ -319,6 +319,27 @@ PEPTIDE_ENCODINGS = {
     "hsdm17": HSDM17_TRANSLATION,
 }
 
+NUCLEOTIDE_ENCODINGS = {
+    "amino-keto": AMINO_KETO_TRANSLATION,
+    "ak": AMINO_KETO_TRANSLATION,
+    "purine-pyrimidine": PURINE_PYRIMIDINE_TRANSLATION,
+    "yr": PURINE_PYRIMIDINE_TRANSLATION,
+    "weak-strong": WEAK_STRONG_TRANSLATION,
+    "ws": WEAK_STRONG_TRANSLATION,
+}
+
+VALID_NUCLEOTIDE = (
+    "nucleotide",
+    "rna",
+    "dna",
+    "amino-keto",
+    "ak",
+    "purine-pyrimidine",
+    "yr",
+    "weak-strong",
+    "ws",
+)
+
 PROTEIN_LIKE = "protein", "peptide", "protein20", "peptide20", "aa20"
 DAYHOFF_LIKE = "dayhoff", "dayhoff6"
 HP_LIKE = (
@@ -431,14 +452,14 @@ def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
 
 
-def reencode(peptide_sequence, molecule):
-    translator = PEPTIDE_ENCODINGS[molecule]
+def reencode(peptide_sequence, translator):
     return peptide_sequence.translate(translator)
 
 
 def encode_peptide(peptide_sequence, molecule):
     if molecule in PEPTIDE_ENCODINGS.keys():
-        return reencode(peptide_sequence, molecule)
+        encoder = PEPTIDE_ENCODINGS[molecule]
+        return reencode(peptide_sequence, encoder)
     elif molecule in VALID_PEPTIDE_MOLECULES:
         # If it's the original protein sequence, return that
         return peptide_sequence
@@ -447,6 +468,21 @@ def encode_peptide(peptide_sequence, molecule):
             f"{molecule} is not a valid amino acid encoding, "
             "only "
             f"{', '.join(PEPTIDE_ENCODINGS.keys())} can be used"
+        )
+
+
+def encode_nucleotide(nucleotide_sequence, alphabet):
+    if alphabet in NUCLEOTIDE_ENCODINGS.keys():
+        encoder = NUCLEOTIDE_ENCODINGS[alphabet]
+        return reencode(nucleotide_sequence, encoder)
+    elif alphabet in VALID_NUCLEOTIDE:
+        # If it's the original protein sequence, return that
+        return nucleotide_sequence
+    else:
+        raise ValueError(
+            f"{alphabet} is not a valid amino acid encoding, "
+            "only "
+            f"{', '.join(NUCLEOTIDE_ENCODINGS.keys())} can be used"
         )
 
 
