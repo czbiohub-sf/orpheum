@@ -148,7 +148,9 @@ def kmer_comparison_table(id1, seq1, id2, seq2, molecule_name, ksizes=KSIZES):
         else:
             # If jaccard=0 at a small ksize, then all future jaccards will also
             # be 0 --> break and exit
-            remaining_lines = [[id1, id2, k, 0] for k in range(ksize, max(ksizes) + 1)]
+            i = [i for i, k in enumerate(ksizes) if k == ksize][0]
+            remaining_ksizes = ksizes[i:]
+            remaining_lines = [[id1, id2, k, 0] for k in remaining_ksizes]
             lines.extend(remaining_lines)
             break
     df = pd.DataFrame(lines, columns=COLUMNS)
