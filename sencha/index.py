@@ -170,7 +170,7 @@ def maybe_make_peptide_bloom_filter(
                     f"equal"
                 )
     else:
-        peptide_ksize = get_peptiload_nodegraphde_ksize(molecule, peptide_ksize)
+        peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
         if not index_dir:
             logger.info(
                 f"Creating peptide bloom filter with file: {peptides}\n"
