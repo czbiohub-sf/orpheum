@@ -81,24 +81,27 @@ def maybe_read_peptide_file(peptide_file):
     records = []
     try:
         records = screed.open(peptide_file)
-    except:
+    except ValueError:
         logger.info(
-            f"File {peptide_file} is not valid fasta format, skipping. \n" f"..."
+            f"File {peptide_file} doesn't seem to be a sequence file, skipping. \n" f"..."
         )
     return records
 
 
 def make_peptide_bloom_filter(
-    peptide_fasta_files,
+    peptides,
     peptide_ksize,
     molecule,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    index_dir=None,
 ):
     """Create a bloom filter out of peptide sequences"""
     peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
-
-    for peptide_fasta in peptide_fasta_files:
+    if not index_dir:
+        # if not a directory, should be single file. Convert to list to use for loop below.
+        peptides = [peptides]
+    for peptide_fasta in peptides:
         records = maybe_read_peptide_file(peptide_fasta)
         for record in tqdm(records):
             if "*" in record["sequence"]:
@@ -147,9 +150,9 @@ def maybe_make_peptide_bloom_filter(
     peptides_are_bloom_filter,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    index_dir=None
 ):
     if peptides_are_bloom_filter:
-        peptides = peptides[0]
         logger.info(
             f"Loading existing bloom filter from {peptides} and "
             f"making sure the ksizes match"
@@ -164,17 +167,16 @@ def maybe_make_peptide_bloom_filter(
                     f"ksize found in bloom filter "
                     f"({peptide_bloom_filter.ksize()}) are not"
                     f"equal"
-                )
+           )
     else:
-        peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
-        if len(peptides) == 1:
+        peptide_ksize = get_peptiload_nodegraphde_ksize(molecule, peptide_ksize)
+        if not index_dir:
             logger.info(
-                f"Creating peptide bloom filter with file: {peptides[0]}\n"
+                f"Creating peptide bloom filter with file: {peptides}\n"
                 f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
                 f"..."
             )
         else:
-            index_dir = os.path.dirname(peptides[0])
             logger.info(
                 f"Creating peptide bloom filter from files in directory: {index_dir}\n"
                 f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
@@ -187,12 +189,13 @@ def maybe_make_peptide_bloom_filter(
             molecule=molecule,
             n_tables=n_tables,
             tablesize=tablesize,
+            index_dir=index_dir,
         )
     return peptide_bloom_filter
 
 
 def maybe_save_peptide_bloom_filter(
-    peptides, peptide_bloom_filter, molecule, save_peptide_bloom_filter
+    peptides, peptide_bloom_filter, molecule, save_peptide_bloom_filter, index_dir=None
 ):
     if save_peptide_bloom_filter:
         ksize = peptide_bloom_filter.ksize()
@@ -202,12 +205,11 @@ def maybe_save_peptide_bloom_filter(
             peptide_bloom_filter.save(save_peptide_bloom_filter)
         else:
             suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter.nodegraph"
-            if len(peptides) == 1:
-                filename = os.path.splitext(peptides[0])[0] + suffix
+            if not index_dir:
+                filename = os.path.splitext(peptides)[0] + suffix
             else:
-                dirname = os.path.dirname(peptides[0])  # get index dir
-                basename = os.path.basename(dirname)  # user index dir name as basename
-                filename = os.path.join(dirname, basename + suffix)
+                basename = os.path.basename(index_dir) # user index dir name as basename
+                filename = os.path.join(index_dir, basename + suffix)
 
         logger.info(f"Writing peptide bloom filter to {filename}")
         peptide_bloom_filter.save(filename)
@@ -291,13 +293,14 @@ def cli(
     """
     # \b above prevents rewrapping of paragraph
 
+    index_dir=""
     if index_from_dir:
-        peptides = [os.path.join(peptides, p) for p in os.listdir(peptides)]
-    else:
-        peptides = [peptides]
+        index_dir = peptides
+        peptides = (os.path.join(index_dir, p) for p in os.listdir(index_dir))
+
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(
-        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize,
+        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize, index_dir=index_dir
     )
     logger.info("\tDone!")
 
@@ -307,6 +310,7 @@ def cli(
         peptide_bloom_filter,
         alphabet,
         save_peptide_bloom_filter=save_peptide_bloom_filter,
+        index_dir=index_dir
     )
 
 

@@ -127,7 +127,7 @@ class Translate:
             self.jaccard_threshold, self.alphabet
         )
         self.peptide_bloom_filter = maybe_make_peptide_bloom_filter(
-            [self.peptides],
+            self.peptides,
             self.peptide_ksize,
             self.alphabet,
             self.peptides_are_bloom_filter,
@@ -139,7 +139,7 @@ class Translate:
 
         if not self.peptides_are_bloom_filter:
             self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
-                [self.peptides],
+                self.peptides,
                 self.peptide_bloom_filter,
                 self.alphabet,
                 self.save_peptide_bloom_filter,

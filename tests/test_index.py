@@ -25,7 +25,7 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksi
     from sencha.index import make_peptide_bloom_filter
 
     test = make_peptide_bloom_filter(
-        [variable_peptide_fasta], peptide_ksize, alphabet, n_tables=4, tablesize=1e6
+        variable_peptide_fasta, peptide_ksize, alphabet, n_tables=4, tablesize=1e6
     )
     if "first1000lines" in variable_peptide_fasta:
         TRUE_N_UNIQUE_KMERS = {
@@ -59,7 +59,7 @@ def test_maybe_make_peptide_bloom_filter(
     from sencha.index import maybe_make_peptide_bloom_filter
 
     maybe_make_peptide_bloom_filter(
-        [peptide_bloom_filter_path],
+        peptide_bloom_filter_path,
         peptide_ksize,
         alphabet,
         peptides_are_bloom_filter=True,
