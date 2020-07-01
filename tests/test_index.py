@@ -1,4 +1,5 @@
 from click.testing import CliRunner
+import os
 import numpy as np
 import pytest
 
@@ -49,6 +50,34 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksi
         }
     true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet, peptide_ksize)]
 
+    # For now, assert that the number of kmers is within 0.1% of the true value
+    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=0.001)
+
+
+def test_make_peptide_bloom_filter_index_from_dir(
+    peptides_dir, alphabet, peptide_ksize
+):
+    from sencha.index import make_peptide_bloom_filter
+
+    peptides = (os.path.join(peptides_dir, p) for p in os.listdir(peptides_dir))
+    test = make_peptide_bloom_filter(
+        peptides,
+        peptide_ksize,
+        alphabet,
+        n_tables=4,
+        tablesize=1e6,
+        index_dir=peptides_dir,
+    )
+    TRUE_N_UNIQUE_KMERS = {
+        ("protein", 7): 519609,
+        ("dayhoff", 7): 99863,
+        ("dayhoff", 11): 472197,
+        ("dayhoff", 12): 501482,
+        ("hydrophobic-polar", 31): 515863,
+        ("hydrophobic-polar", 21): 434810,
+        ("hydrophobic-polar", 7): 170,
+    }
+    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet, peptide_ksize)]
     # For now, assert that the number of kmers is within 0.1% of the true value
     np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=0.001)
 
