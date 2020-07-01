@@ -83,7 +83,8 @@ def maybe_read_peptide_file(peptide_file):
         records = screed.open(peptide_file)
     except ValueError:
         logger.info(
-            f"File {peptide_file} doesn't seem to be a sequence file, skipping. \n" f"..."
+            f"File {peptide_file} doesn't seem to be a sequence file, skipping. \n"
+            f"..."
         )
     return records
 
@@ -150,7 +151,7 @@ def maybe_make_peptide_bloom_filter(
     peptides_are_bloom_filter,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
-    index_dir=None
+    index_dir=None,
 ):
     if peptides_are_bloom_filter:
         logger.info(
@@ -167,7 +168,7 @@ def maybe_make_peptide_bloom_filter(
                     f"ksize found in bloom filter "
                     f"({peptide_bloom_filter.ksize()}) are not"
                     f"equal"
-           )
+                )
     else:
         peptide_ksize = get_peptiload_nodegraphde_ksize(molecule, peptide_ksize)
         if not index_dir:
@@ -208,7 +209,9 @@ def maybe_save_peptide_bloom_filter(
             if not index_dir:
                 filename = os.path.splitext(peptides)[0] + suffix
             else:
-                basename = os.path.basename(index_dir) # user index dir name as basename
+                basename = os.path.basename(
+                    index_dir
+                )  # user index dir name as basename
                 filename = os.path.join(index_dir, basename + suffix)
 
         logger.info(f"Writing peptide bloom filter to {filename}")
@@ -293,14 +296,19 @@ def cli(
     """
     # \b above prevents rewrapping of paragraph
 
-    index_dir=""
+    index_dir = ""
     if index_from_dir:
         index_dir = peptides
         peptides = (os.path.join(index_dir, p) for p in os.listdir(index_dir))
 
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
     peptide_bloom_filter = make_peptide_bloom_filter(
-        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize, index_dir=index_dir
+        peptides,
+        peptide_ksize,
+        alphabet,
+        n_tables=n_tables,
+        tablesize=tablesize,
+        index_dir=index_dir,
     )
     logger.info("\tDone!")
 
@@ -310,7 +318,7 @@ def cli(
         peptide_bloom_filter,
         alphabet,
         save_peptide_bloom_filter=save_peptide_bloom_filter,
-        index_dir=index_dir
+        index_dir=index_dir,
     )
 
 
