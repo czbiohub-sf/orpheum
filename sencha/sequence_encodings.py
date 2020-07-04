@@ -473,6 +473,33 @@ def purine_pyrimidize(seq):
     return seq.translate(PURINE_PYRIMIDINE_TRANSLATION)
 
 
+# Nucleic acid utils
+
+COMPLEMENT_NUCLEOTIDE = {
+    "A": "T",
+    "C": "G",
+    "G": "C",
+    "T": "A",
+    "N": "N"
+}
+
+def complement(s):
+    # https://github.com/dib-lab/sourmash/blob/master/utils/compute-dna-mh-another-way.py
+    """
+    Return complement of 's'.
+    """
+    c = "".join(COMPLEMENT_NUCLEOTIDE[n] for n in s)
+    return c
+
+
+def reverse(s):
+    # https://github.com/dib-lab/sourmash/blob/master/utils/compute-dna-mh-another-way.py
+    """
+    Return reverse of 's'.
+    """
+    r = "".join(reversed(s))
+    return r
+
 # Amino acid mappings
 def dayhoffize(seq):
     return seq.translate(DAYHOFF_TRANSLATION)
