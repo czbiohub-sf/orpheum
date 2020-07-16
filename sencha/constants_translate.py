@@ -64,6 +64,7 @@ STANDARD_CODON_TABLE_MAPPING = {
     "ACC": "T",
     "ACG": "T",
     "ACT": "T",
+    "ACN": "T",
     "AAC": "N",
     "AAT": "N",
     "AAA": "K",
@@ -76,6 +77,7 @@ STANDARD_CODON_TABLE_MAPPING = {
     "CTC": "L",
     "CTG": "L",
     "CTT": "L",
+    "CTN": "L",
     "CCA": "P",
     "CCC": "P",
     "CCG": "P",
@@ -88,14 +90,17 @@ STANDARD_CODON_TABLE_MAPPING = {
     "CGC": "R",
     "CGG": "R",
     "CGT": "R",
+    "CGN": "R",
     "GTA": "V",
     "GTC": "V",
     "GTG": "V",
     "GTT": "V",
+    "GTN": "V",
     "GCA": "A",
     "GCC": "A",
     "GCG": "A",
     "GCT": "A",
+    "GCN": "A",
     "GAC": "D",
     "GAT": "D",
     "GAA": "E",
@@ -104,10 +109,12 @@ STANDARD_CODON_TABLE_MAPPING = {
     "GGC": "G",
     "GGG": "G",
     "GGT": "G",
+    "GGN": "G",
     "TCA": "S",
     "TCC": "S",
     "TCG": "S",
     "TCT": "S",
+    "TCN": "S",
     "TTC": "F",
     "TTT": "F",
     "TTA": "L",
@@ -122,8 +129,6 @@ STANDARD_CODON_TABLE_MAPPING = {
     "TGG": "W",
 }
 
-STANDARD_CODON_TABLE = defaultdict(lambda: "X")
-STANDARD_CODON_TABLE.update(STANDARD_CODON_TABLE_MAPPING)
 
 REVERSE_COMPLEMENT_MAPPING = {
     "A": "T",
@@ -131,3 +136,5 @@ REVERSE_COMPLEMENT_MAPPING = {
     "G": "C",
     "T": "A",
 }
+
+REVERSE_COMPLEMENT_TABLE = str.maketrans("ACGT", "TGCA")
