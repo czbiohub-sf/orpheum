@@ -1,6 +1,6 @@
 from .constants_translate import (
-    STANDARD_CODON_TABLE,
-    REVERSE_COMPLEMENT_MAPPING,
+    STANDARD_CODON_TABLE_MAPPING,
+    REVERSE_COMPLEMENT_TABLE,
 )
 
 
@@ -11,16 +11,24 @@ class TranslateSingleSeq:
         self.sign = 1
 
     @staticmethod
-    def _single_seq_translation(seq, frame=0):
-        return "".join(
-            [
-                STANDARD_CODON_TABLE[seq[(frame + i * 3) : (i * 3 + 3)]]
-                for i in range(int(len(seq) / 3))
-            ]
-        )
+    def _translate_codon(codon):
+        if len(codon) == 3:
+            return STANDARD_CODON_TABLE_MAPPING.get(codon, "X")
+        else:
+            return ""
 
-    def _reverse_complement(self, seq):
-        return seq.translate(REVERSE_COMPLEMENT_MAPPING)[::-1]
+    def _single_seq_translation(self, seq, frame=0):
+        translated = ""
+        for i in range(int(len(seq) / 3)):
+            start = frame + (i * 3)
+            end = start + 3
+            codon = seq[start:end]
+            translated += self._translate_codon(codon)
+        return translated
+
+    @staticmethod
+    def _reverse_complement(seq):
+        return seq.translate(REVERSE_COMPLEMENT_TABLE)[::-1]
 
     def three_frame_translation(self):
 
@@ -33,8 +41,7 @@ class TranslateSingleSeq:
             yield translation
 
     def three_frame_translation_no_stops(self, sign):
-        """Remove translations with stop codons &
-        keep track of reading frame"""
+        """Remove translations with stop codons & keep track of reading frame"""
         self.sign = sign
         return {
             self.sign * (i + 1): t
@@ -43,8 +50,7 @@ class TranslateSingleSeq:
         }
 
     def three_frame_translation_stops(self, sign):
-        """Remove translations with stop codons &
-        keep track of reading frame"""
+        """Remove translations with stop codons & keep track of reading frame"""
         self.sign = sign
         return {
             self.sign * (i + 1): t for i, t in enumerate(self.three_frame_translation())
