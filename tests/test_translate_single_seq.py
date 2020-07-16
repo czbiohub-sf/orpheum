@@ -13,8 +13,11 @@ def translation(seq):
 
 
 def test__reverse_complement(translation):
-    rev = translation.translate_ss._reverse_complement("AACCGGTT")
-    assert rev == "AACCGGTT"
+    # Palindromic sequence
+    assert translation.translate_ss._reverse_complement("AACCGGTT") == "AACCGGTT"
+
+    # Non-palindrome
+    assert translation.translate_ss._reverse_complement("AACC") == "GGTT"
 
 
 def test__translate_codon(translation):
