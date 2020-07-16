@@ -1,4 +1,7 @@
-import warnings
+from .constants_translate import (
+    STANDARD_CODON_TABLE,
+    REVERSE_COMPLEMENT_MAPPING,
+)
 
 
 class TranslateSingleSeq:
@@ -7,17 +10,27 @@ class TranslateSingleSeq:
         self.verbose = verbose
         self.sign = 1
 
-    def three_frame_translation(self):
-        from Bio import BiopythonWarning
+    @staticmethod
+    def _single_seq_translation(seq, frame=0):
+        return "".join(
+            [
+                STANDARD_CODON_TABLE[seq[(frame + i * 3) : (i * 3 + 3)]]
+                for i in range(int(len(seq) / 3))
+            ]
+        )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", BiopythonWarning)
-            for frame in range(3):
-                if self.sign == 1:
-                    translation = self.seq[frame:].translate()
-                elif self.sign == -1:
-                    translation = self.seq.reverse_complement()[frame:].translate()
-                yield translation
+    def _reverse_complement(self, seq):
+        return seq.translate(REVERSE_COMPLEMENT_MAPPING)[::-1]
+
+    def three_frame_translation(self):
+
+        for frame in range(3):
+            if self.sign == 1:
+                translation = self._single_seq_translation(self.seq, frame)
+            elif self.sign == -1:
+                reverse_complement = self._reverse_complement(self.seq)
+                translation = self._single_seq_translation(reverse_complement, frame)
+            yield translation
 
     def three_frame_translation_no_stops(self, sign):
         """Remove translations with stop codons &
