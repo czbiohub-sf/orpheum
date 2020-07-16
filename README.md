@@ -124,3 +124,94 @@ sequence of low-complexity peptides to a fasta, use the flag
 sencha translate --low-complexity-peptides-fasta low_complexity_peptides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
+## Checks and balances to ensure a worry-free translation
+
+Some of the concerns with translating reads into protein is what is the false positive rate of the translation? How can I be sure that only "real" reading frames are being passed through and not just all possible k-mers?
+
+There are two main things contributing to the false positive rate:
+
+1. The k-mer size and alphabet
+2. The false positive of the bloom filter
+
+### How big of a k-mer size should I use for my alphabet?
+
+To find true protein-coding translations, `sencha` relies on having a large "negative space" of unobserved k-mers which represent not real protein coding k-mers. Empirically, the ratio of observed k-mers to theoretical k-mers should be about 1e-4 to ensure that there are enough unobserved k-mers to consider as non-coding.
+
+The default k-mer sizes for the various alphabets and their alphabet sizes (sigma):
+
+- Protein (sigma = 20): 9
+- Dayhoff (sigma = 6): 15
+- Hydrophobic-Polar (sigma = 2): 39
+
+These numbers came from empirical testing using the UniProt/SwissProt manually reviewed database of mammalian protein sequences on primate data, and a protein k-size of 9 created "reasonable" results. Meaning, there were few reads that had multiple translations per read, and especially not 3+ translations per read. Extrapolating to other k-mer sizes, one can use log math to solve for `k` in this equation: `20^9 = sigma^k`, where `sigma` is the size of the alphabet.
+
+Now, `sencha` will throw an error if it senses that the size k-mers from the provided reference proteome is too large relative to the total theoretical k-mers. Here is what that error looks like:
+
+```
+ ✘  Fri 29 May - 14:28  ~/code/sencha   origin ☊ olgabot/index-updates ↑1 2☀ 2● 
+  sencha index --molecule protein --peptide-ksize 7 tests/data/index/Homo_sapiens.GRCh38.pep.subset.fa.gz
+2662it [00:05, 510.07it/s]
+Traceback (most recent call last):
+  File "/anaconda3/envs/sencha-master/bin/sencha", line 11, in <module>
+    load_entry_point('sencha', 'console_scripts', 'sencha')()
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 829, in __call__
+    return self.main(*args, **kwargs)
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 782, in main
+    rv = self.invoke(ctx)
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 1259, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 1066, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 610, in invoke
+    return callback(*args, **kwargs)
+  File "/Users/olgabot/code/sencha/sencha/index.py", line 322, in cli
+    max_observed_fraction=max_observed_fraction,
+  File "/Users/olgabot/code/sencha/sencha/index.py", line 121, in make_peptide_index
+    check_kmer_occupancy(max_observed_fraction, molecule, peptide_index, peptide_ksize)
+  File "/Users/olgabot/code/sencha/sencha/index.py", line 133, in check_kmer_occupancy
+    f"The number of observed length {peptide_ksize} k-mers compared to the "
+ValueError: The number of observed length 7 k-mers compared to the possible theoretical k-mers is 509247 / 1280000000 = 3.98e-04 which is greater than the maximum observed fraction threshold, 1.00e-04. This doesn't leave enough 'negative space' of non-observed protein k-mers for room for predicting true protein-coding sequence, which relies on seeing which protein k-mers are *not* present in the observed data. Please increase the k-mer size.
+```
+
+### How big of a table size should I use?
+
+The default "tablesize" is 1e8, which has been sufficient for UniProt/SwissProt reference proteome from Mammalia. However, if you are using a more complex dataset with many more k-mers, you may want to increase the tablesize to avoid false positive collisions in the bloom filter index.
+
+With a `--tablesize` that is too small, the error looks like this:
+
+```
+(sencha-master) 
+ ✘  Fri 29 May - 14:29  ~/code/sencha   origin ☊ olgabot/index-updates ↑1 2☀ 2● 
+  sencha index --tablesize 1e4 tests/data/index/Homo_sapiens.GRCh38.pep.subset.fa.gz            
+2662it [00:03, 667.66it/s]
+**
+** ERROR: the graph structure is too small for 
+** this data set.  Increase data structure size
+** with --max_memory_usage/-M.
+**
+** Do not use these results!!
+**
+** (estimated false positive rate of 1.013; max recommended 0.200)
+**
+Traceback (most recent call last):
+  File "/anaconda3/envs/sencha-master/bin/sencha", line 11, in <module>
+    load_entry_point('sencha', 'console_scripts', 'sencha')()
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 829, in __call__
+    return self.main(*args, **kwargs)
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 782, in main
+    rv = self.invoke(ctx)
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 1259, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 1066, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/anaconda3/envs/sencha-master/lib/python3.7/site-packages/click/core.py", line 610, in invoke
+    return callback(*args, **kwargs)
+  File "/Users/olgabot/code/sencha/sencha/index.py", line 322, in cli
+    max_observed_fraction=max_observed_fraction,
+  File "/Users/olgabot/code/sencha/sencha/index.py", line 119, in make_peptide_index
+    check_collisions(peptide_index, tablesize)
+  File "/Users/olgabot/code/sencha/sencha/index.py", line 150, in check_collisions
+    f"The false positive rate in the bloom filter index is "
+ValueError: The false positive rate in the bloom filter index is 1.0129382731984724, which is greater than than the recommended maximum of 0.2. The current table size is 1.0e+04, please increase by an order of magnitude and rerun.
+
+```

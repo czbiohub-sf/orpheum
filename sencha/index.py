@@ -1,5 +1,7 @@
 import math
+import logging
 import os
+import sys
 
 import click
 import khmer
@@ -8,7 +10,12 @@ from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
 from sencha.compare_kmer_content import kmerize
-from sencha.sequence_encodings import encode_peptide, BEST_KSIZES, ALPHABET_SIZES
+from sencha.sequence_encodings import (
+    encode_peptide,
+    ALPHABET_SIZES,
+    AMINO_ACID_SINGLE_LETTERS,
+)
+from sencha.constants_index import BEST_KSIZES
 import sencha.constants_index as constants_index
 from sencha.log_utils import get_logger
 
@@ -77,34 +84,100 @@ def load_nodegraph(*args, **kwargs):
         return khmer.Nodegraph.load(*args, **kwargs)
 
 
-def make_peptide_bloom_filter(
+def make_peptide_index(
     peptide_fasta,
     peptide_ksize,
     molecule,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    debug=False,
+    force=False,
 ):
     """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+    peptide_index = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+
+    if debug:
+        logger.setLevel(logging.DEBUG)
 
     with screed.open(peptide_fasta) as records:
         for record in tqdm(records):
-            if "*" in record["sequence"]:
+            sequence = record["sequence"]
+            # Ignore the whole sequence if there are any illegal characters
+            if not all(x in AMINO_ACID_SINGLE_LETTERS for x in sequence):
+                bad_residues = [
+                    x for x in sequence if x not in AMINO_ACID_SINGLE_LETTERS
+                ]
+                bad_residues_str = ", ".join(bad_residues)
+                logger.debug(
+                    f'The sequence with ID "{record["name"]}"\n'
+                    f"contained non-amino acid "
+                    f"characters:\n{bad_residues_str}, skipping"
+                )
                 continue
-            sequence = encode_peptide(record["sequence"], molecule)
-            try:
-                kmers = kmerize(sequence, peptide_ksize)
+
+            encoded = encode_peptide(sequence, molecule)
+            if len(encoded) >= peptide_ksize:
+                # Skip sequences with any stop codons
+                kmers = kmerize(encoded, peptide_ksize)
                 for kmer in kmers:
                     # Convert the k-mer into an integer
                     hashed = hash_murmur(kmer)
 
                     # .add can take the hashed integer so we can hash the
                     #  peptide kmer and add it directly
-                    peptide_bloom_filter.add(hashed)
-            except ValueError:
-                # Sequence length is smaller than k-mer size
-                continue
-    return peptide_bloom_filter
+                    peptide_index.add(hashed)
+            else:
+                logger.info(
+                    f'{record["name"]} sequence is shorter than the k-mer '
+                    f"size {peptide_ksize}, skipping"
+                )
+    check_collisions(peptide_index, tablesize, force)
+
+    check_kmer_occupancy(
+        max_observed_fraction, molecule, peptide_index, peptide_ksize, force
+    )
+    return peptide_index
+
+
+def check_kmer_occupancy(
+    max_observed_fraction, molecule, peptide_index, peptide_ksize, force
+):
+    """Ensure that the fraction of observed k-mers in the reference proteome is
+    substantially lower than the total number of theoretical k-mers given the k-mer size and alphabet size"""
+    n_theoretical_kmers = ALPHABET_SIZES[molecule] ** peptide_ksize
+    n_observed_kmers = peptide_index.n_unique_kmers()
+    fraction_observed = n_observed_kmers / n_theoretical_kmers
+    if fraction_observed > max_observed_fraction:
+        logger.error(
+            f"\nThe number of observed length {peptide_ksize} k-mers compared to the\n"
+            f"possible theoretical k-mers "
+            f"is {n_observed_kmers} / {n_theoretical_kmers} = {fraction_observed:.2e}\n"
+            f"which is greater than the maximum observed fraction threshold, "
+            f"{max_observed_fraction:.2e}.\n"
+            f"This doesn't leave enough 'negative space' of non-observed protein\n"
+            f"k-mers for room for predicting true protein-coding sequence, which\n"
+            f"relies on seeing which protein k-mers are *not* present in the observed\n"
+            f"data. Please increase the k-mer size.\n"
+        )
+        if not force:
+            # TODO: Is this best practices?
+            sys.exit(1)
+
+
+def check_collisions(peptide_index, tablesize, force):
+    """Use khmer to check for bloom filter false positives"""
+    collisions = khmer.calc_expected_collisions(peptide_index, force=True)
+    if collisions > constants_index.MAX_BF_FALSE_POSITIVES:
+        logger.error(
+            f"\nThe false positive rate in the bloom filter index is\n"
+            f"{collisions}, which is greater than than the recommended\n"
+            f"maximum of {constants_index.MAX_BF_FALSE_POSITIVES:.1f}.\n"
+            f"The current table size is {tablesize:.1e}, please increase\n"
+            f"by an order of magnitude and rerun.\n"
+        )
+        if not force:
+            sys.exit(1)
 
 
 def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
@@ -128,28 +201,29 @@ def make_peptide_set(peptide_fasta, peptide_ksize, molecule):
     return peptide_set
 
 
-def maybe_make_peptide_bloom_filter(
+def maybe_make_peptide_index(
     peptides,
     peptide_ksize,
     molecule,
-    peptides_are_bloom_filter,
+    peptides_are_index,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
+    force=False,
 ):
-    if peptides_are_bloom_filter:
+    if peptides_are_index:
         logger.info(
             f"Loading existing bloom filter from {peptides} and "
             f"making sure the ksizes match"
         )
-        peptide_bloom_filter = load_nodegraph(peptides)
+        peptide_index = load_nodegraph(peptides)
         if peptide_ksize is not None:
             try:
-                assert peptide_ksize == peptide_bloom_filter.ksize()
+                assert peptide_ksize == peptide_index.ksize()
             except AssertionError:
                 raise ValueError(
                     f"Given peptide ksize ({peptide_ksize}) and "
                     f"ksize found in bloom filter "
-                    f"({peptide_bloom_filter.ksize()}) are not"
+                    f"({peptide_index.ksize()}) are not"
                     f"equal"
                 )
     else:
@@ -159,25 +233,26 @@ def maybe_make_peptide_bloom_filter(
             f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
             f"..."
         )
-        peptide_bloom_filter = make_peptide_bloom_filter(
+        peptide_index = make_peptide_index(
             peptides,
             peptide_ksize,
             molecule=molecule,
             n_tables=n_tables,
             tablesize=tablesize,
+            force=force,
         )
-    return peptide_bloom_filter
+    return peptide_index
 
 
-def maybe_save_peptide_bloom_filter(
-    peptides, peptide_bloom_filter, molecule, save_peptide_bloom_filter
+def maybe_save_peptide_index(
+    peptides, peptide_bloom_filter, molecule, save_peptide_index
 ):
-    if save_peptide_bloom_filter:
+    if save_peptide_index:
         ksize = peptide_bloom_filter.ksize()
 
-        if isinstance(save_peptide_bloom_filter, str):
-            filename = save_peptide_bloom_filter
-            peptide_bloom_filter.save(save_peptide_bloom_filter)
+        if isinstance(save_peptide_index, str):
+            filename = save_peptide_index
+            peptide_bloom_filter.save(save_peptide_index)
         else:
             suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter." f"nodegraph"
             filename = os.path.splitext(peptides)[0] + suffix
@@ -226,6 +301,23 @@ def maybe_save_peptide_bloom_filter(
     default=constants_index.DEFAULT_N_TABLES,
     help="Size of the bloom filter table to use",
 )
+@click.option(
+    "--max-observed-fraction",
+    type=float,
+    default=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    help="Maximum fraction of observed to theoretical k-mers to allow. Theoretical "
+    "k-mers are computed as the (alphabet size)^(peptide_ksize). This number "
+    "should be fairly small (e.g. 1e-4) to prevent false positive translation "
+    "results.",
+)
+@click.option(
+    "--force",
+    type=bool,
+    default=False,
+    help="Force creation of the bloom filter index, even if the collision rate is high"
+    " or the k-mer size is too small for the number of observed vs theoretical k-mers. "
+    "Not recommended except for debugging!",
+)
 def cli(
     peptides,
     peptide_ksize=None,
@@ -233,6 +325,8 @@ def cli(
     save_as=None,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     n_tables=constants_index.DEFAULT_N_TABLES,
+    max_observed_fraction=constants_index.MAX_FRACTION_OBSERVED_TO_THEORETICAL_KMERS,
+    force=False,
 ):
     """Make a peptide bloom filter for your peptides
 
@@ -255,17 +349,20 @@ def cli(
     """
     # \b above prevents rewrapping of paragraph
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
-    peptide_bloom_filter = make_peptide_bloom_filter(
-        peptides, peptide_ksize, alphabet, n_tables=n_tables, tablesize=tablesize
+    peptide_index = make_peptide_index(
+        peptides,
+        peptide_ksize,
+        alphabet,
+        n_tables=n_tables,
+        tablesize=tablesize,
+        max_observed_fraction=max_observed_fraction,
+        force=force,
     )
     logger.info("\tDone!")
 
-    save_peptide_bloom_filter = save_as if save_as is not None else True
-    maybe_save_peptide_bloom_filter(
-        peptides,
-        peptide_bloom_filter,
-        alphabet,
-        save_peptide_bloom_filter=save_peptide_bloom_filter,
+    save_peptide_index = save_as if save_as is not None else True
+    maybe_save_peptide_index(
+        peptides, peptide_index, alphabet, save_peptide_index=save_peptide_index,
     )
 
 

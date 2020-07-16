@@ -124,7 +124,7 @@ def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
     filename = os.path.join(
         data_folder,
         "index",
-        "Homo_sapiens.GRCh38.pep.subset.alphabet-{}_".format(alphabet)
+        "Homo_sapiens.GRCh38.pep.subset.fa.alphabet-{}_".format(alphabet)
         + "ksize-{}.bloomfilter.nodegraph".format(peptide_ksize),
     )
     return filename
@@ -140,9 +140,9 @@ def peptide_bloom_filter(
     try:
         return load_nodegraph(peptide_bloom_filter_path)
     except (OSError):
-        from sencha.index import make_peptide_bloom_filter
+        from sencha.index import make_peptide_index
 
-        bloom_filter = make_peptide_bloom_filter(
+        bloom_filter = make_peptide_index(
             peptide_fasta, peptide_ksize, alphabet, tablesize=1e6
         )
         bloom_filter.save(peptide_bloom_filter_path)

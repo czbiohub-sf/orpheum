@@ -319,6 +319,27 @@ PEPTIDE_ENCODINGS = {
     "hsdm17": HSDM17_TRANSLATION,
 }
 
+NUCLEOTIDE_ENCODINGS = {
+    "amino-keto": AMINO_KETO_TRANSLATION,
+    "ak": AMINO_KETO_TRANSLATION,
+    "purine-pyrimidine": PURINE_PYRIMIDINE_TRANSLATION,
+    "yr": PURINE_PYRIMIDINE_TRANSLATION,
+    "weak-strong": WEAK_STRONG_TRANSLATION,
+    "ws": WEAK_STRONG_TRANSLATION,
+}
+
+VALID_NUCLEOTIDE = (
+    "nucleotide",
+    "rna",
+    "dna",
+    "amino-keto",
+    "ak",
+    "purine-pyrimidine",
+    "yr",
+    "weak-strong",
+    "ws",
+)
+
 PROTEIN_LIKE = "protein", "peptide", "protein20", "peptide20", "aa20"
 DAYHOFF_LIKE = "dayhoff", "dayhoff6"
 HP_LIKE = (
@@ -391,31 +412,13 @@ ALPHABET_SIZES = {
     "botvinnik": 8,
     "botvinnik8": 8,
     "hydrophobic-polar": 2,
+    "hydrophobic-polar2": 2,
     "hp": 2,
     "hp2": 2,
     "aa9": 9,
     "gbmr4": 4,
     "sdm12": 12,
     "hsdm17": 17,
-}
-
-BEST_KSIZES = {
-    "protein": 7,
-    "peptide": 7,
-    "protein20": 7,
-    "peptide20": 7,
-    "aa20": 7,
-    "dayhoff": 12,
-    "dayhoff6": 12,
-    "botvinnik": 11,
-    "botvinnik8": 11,
-    "hydrophobic-polar": 31,
-    "hp": 31,
-    "hp2": 31,
-    "aa9": 10,
-    "gbmr4": 16,
-    "sdm12": 9,
-    "hsdm17": 8,
 }
 
 
@@ -449,14 +452,14 @@ def botvinnikize(seq):
     return seq.translate(BOTVINNIK_TRANSLATION)
 
 
-def reencode(peptide_sequence, molecule):
-    translator = PEPTIDE_ENCODINGS[molecule]
+def reencode(peptide_sequence, translator):
     return peptide_sequence.translate(translator)
 
 
 def encode_peptide(peptide_sequence, molecule):
     if molecule in PEPTIDE_ENCODINGS.keys():
-        return reencode(peptide_sequence, molecule)
+        encoder = PEPTIDE_ENCODINGS[molecule]
+        return reencode(peptide_sequence, encoder)
     elif molecule in VALID_PEPTIDE_MOLECULES:
         # If it's the original protein sequence, return that
         return peptide_sequence
@@ -465,6 +468,21 @@ def encode_peptide(peptide_sequence, molecule):
             f"{molecule} is not a valid amino acid encoding, "
             "only "
             f"{', '.join(PEPTIDE_ENCODINGS.keys())} can be used"
+        )
+
+
+def encode_nucleotide(nucleotide_sequence, alphabet):
+    if alphabet in NUCLEOTIDE_ENCODINGS.keys():
+        encoder = NUCLEOTIDE_ENCODINGS[alphabet]
+        return reencode(nucleotide_sequence, encoder)
+    elif alphabet in VALID_NUCLEOTIDE:
+        # If it's the original protein sequence, return that
+        return nucleotide_sequence
+    else:
+        raise ValueError(
+            f"{alphabet} is not a valid amino acid encoding, "
+            "only "
+            f"{', '.join(NUCLEOTIDE_ENCODINGS.keys())} can be used"
         )
 
 

@@ -1,6 +1,13 @@
 from click.testing import CliRunner
+import khmer
 import numpy as np
 import pytest
+
+from sencha.constants_index import (
+    DEFAULT_PROTEIN_KSIZE,
+    DEFAULT_DAYHOFF_KSIZE,
+    DEFAULT_HP_KSIZE,
+)
 
 
 def test_per_translation_false_positive_rate():
@@ -21,51 +28,134 @@ def test_per_read_false_positive_coding_rate():
     assert test == 3.884682410293139e-05
 
 
-def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksize):
-    from sencha.index import make_peptide_bloom_filter
+# Tie the alphabet name to its default ksize to make sure we keep getting the
+# right sequences
+@pytest.fixture(
+    params=[
+        ("protein", DEFAULT_PROTEIN_KSIZE),
+        ("dayhoff", DEFAULT_DAYHOFF_KSIZE),
+        ("hydrophobic-polar", DEFAULT_HP_KSIZE),
+    ],
+    ids=[
+        f"protein_ksize{DEFAULT_PROTEIN_KSIZE}",
+        f"dayhoff_ksize{DEFAULT_DAYHOFF_KSIZE}",
+        f"hp_ksize{DEFAULT_HP_KSIZE}",
+    ],
+)
+def alphabet_ksize_index(request):
+    return request.param
 
-    test = make_peptide_bloom_filter(
-        variable_peptide_fasta, peptide_ksize, alphabet, n_tables=4, tablesize=1e6
+
+@pytest.fixture
+def peptide_ksize_index(alphabet_ksize_index):
+    return alphabet_ksize_index[1]
+
+
+@pytest.fixture
+def alphabet_index(alphabet_ksize_index):
+    return alphabet_ksize_index[0]
+
+
+@pytest.fixture(params=[True, False])
+def force(request):
+    return request.param
+
+
+def test_make_peptide_index(
+    variable_peptide_fasta, alphabet_index, peptide_ksize_index
+):
+    from sencha.index import make_peptide_index
+
+    test = make_peptide_index(
+        variable_peptide_fasta,
+        peptide_ksize_index,
+        alphabet_index,
+        n_tables=4,
+        tablesize=1e6,
+        max_observed_fraction=1e-1,
     )
     if "first1000lines" in variable_peptide_fasta:
+        # This is the adversarial fasta with short sequences
         TRUE_N_UNIQUE_KMERS = {
-            ("protein", 7): 13966,
-            ("dayhoff", 7): 10090,
-            ("dayhoff", 11): 13605,
-            ("dayhoff", 12): 13816,
-            ("hydrophobic-polar", 31): 12888,
-            ("hydrophobic-polar", 21): 13076,
-            ("hydrophobic-polar", 7): 136,
+            ("protein", DEFAULT_PROTEIN_KSIZE): 14448,
+            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 13976,
+            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 12133,
         }
     else:
+        # This is the "normal" fasta
         TRUE_N_UNIQUE_KMERS = {
-            ("protein", 7): 506352,
-            ("dayhoff", 7): 99863,
-            ("dayhoff", 11): 472197,
-            ("dayhoff", 12): 488469,
-            ("hydrophobic-polar", 31): 515863,
-            ("hydrophobic-polar", 21): 434810,
-            ("hydrophobic-polar", 7): 170,
+            ("protein", DEFAULT_PROTEIN_KSIZE): 517240,
+            ("dayhoff", DEFAULT_DAYHOFF_KSIZE): 504058,
+            ("hydrophobic-polar", DEFAULT_HP_KSIZE): 519832,
         }
-    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet, peptide_ksize)]
+    true_n_unique_kmers = TRUE_N_UNIQUE_KMERS[(alphabet_index, peptide_ksize_index)]
 
-    # For now, assert that the number of kmers is within 0.1% of the true value
-    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=0.001)
+    # For now, assert that the number of kmers is within 0.001% of the true value
+    np.testing.assert_allclose(test.n_unique_kmers(), true_n_unique_kmers, rtol=1e-4)
 
 
-def test_maybe_make_peptide_bloom_filter(
-    peptide_bloom_filter_path, alphabet, peptide_ksize
-):
-    from sencha.index import maybe_make_peptide_bloom_filter
+def test_error_if_index_tables_too_small(adversarial_peptide_fasta, force):
+    from sencha.index import make_peptide_index
 
-    maybe_make_peptide_bloom_filter(
-        peptide_bloom_filter_path,
-        peptide_ksize,
-        alphabet,
-        peptides_are_bloom_filter=True,
+    if force:
+        make_peptide_index(
+            adversarial_peptide_fasta,
+            peptide_ksize=9,
+            molecule="protein",
+            n_tables=2,
+            tablesize=1e2,
+            force=force,
+        )
+    else:
+        with pytest.raises(SystemExit) as pytest_wrapped_error:
+            make_peptide_index(
+                adversarial_peptide_fasta,
+                peptide_ksize=9,
+                molecule="protein",
+                n_tables=2,
+                tablesize=1e2,
+                force=force,
+            )
+            assert pytest_wrapped_error.type == SystemExit
+            assert pytest_wrapped_error.value.code == 1
+
+
+def test_error_if_too_many_observed_kmers(peptide_fasta, force):
+    from sencha.index import make_peptide_index
+
+    if force:
+        make_peptide_index(
+            peptide_fasta,
+            peptide_ksize=7,
+            molecule="dayhoff",
+            n_tables=4,
+            tablesize=1e6,
+            force=force,
+        )
+    else:
+        with pytest.raises(SystemExit) as pytest_wrapped_error:
+            make_peptide_index(
+                peptide_fasta,
+                peptide_ksize=7,
+                molecule="dayhoff",
+                n_tables=4,
+                tablesize=1e6,
+                force=force,
+            )
+            assert pytest_wrapped_error.type == SystemExit
+            assert pytest_wrapped_error.value.code == 1
+
+
+def test_maybe_make_peptide_index(peptide_bloom_filter_path, alphabet, peptide_ksize):
+    from sencha.index import maybe_make_peptide_index
+
+    test = maybe_make_peptide_index(
+        peptide_bloom_filter_path, peptide_ksize, alphabet, peptides_are_index=True,
     )
-    # No assertion, just check that it ran
-    # assert isinstance(test, khmer.Nodegraph)
+    # Can't do isinstance because of various legacy versions of khmer.Nodegraph
+    type_test = str(type(test))
+    assert "khmer" in type_test
+    assert "Nodegraph" in type_test
 
 
 def test_cli_minimum(peptide_fasta):
@@ -88,7 +178,9 @@ def test_cli_options(peptide_fasta, alphabet, peptide_ksize):
             "--alphabet",
             alphabet,
             "--tablesize",
-            "1e4",
+            "1e7",
+            "--max-observed-fraction",
+            "1e-1",
             peptide_fasta,
         ],
     )
