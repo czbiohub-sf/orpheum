@@ -15,6 +15,7 @@ class TranslateSingleSeq:
         if len(codon) == 3:
             return STANDARD_CODON_TABLE_MAPPING.get(codon, "X")
         else:
+            # only length 3 is a valid codon, return an empty string otherwise
             return ""
 
     def _single_seq_translation(self, seq, frame=0):
