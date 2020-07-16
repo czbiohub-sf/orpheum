@@ -4,7 +4,6 @@ channels:
   - r
   - defaults
 dependencies:
-  - biopython
   - click
   - httmock
   - ipykernel

@@ -15,7 +15,6 @@ dependencies:
   - attrs
   - babel
   - backcall
-  - biopython
   - bleach
   - bokeh
   - boost-cpp
