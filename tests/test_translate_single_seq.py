@@ -102,12 +102,3 @@ def test_six_frame_translation_stops(translation):
         -3: "QNRIYSYIAIFLILLMSVLSK",
     }
     assert test == true
-
-
-if __name__ == "__main__":
-    import timeit
-    from Bio import Seq
-
-    timeit.timeit(
-        'TranslateSingleSeq.three_frame_translation(Seq("CGCTTGCTTAATACTGACATCAATAATATTAGGAAAATCGCAATATAACTGTAAATCCTGTTCTGTC"))'
-    )
