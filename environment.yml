@@ -16,7 +16,6 @@ dependencies:
   - attrs=19.3.0=py_0
   - babel=2.8.0=py_0
   - backcall=0.1.0=py_0
-  - biopython=1.74=py37h01d97ff_0
   - bleach=3.1.1=py_0
   - bokeh=1.4.0=py37_0
   - boost-cpp=1.70.0=h75728bb_2

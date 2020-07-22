@@ -32,19 +32,8 @@ def jaccard_threshold(alphabet):
 
 @pytest.fixture
 def seq():
-    from Bio.Seq import Seq
-    from Bio import BiopythonWarning
-
     s = "CGCTTGCTTAATACTGACATCAATAATATTAGGAAAATCGCAATATAACTGTAAATCCTGTTCTGTC"
-    with warnings.catch_warnings():
-        # Ignore The following warning because we don't use Bio.Alphabet
-        # explicitly:
-        # PendingDeprecationWarning: We intend to remove or replace
-        # Bio.Alphabet in 2020, ideally avoid using it explicitly in your
-        # code. Please get in touch if you will be adversely affected by this.
-        # https://github.com/biopython/biopython/issues/2046
-        warnings.simplefilter("ignore", BiopythonWarning)
-        return Seq(s)
+    return s
 
 
 @pytest.fixture

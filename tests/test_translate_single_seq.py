@@ -12,6 +12,40 @@ def translation(seq):
     return TestTranslateSingleSeq(seq, True)
 
 
+def test__reverse_complement(translation):
+    # Palindromic sequence
+    assert translation.translate_ss._reverse_complement("AACCGGTT") == "AACCGGTT"
+
+    # Non-palindrome
+    assert translation.translate_ss._reverse_complement("AACC") == "GGTT"
+
+
+def test__translate_codon(translation):
+    # Make sure first base as "N" results in "X ambiguous amino acid
+    assert translation.translate_ss._translate_codon("NAA") == "X"
+
+    # Threonine can have ambiguous final base
+    assert translation.translate_ss._translate_codon("ACN") == "T"
+
+    # Leucine can have an ambiguous final base
+    assert translation.translate_ss._translate_codon("CTN") == "L"
+
+    # Valine can have ambiguous final base
+    assert translation.translate_ss._translate_codon("GTN") == "V"
+
+    # Alanine can have ambiguous final base
+    assert translation.translate_ss._translate_codon("GCN") == "A"
+
+    # Arginine can have ambiguous final base
+    assert translation.translate_ss._translate_codon("CGN") == "R"
+
+    # Glycine can have ambiguous final base
+    assert translation.translate_ss._translate_codon("GGN") == "G"
+
+    # Make sure too short codons don't translate
+    assert translation.translate_ss._translate_codon("AC") == ""
+
+
 def test_three_frame_translation(translation):
     test = [str(x) for x in translation.translate_ss.three_frame_translation()]
     true = ["RLLNTDINNIRKIAI*L*ILFC", "ACLILTSIILGKSQYNCKSCSV", "LA*Y*HQ*Y*ENRNITVNPVL"]

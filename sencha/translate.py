@@ -6,8 +6,7 @@ Partition reads into coding, noncoding, and low-complexity bins
 import sys
 import warnings
 
-from Bio.Seq import Seq
-from Bio import BiopythonWarning
+
 import click
 import numpy as np
 import pandas as pd
@@ -91,14 +90,12 @@ def evaluate_is_kmer_low_complexity(seq, ksize):
     By this definition, the sequence is not complex if its number of unique
     k-mers is smaller than half the number of expected k-mers
     """
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", BiopythonWarning)
-        # Ignore Biopython warning of seq objects being strings now
-        try:
-            kmers = kmerize(seq, ksize)
-        except ValueError:
-            # k-mer size is larger than sequence
-            return None, None
+    # Ignore Biopython warning of seq objects being strings now
+    try:
+        kmers = kmerize(seq, ksize)
+    except ValueError:
+        # k-mer size is larger than sequence
+        return None, None
     n_kmers = len(kmers)
     complexity = compute_kmer_complexity(seq, ksize)
     is_low_complexity = n_kmers <= complexity
@@ -214,7 +211,7 @@ class Translate:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             translations = TranslateSingleSeq(
-                Seq(sequence), self.verbose
+                sequence, self.verbose
             ).six_frame_translation()
         scoring_lines = []
 

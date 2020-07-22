@@ -1,4 +1,3 @@
-biopython
 click
 httmock
 khmer

@@ -1,5 +1,5 @@
 import itertools
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 from sencha.sequence_encodings import ALPHABET_ALIASES
 
@@ -53,3 +53,88 @@ SingleReadScore = namedtuple(
 )
 
 COMPLEXITY_THRESHOLD = 0.3
+
+
+STANDARD_CODON_TABLE_MAPPING = {
+    "ATA": "I",
+    "ATC": "I",
+    "ATT": "I",
+    "ATG": "M",
+    "ACA": "T",
+    "ACC": "T",
+    "ACG": "T",
+    "ACT": "T",
+    "ACN": "T",
+    "AAC": "N",
+    "AAT": "N",
+    "AAA": "K",
+    "AAG": "K",
+    "AGC": "S",
+    "AGT": "S",
+    "AGA": "R",
+    "AGG": "R",
+    "CTA": "L",
+    "CTC": "L",
+    "CTG": "L",
+    "CTT": "L",
+    "CTN": "L",
+    "CCA": "P",
+    "CCC": "P",
+    "CCG": "P",
+    "CCT": "P",
+    "CAC": "H",
+    "CAT": "H",
+    "CAA": "Q",
+    "CAG": "Q",
+    "CGA": "R",
+    "CGC": "R",
+    "CGG": "R",
+    "CGT": "R",
+    "CGN": "R",
+    "GTA": "V",
+    "GTC": "V",
+    "GTG": "V",
+    "GTT": "V",
+    "GTN": "V",
+    "GCA": "A",
+    "GCC": "A",
+    "GCG": "A",
+    "GCT": "A",
+    "GCN": "A",
+    "GAC": "D",
+    "GAT": "D",
+    "GAA": "E",
+    "GAG": "E",
+    "GGA": "G",
+    "GGC": "G",
+    "GGG": "G",
+    "GGT": "G",
+    "GGN": "G",
+    "TCA": "S",
+    "TCC": "S",
+    "TCG": "S",
+    "TCT": "S",
+    "TCN": "S",
+    "TTC": "F",
+    "TTT": "F",
+    "TTA": "L",
+    "TTG": "L",
+    "TAC": "Y",
+    "TAT": "Y",
+    "TAA": "*",
+    "TAG": "*",
+    "TGC": "C",
+    "TGT": "C",
+    "TGA": "*",
+    "TGG": "W",
+}
+
+
+REVERSE_COMPLEMENT_MAPPING = {
+    "A": "T",
+    "C": "G",
+    "G": "C",
+    "T": "A",
+}
+
+REVERSE_COMPLEMENT_TABLE = str.maketrans("ACGT", "TGCA")
