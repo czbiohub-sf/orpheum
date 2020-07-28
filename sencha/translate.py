@@ -362,10 +362,10 @@ class Translate:
         description = record["name"]
         sequence = record["sequence"]
         if evaluate_is_fastp_low_complexity(sequence):
-            scores = self.check_nucleotide_content(
+            scores, fasta_seqs = self.check_nucleotide_content(
                 description, np.nan, sequence)
         else:
-            scores = self.check_peptide_content(description, sequence)
+            scores, fasta_seqs = self.check_peptide_content(description, sequence)
         return scores
 
     def get_coding_score_line(
@@ -400,7 +400,13 @@ class Translate:
             "Pooled %d and chunksize %d mapped",
             n_jobs, chunksize)
 
-        scoring_lines = pool.map(self.maybe_score_single_read, records)
+        scoring_lines, fasta_seqs = pool.map(
+            self.maybe_score_single_read, records)
+        for fasta_file_handle, seqs in fasta_seqs.items():
+            for description, seq in seqs:
+                self.maybe_write_fasta(
+                    self.file_handles[fasta_file_handle],
+                    description, seq)
         pool.close()
         pool.join()
 
