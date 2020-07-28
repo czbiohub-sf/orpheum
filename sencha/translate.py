@@ -10,6 +10,7 @@ import warnings
 import click
 import numpy as np
 import pandas as pd
+import screed
 from pathos import multiprocessing
 from screed import ScreedDB
 from sourmash._minhash import hash_murmur
@@ -371,6 +372,7 @@ class Translate:
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
+        screed.read_fasta_sequences(reads)
         fadb = ScreedDB(reads)
         records = [r for r in fadb.itervalues()]
         n_jobs = self.processes
