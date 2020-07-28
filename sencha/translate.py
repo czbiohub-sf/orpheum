@@ -372,7 +372,7 @@ class Translate:
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
-        if reads.endwsith(".fastq", ".fq", ".fq.gz", ".fastq.gz"):
+        if reads.endswith(".fastq", ".fq", ".fq.gz", ".fastq.gz"):
             screed.read_fastq_sequences(reads)
         else:
             screed.read_fasta_sequences(reads)
