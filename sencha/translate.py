@@ -10,8 +10,8 @@ import warnings
 import click
 import numpy as np
 import pandas as pd
-import screed
-from tqdm import tqdm
+from pathos import multiprocessing
+from screed import ScreedDB
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -29,10 +29,29 @@ from sencha.translate_single_seq import TranslateSingleSeq
 logger = get_logger(__file__)
 
 
+def calculate_chunksize(total_jobs_todo, processes):
+    """
+    Return a generator of strings after
+    splitting a string by the given separator
+
+    sep : str
+        Separator between strings, default one space
+    Returns
+    -------
+    Yields generator of strings after
+    splitting a string by the given separator
+    """
+    chunksize, extra = divmod(total_jobs_todo, processes)
+    if extra:
+        chunksize += 1
+    return chunksize
+
+
 def get_jaccard_threshold(jaccard_threshold, alphabet):
     if jaccard_threshold is None:
         if alphabet == "hp" or alphabet == "hydrophobic-polar":
-            jaccard_threshold = constants_translate.DEFAULT_HP_JACCARD_THRESHOLD
+            jaccard_threshold = \
+                constants_translate.DEFAULT_HP_JACCARD_THRESHOLD
         else:
             jaccard_threshold = constants_translate.DEFAULT_JACCARD_THRESHOLD
     return jaccard_threshold
@@ -135,12 +154,12 @@ class Translate:
         logger.info("\tDone making peptide_bloom_filter!")
 
         if not self.peptides_are_bloom_filter:
-            self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
-                self.peptides,
-                self.peptide_bloom_filter,
-                self.alphabet,
-                self.save_peptide_bloom_filter,
-            )
+            self.peptide_bloom_filter_filename = \
+                maybe_save_peptide_bloom_filter(
+                    self.peptides,
+                    self.peptide_bloom_filter,
+                    self.alphabet,
+                    self.save_peptide_bloom_filter)
         else:
             self.peptide_bloom_filter_filename = self.peptides
         self.peptide_ksize = self.peptide_bloom_filter.ksize()
@@ -168,7 +187,8 @@ class Translate:
         self.file_handles = {}
         for seqtype, fasta in self.fastas.items():
             if fasta is not None:
-                self.file_handles[seqtype] = self.open_and_announce(fasta, seqtype)
+                self.file_handles[seqtype] = self.open_and_announce(
+                    fasta, seqtype)
             else:
                 self.file_handles[seqtype] = None
 
@@ -196,7 +216,8 @@ class Translate:
 
         if self.verbose:
             kmers_in_peptide_db = {
-                (k, h): self.peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
+                (k, h): self.peptide_bloom_filter.get(h)
+                for k, h in zip(kmers, hashes)
             }
             # Print keys (kmers) only
             logger.info("\tK-mers in peptide database:")
@@ -208,6 +229,10 @@ class Translate:
 
     def check_peptide_content(self, description, sequence):
         """Predict whether a nucleotide sequence could be protein-coding"""
+        fasta_seqs = {
+            "low_complexity_peptide": [],
+            "coding_nucleotide": [],
+            "noncoding_nucleotide": []}
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             translations = TranslateSingleSeq(
@@ -221,7 +246,8 @@ class Translate:
                     constants_translate.SingleReadScore(
                         np.nan,
                         np.nan,
-                        constants_translate.PROTEIN_CODING_CATEGORIES["stop_codons"],
+                        constants_translate.PROTEIN_CODING_CATEGORIES[
+                            "stop_codons"],
                         frame,
                     )
                 )
@@ -238,16 +264,15 @@ class Translate:
                 )
             else:
                 encoded = encode_peptide(str(translation), self.alphabet)
-                fraction_in_peptide_db, n_kmers = self.score_single_translation(encoded)
+                fraction_in_peptide_db, n_kmers = \
+                    self.score_single_translation(encoded)
                 is_kmer_low_complex = evaluate_is_kmer_low_complexity(
                     encoded, self.peptide_ksize
                 )
                 if is_kmer_low_complex:
-                    self.maybe_write_fasta(
-                        self.file_handles["low_complexity_peptide"],
-                        description + " translation_frame: {}.format(frame)",
-                        translation,
-                    )
+                    fasta_seqs["low_complexity_peptide"].append(
+                        [description + " translation_frame: {}.format(frame)",
+                         translation])
                     scoring_lines.append(
                         constants_translate.SingleReadScore(
                             np.nan,
@@ -270,20 +295,21 @@ class Translate:
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
                         write_fasta(sys.stdout, seqname, translation)
-                        self.maybe_write_fasta(
-                            self.file_handles["coding_nucleotide"], seqname, sequence
+                        fasta_seqs["coding_nucleotide"].append(
+                            [seqname, sequence]
                         )
                         scoring_lines.append(
                             constants_translate.SingleReadScore(
                                 fraction_in_peptide_db,
                                 n_kmers,
-                                constants_translate.PROTEIN_CODING_CATEGORIES["coding"],
+                                constants_translate.PROTEIN_CODING_CATEGORIES[
+                                    "coding"],
                                 frame,
                             )
                         )
                     else:
-                        self.maybe_write_fasta(
-                            self.file_handles["noncoding_nucleotide"], seqname, sequence
+                        fasta_seqs["noncoding_nucleotide"].append(
+                            [seqname, sequence]
                         )
                         scoring_lines.append(
                             constants_translate.SingleReadScore(
@@ -295,7 +321,11 @@ class Translate:
                                 frame,
                             )
                         )
-        return scoring_lines
+        lines = [
+            self.get_coding_score_line(
+                description, x, y, z, frame)
+            for x, y, z, frame in scoring_lines]
+        return lines, fasta_seqs
 
     def check_nucleotide_content(self, description, n_kmers, sequence):
         """If passes, then this read can move on to checking protein translations
@@ -304,32 +334,42 @@ class Translate:
         pass thresholds to be
         checked for protein-coding-ness
         """
+        fasta_seqs = {"low_complexity_nucleotide": []}
         if n_kmers > 0:
             jaccard = np.nan
             special_case = "Low complexity nucleotide"
-            self.maybe_write_fasta(
-                self.file_handles["low_complexity_nucleotide"], description, sequence
-            )
+            fasta_seqs["low_complexity_nucleotide"].append(
+                [description, sequence])
         else:
             jaccard = np.nan
             n_kmers = np.nan
-            special_case = "Read length was shorter than 3 * peptide " "k-mer size"
-        return [
-            constants_translate.SingleReadScore(jaccard, n_kmers, special_case, i)
+            special_case = \
+                "Read length was shorter than 3 * peptide " "k-mer size"
+        tranlated_scores = [
+            constants_translate.SingleReadScore(
+                jaccard, n_kmers, special_case, i)
             for i in [1, 2, 3, -1, -2, -3]
         ]
+        lines = [
+            self.get_coding_score_line(
+                description, x, y, z, frame)
+            for x, y, z, frame in tranlated_scores]
+        return lines, fasta_seqs
 
-    def maybe_score_single_read(self, description, sequence):
+    def maybe_score_single_read(self, record):
         """Check if read is low complexity/too short, otherwise score it"""
         # Check if nucleotide sequence is low complexity
-
+        description = record["name"]
+        sequence = record["sequence"]
         if evaluate_is_fastp_low_complexity(sequence):
-            scores = self.check_nucleotide_content(description, np.nan, sequence)
+            scores = self.check_nucleotide_content(
+                description, np.nan, sequence)
         else:
             scores = self.check_peptide_content(description, sequence)
         return scores
 
-    def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
+    def get_coding_score_line(
+            self, description, jaccard, n_kmers, special_case, frame):
         if special_case is not None:
             line = [description, jaccard, n_kmers, special_case, frame]
         elif jaccard > self.jaccard_threshold:
@@ -340,32 +380,30 @@ class Translate:
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
+        fadb = ScreedDB(reads)
+        records = [r for r in fadb.itervalues()]
+        n_jobs = self.processes
+        num_records = len(records)
+        if num_records == 1:
+            chunksize = 1
+        elif num_records == 0:
+            logger.info("No records to read from")
+            raise AssertionError(
+                "fasta file is empty {}".format(
+                    reads))
+        else:
+            chunksize = calculate_chunksize(
+                num_records, n_jobs)
 
-        scoring_lines = []
+        pool = multiprocessing.Pool(processes=n_jobs)
+        logger.info(
+            "Pooled %d and chunksize %d mapped",
+            n_jobs, chunksize)
 
-        with screed.open(reads) as records:
-            for record in tqdm(records):
-                description = record["name"]
-                sequence = record["sequence"]
-                if self.verbose:
-                    logger.info(description)
+        scoring_lines = pool.map(self.maybe_score_single_read, records)
+        pool.close()
+        pool.join()
 
-                for (
-                    jaccard,
-                    n_kmers,
-                    special_case,
-                    frame,
-                ) in self.maybe_score_single_read(description, sequence):
-                    if self.verbose:
-                        logger.info(
-                            "Jaccard: {}, n_kmers = {} for frame {}".format(
-                                jaccard, n_kmers, frame
-                            )
-                        )
-                    line = self.get_coding_score_line(
-                        description, jaccard, n_kmers, special_case, frame
-                    )
-                    scoring_lines.append(line)
         # Concatenate all the lines into a single dataframe
         scoring_df = pd.DataFrame(
             scoring_lines, columns=constants_translate.SCORING_DF_COLUMNS
@@ -444,7 +482,8 @@ class Translate:
 @click.option(
     "--csv",
     default=False,
-    help="Name of csv file to write with all sequence reads and " "their coding scores",
+    help="Name of csv file to write with all sequence reads and"
+    "their coding scores",
 )
 @click.option(
     "--parquet",
@@ -495,6 +534,12 @@ class Translate:
     "(TAG, TAA, TGA)",
 )
 @click.option("--verbose", is_flag=True, help="Print more output")
+@click.option(
+    "--processes",
+    default=4,
+    type=int,
+    help="number of processes to parallel process on"
+)  # noqa
 def cli(
     peptides,
     reads,
@@ -514,6 +559,7 @@ def cli(
     n_tables=constants_index.DEFAULT_N_TABLES,
     long_reads=False,
     verbose=False,
+    processes=4
 ):
     """Writes coding peptides from reads to standard output
 
@@ -582,6 +628,8 @@ def cli(
     verbose : bool
         Whether or not to print lots of stuff. Can specify multiple, e.g. -vv
         if you really like having everything in stdout
+    processes: int
+        multiprocessing number of processes to run on
 
     \b
     Returns
