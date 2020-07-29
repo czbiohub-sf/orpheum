@@ -45,8 +45,25 @@ def translate_class(tmpdir, reads, peptide_fasta):
         n_tables=constants_index.DEFAULT_N_TABLES,
         long_reads=False,
         verbose=True,
+        processes=4
     )
     translate_obj = translate.Translate(args)
+    peptide_bloom_filter = \
+        translate.maybe_make_peptide_bloom_filter(
+            peptide_fasta,
+            None,
+            "protein",
+            False,
+            n_tables=constants_index.DEFAULT_N_TABLES,
+            tablesize=constants_index.DEFAULT_MAX_TABLESIZE)
+
+    translate_obj.peptide_bloom_filter_filename = \
+        translate.maybe_save_peptide_bloom_filter(
+            peptide_fasta,
+            peptide_bloom_filter,
+            "protein",
+            True)
+    translate_obj.set_ksizes(peptide_bloom_filter.ksize())
     return translate_obj
 
 

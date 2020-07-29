@@ -13,6 +13,7 @@ import pandas as pd
 import screed
 from pathos import multiprocessing
 from screed import ScreedDB
+from sencha.index import load_nodegraph
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -142,28 +143,11 @@ class Translate:
         self.jaccard_threshold = get_jaccard_threshold(
             self.jaccard_threshold, self.alphabet
         )
-        self.peptide_bloom_filter = maybe_make_peptide_bloom_filter(
-            self.peptides,
-            self.peptide_ksize,
-            self.alphabet,
-            self.peptides_are_bloom_filter,
-            n_tables=self.n_tables,
-            tablesize=self.tablesize,
-        )
-        self.verbose = True
-        logger.info("\tDone making peptide_bloom_filter!")
+        self.peptide_bloom_filter_filename = ""
 
-        if not self.peptides_are_bloom_filter:
-            self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
-                self.peptides,
-                self.peptide_bloom_filter,
-                self.alphabet,
-                self.save_peptide_bloom_filter,
-            )
-        else:
-            self.peptide_bloom_filter_filename = self.peptides
-        self.peptide_ksize = self.peptide_bloom_filter.ksize()
-        self.nucleotide_ksize = 3 * self.peptide_ksize
+    def set_ksizes(self, peptide_ksize):
+        self.peptide_ksize = peptide_ksize
+        self.nucleotide_ksize = 3 * peptide_ksize
 
     def maybe_write_fasta(self, file_handle, description, sequence):
         """Write fasta to file handle if it is not None"""
@@ -206,8 +190,9 @@ class Translate:
         kmers = list(set(kmerize(str(encoded), self.peptide_ksize)))
         hashes = [hash_murmur(kmer) for kmer in kmers]
         n_kmers = len(kmers)
+        peptide_bloom_filter = load_nodegraph(self.peptide_bloom_filter_filename)
         n_kmers_in_peptide_db = sum(
-            1 for h in hashes if self.peptide_bloom_filter.get(h) > 0
+            1 for h in hashes if peptide_bloom_filter.get(h) > 0
         )
         if self.verbose:
             logger.info("\ttranslation: \t".format(encoded))
@@ -215,7 +200,7 @@ class Translate:
 
         if self.verbose:
             kmers_in_peptide_db = {
-                (k, h): self.peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
+                (k, h): peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
             }
             # Print keys (kmers) only
             logger.info("\tK-mers in peptide database:")
@@ -639,6 +624,25 @@ def cli(
     """
     # \b above prevents re-wrapping of paragraphs
     translate_obj = Translate(locals())
+    peptide_bloom_filter = maybe_make_peptide_bloom_filter(
+        peptides,
+        peptide_ksize,
+        alphabet,
+        peptides_are_bloom_filter,
+        n_tables=n_tables,
+        tablesize=tablesize,
+    )
+
+    if not peptides_are_bloom_filter:
+        translate_obj.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
+            peptides,
+            peptide_bloom_filter,
+            alphabet,
+            save_peptide_bloom_filter,
+        )
+    else:
+        translate_obj.peptide_bloom_filter_filename = peptides
+    translate_obj.set_ksizes(peptide_bloom_filter.ksize())
     translate_obj.set_coding_scores_all_files()
     coding_scores = translate_obj.get_coding_scores_all_files()
     assemble_summary_obj = CreateSaveSummary(
