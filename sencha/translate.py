@@ -336,8 +336,8 @@ class Translate:
     def maybe_score_single_read(self, record):
         """Check if read is low complexity/too short, otherwise score it"""
         # Check if nucleotide sequence is low complexity
-        description = record["name"]
-        sequence = record["sequence"]
+        description = record[0]
+        sequence = record[1]
         if evaluate_is_fastp_low_complexity(sequence):
             scores, fasta_seqs = self.check_nucleotide_content(
                 description, np.nan, sequence
@@ -357,17 +357,11 @@ class Translate:
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
-        if (
-            reads.endswith(".fastq")
-            or reads.endswith(".fq")
-            or reads.endswith(".fq.gz")
-            or reads.endswith(".fastq.gz")
-        ):
-            screed.read_fastq_sequences(reads)
-        else:
-            screed.read_fasta_sequences(reads)
-        fadb = ScreedDB(reads)
-        records = [r for r in fadb.itervalues()]
+        records = []
+        with screed.open(reads) as seqfile:
+            for read in seqfile:
+                records.append(
+                    tuple((read.name, read.sequence)))
         n_jobs = self.processes
         num_records = len(records)
         if num_records == 1:
@@ -639,6 +633,8 @@ def cli(
         )
     else:
         translate_obj.peptide_bloom_filter_filename = peptides
+    print(translate_obj)
+    print(translate_obj.peptide_bloom_filter_filename)
     translate_obj.set_ksizes(peptide_bloom_filter.ksize())
     translate_obj.set_coding_scores_all_files()
     coding_scores = translate_obj.get_coding_scores_all_files()
