@@ -635,10 +635,7 @@ def cli(
 
     if not peptides_are_bloom_filter:
         translate_obj.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
-            peptides,
-            peptide_bloom_filter,
-            alphabet,
-            save_peptide_bloom_filter,
+            peptides, peptide_bloom_filter, alphabet, save_peptide_bloom_filter,
         )
     else:
         translate_obj.peptide_bloom_filter_filename = peptides
