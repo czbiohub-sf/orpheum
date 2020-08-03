@@ -1,5 +1,6 @@
 click
 httmock
+pathos
 khmer
 networkx
 numpy
