@@ -393,7 +393,9 @@ class Translate:
         pool = multiprocessing.Pool(processes=n_jobs)
         logger.info("Pooled %d and chunksize %d mapped", n_jobs, chunksize)
 
-        results = pool.imap_unordered(self.maybe_score_single_read, records, chunksize=chunksize)
+        results = pool.imap_unordered(
+            self.maybe_score_single_read, records, chunksize=chunksize
+        )
         for result in results:
             for fasta_file_handle, seqs in result.fasta_seqs.items():
                 for description, seq in seqs:
@@ -656,9 +658,8 @@ def cli(
     assemble_summary_obj.maybe_write_csv(coding_scores)
     assemble_summary_obj.maybe_write_parquet(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
-    print(
-        "time taken to translate is %.5f seconds"
-        % (time.time() - startt))
+    print("time taken to translate is %.5f seconds" % (time.time() - startt))
+
 
 if __name__ == "__main__":
     cli()
