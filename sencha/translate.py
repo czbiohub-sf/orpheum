@@ -392,7 +392,7 @@ class Translate:
         pool = multiprocessing.Pool(processes=n_jobs)
         logger.info("Pooled %d and chunksize %d mapped", n_jobs, chunksize)
 
-        results = pool.map(self.maybe_score_single_read, records)
+        results = pool.map(self.maybe_score_single_read, records, chunksize=chunksize)
         for result in results:
             for fasta_file_handle, seqs in result.fasta_seqs.items():
                 for description, seq in seqs:
