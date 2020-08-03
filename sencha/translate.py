@@ -393,9 +393,7 @@ class Translate:
         pool = multiprocessing.Pool(processes=n_jobs)
         logger.info("Pooled %d and chunksize %d mapped", n_jobs, chunksize)
 
-        results = pool.map(
-            self.maybe_score_single_read, records, chunksize=chunksize
-        )
+        results = pool.map(self.maybe_score_single_read, records, chunksize=chunksize)
         pool.close()
         pool.join()
         for result in results:
