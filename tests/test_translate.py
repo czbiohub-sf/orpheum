@@ -221,9 +221,7 @@ def test_get_coding_score_line(translate_class, translations_for_single_seq):
     assert result == ["description", 1.0, 40, "Coding", -3]
 
 
-def test_cli_peptide_fasta(
-    reads, peptide_fasta, alphabet, peptide_ksize
-):
+def test_cli_peptide_fasta(reads, peptide_fasta, alphabet, peptide_ksize):
 
     runner = CliRunner()
     result = runner.invoke(
@@ -263,10 +261,7 @@ def test_cli_bad_jaccard_threshold_string(reads, peptide_fasta):
 
 
 def test_cli_peptide_bloom_filter(
-    reads,
-    peptide_bloom_filter_path,
-    alphabet,
-    peptide_ksize,
+    reads, peptide_bloom_filter_path, alphabet, peptide_ksize,
 ):
     runner = CliRunner()
     result = runner.invoke(
@@ -285,12 +280,7 @@ def test_cli_peptide_bloom_filter(
 
 
 def test_cli_csv(
-    tmpdir,
-    reads,
-    peptide_bloom_filter_path,
-    alphabet,
-    peptide_ksize,
-    true_scores,
+    tmpdir, reads, peptide_bloom_filter_path, alphabet, peptide_ksize, true_scores,
 ):
 
     csv = os.path.join(tmpdir, "coding_scores.csv")
@@ -322,12 +312,7 @@ def test_cli_csv(
 
 
 def test_cli_parquet(
-    tmpdir,
-    reads,
-    peptide_bloom_filter_path,
-    alphabet,
-    peptide_ksize,
-    true_scores,
+    tmpdir, reads, peptide_bloom_filter_path, alphabet, peptide_ksize, true_scores,
 ):
 
     parquet = os.path.join(tmpdir, "coding_scores.parquet")

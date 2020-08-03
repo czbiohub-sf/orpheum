@@ -52,12 +52,7 @@ SingleReadScore = namedtuple(
     ],
 )
 
-SingleFileScore = namedtuple(
-    "SingleFileScore",
-    [
-        "scoring_lines",
-        "fasta_seqs"],
-)
+SingleFileScore = namedtuple("SingleFileScore", ["scoring_lines", "fasta_seqs"],)
 
 COMPLEXITY_THRESHOLD = 0.3
 

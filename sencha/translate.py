@@ -381,8 +381,7 @@ class Translate:
                 description = read.name
                 if self.verbose:
                     logger.info(description)
-                records.append(
-                    tuple((description, read.sequence)))
+                records.append(tuple((description, read.sequence)))
         n_jobs = self.processes
         num_records = len(records)
         if num_records == 1:
@@ -398,7 +397,8 @@ class Translate:
             for fasta_file_handle, seqs in result.fasta_seqs.items():
                 for description, seq in seqs:
                     self.maybe_write_fasta(
-                        self.file_handles[fasta_file_handle], description, seq)
+                        self.file_handles[fasta_file_handle], description, seq
+                    )
         pool.close()
         pool.join()
         scoring_lines = []
