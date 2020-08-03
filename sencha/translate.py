@@ -387,9 +387,6 @@ class Translate:
         num_records = len(records)
         if num_records == 1:
             chunksize = 1
-        elif num_records == 0:
-            logger.info("No records to read from")
-            raise AssertionError("fasta file is empty {}".format(reads))
         else:
             chunksize = calculate_chunksize(num_records, n_jobs)
 

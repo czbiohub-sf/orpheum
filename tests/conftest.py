@@ -150,12 +150,6 @@ def true_protein_coding_fasta_path(data_folder):
 
 
 @pytest.fixture
-def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
-    with open(true_protein_coding_fasta_path) as f:
-        return f.read()
-
-
-@pytest.fixture
 def low_complexity_seq():
     return (
         "CCCCCCCCCACCACCACCCCCCCCACCCCCCCCCCCCCCCCCCCCCCCCCCACCCCCCCA"

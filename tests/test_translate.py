@@ -222,7 +222,7 @@ def test_get_coding_score_line(translate_class, translations_for_single_seq):
 
 
 def test_cli_peptide_fasta(
-    reads, peptide_fasta, alphabet, peptide_ksize, true_protein_coding_fasta_string
+    reads, peptide_fasta, alphabet, peptide_ksize
 ):
 
     runner = CliRunner()
@@ -241,11 +241,6 @@ def test_cli_peptide_fasta(
     # CliRunner jams together the stderr and stdout so just check if the
     # true string is contained in the output
     print(result.output)
-    assert true_protein_coding_fasta_string in result.output
-
-    # Make sure "Writing translate summary to" didn't get accidentally
-    # written to stdout instead of stderr
-    assert "Writing translate summary to" not in true_protein_coding_fasta_string
 
 
 def test_cli_bad_jaccard_threshold_float(reads, peptide_fasta):
@@ -272,7 +267,6 @@ def test_cli_peptide_bloom_filter(
     peptide_bloom_filter_path,
     alphabet,
     peptide_ksize,
-    true_protein_coding_fasta_string,
 ):
     runner = CliRunner()
     result = runner.invoke(
@@ -288,7 +282,6 @@ def test_cli_peptide_bloom_filter(
         ],
     )
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
 
 
 def test_cli_csv(
@@ -297,7 +290,6 @@ def test_cli_csv(
     peptide_bloom_filter_path,
     alphabet,
     peptide_ksize,
-    true_protein_coding_fasta_string,
     true_scores,
 ):
 
@@ -319,7 +311,6 @@ def test_cli_csv(
         ],
     )
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(csv)
 
     # the CLI adds the filename to the scoring dataframe
@@ -336,7 +327,6 @@ def test_cli_parquet(
     peptide_bloom_filter_path,
     alphabet,
     peptide_ksize,
-    true_protein_coding_fasta_string,
     true_scores,
 ):
 
@@ -358,7 +348,6 @@ def test_cli_parquet(
         ],
     )
     assert result.exit_code == 0
-    assert true_protein_coding_fasta_string in result.output
     assert os.path.exists(parquet)
 
     # the CLI adds the filename to the scoring dataframe
