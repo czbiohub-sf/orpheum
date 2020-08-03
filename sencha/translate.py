@@ -4,6 +4,7 @@ translate.py
 Partition reads into coding, noncoding, and low-complexity bins
 """
 import sys
+import time
 import warnings
 
 import click
@@ -638,6 +639,7 @@ def cli(
         Outputs a fasta-formatted sequence of translated peptides
     """
     # \b above prevents re-wrapping of paragraphs
+    startt = time.time()
     translate_obj = Translate(locals())
     translate_obj.set_coding_scores_all_files()
     coding_scores = translate_obj.get_coding_scores_all_files()
@@ -654,7 +656,9 @@ def cli(
     assemble_summary_obj.maybe_write_csv(coding_scores)
     assemble_summary_obj.maybe_write_parquet(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
-
+    print(
+        "time taken to translate is %.5f seconds"
+        % (time.time() - startt))
 
 if __name__ == "__main__":
     cli()
