@@ -5,15 +5,13 @@ Partition reads into coding, noncoding, and low-complexity bins
 """
 import sys
 import warnings
-
+import time
 
 import click
 import numpy as np
 import pandas as pd
 import screed
 from pathos import multiprocessing
-from screed import ScreedDB
-from sencha.index import load_nodegraph
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -135,7 +133,6 @@ def write_fasta(file_handle, description, sequence):
 class Translate:
     def __init__(self, args):
         """Constructor"""
-        self.args = args
         for key in args:
             setattr(self, key, args[key])
         if self.long_reads:
@@ -143,7 +140,29 @@ class Translate:
         self.jaccard_threshold = get_jaccard_threshold(
             self.jaccard_threshold, self.alphabet
         )
-        self.peptide_bloom_filter_filename = ""
+        global peptide_bloom_filter
+        peptide_bloom_filter = maybe_make_peptide_bloom_filter(
+            self.peptides,
+            self.peptide_ksize,
+            self.alphabet,
+            self.peptides_are_bloom_filter,
+            n_tables=self.n_tables,
+            tablesize=self.tablesize,
+        )
+        self.verbose = True
+        logger.info("\tDone making peptide_bloom_filter!")
+
+        if not self.peptides_are_bloom_filter:
+            self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
+                self.peptides,
+                peptide_bloom_filter,
+                self.alphabet,
+                self.save_peptide_bloom_filter,
+            )
+        else:
+            self.peptide_bloom_filter_filename = self.peptides
+        self.peptide_ksize = peptide_bloom_filter.ksize()
+        self.nucleotide_ksize = 3 * self.peptide_ksize
 
     def set_ksizes(self, peptide_ksize):
         self.peptide_ksize = peptide_ksize
@@ -190,7 +209,6 @@ class Translate:
         kmers = list(set(kmerize(str(encoded), self.peptide_ksize)))
         hashes = [hash_murmur(kmer) for kmer in kmers]
         n_kmers = len(kmers)
-        peptide_bloom_filter = load_nodegraph(self.peptide_bloom_filter_filename)
         n_kmers_in_peptide_db = sum(
             1 for h in hashes if peptide_bloom_filter.get(h) > 0
         )
@@ -254,7 +272,7 @@ class Translate:
                 if is_kmer_low_complex:
                     fasta_seqs["low_complexity_peptide"].append(
                         [
-                            description + " translation_frame: {}.format(frame)",
+                            description + " translation_frame: {} ".format(frame),
                             translation,
                         ]
                     )
@@ -344,7 +362,8 @@ class Translate:
             )
         else:
             scores, fasta_seqs = self.check_peptide_content(description, sequence)
-        return scores
+        results = constants_translate.SingleFileScore(scores, fasta_seqs)
+        return results
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
         if special_case is not None:
@@ -375,15 +394,18 @@ class Translate:
         pool = multiprocessing.Pool(processes=n_jobs)
         logger.info("Pooled %d and chunksize %d mapped", n_jobs, chunksize)
 
-        scoring_lines, fasta_seqs = pool.map(self.maybe_score_single_read, records)
-        for fasta_file_handle, seqs in fasta_seqs.items():
-            for description, seq in seqs:
-                self.maybe_write_fasta(
-                    self.file_handles[fasta_file_handle], description, seq
-                )
+        results = pool.map(self.maybe_score_single_read, records)
+        for result in results:
+            for fasta_file_handle, seqs in result.fasta_seqs.items():
+                for description, seq in seqs:
+                    self.maybe_write_fasta(
+                        self.file_handles[fasta_file_handle], description, seq)
         pool.close()
         pool.join()
-
+        scoring_lines = []
+        for result in results:
+            for line in result.scoring_lines:
+                scoring_lines.append(line)
         # Concatenate all the lines into a single dataframe
         scoring_df = pd.DataFrame(
             scoring_lines, columns=constants_translate.SCORING_DF_COLUMNS
@@ -617,25 +639,8 @@ def cli(
         Outputs a fasta-formatted sequence of translated peptides
     """
     # \b above prevents re-wrapping of paragraphs
+    startt = time.time()
     translate_obj = Translate(locals())
-    peptide_bloom_filter = maybe_make_peptide_bloom_filter(
-        peptides,
-        peptide_ksize,
-        alphabet,
-        peptides_are_bloom_filter,
-        n_tables=n_tables,
-        tablesize=tablesize,
-    )
-
-    if not peptides_are_bloom_filter:
-        translate_obj.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
-            peptides, peptide_bloom_filter, alphabet, save_peptide_bloom_filter,
-        )
-    else:
-        translate_obj.peptide_bloom_filter_filename = peptides
-    print(translate_obj)
-    print(translate_obj.peptide_bloom_filter_filename)
-    translate_obj.set_ksizes(peptide_bloom_filter.ksize())
     translate_obj.set_coding_scores_all_files()
     coding_scores = translate_obj.get_coding_scores_all_files()
     assemble_summary_obj = CreateSaveSummary(
@@ -651,6 +656,9 @@ def cli(
     assemble_summary_obj.maybe_write_csv(coding_scores)
     assemble_summary_obj.maybe_write_parquet(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
+    print(
+        "time taken to translate is %.5f seconds"
+        % (time.time() - startt))
 
 
 if __name__ == "__main__":

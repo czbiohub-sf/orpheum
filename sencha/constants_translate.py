@@ -1,5 +1,5 @@
 import itertools
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 
 from sencha.sequence_encodings import ALPHABET_ALIASES
 
@@ -50,6 +50,13 @@ SingleReadScore = namedtuple(
         "special_case",
         "translation_frame",
     ],
+)
+
+SingleFileScore = namedtuple(
+    "SingleFileScore",
+    [
+        "scoring_lines",
+        "fasta_seqs"],
 )
 
 COMPLEXITY_THRESHOLD = 0.3
