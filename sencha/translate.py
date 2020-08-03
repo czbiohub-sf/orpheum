@@ -5,7 +5,6 @@ Partition reads into coding, noncoding, and low-complexity bins
 """
 import sys
 import warnings
-import time
 
 import click
 import numpy as np
@@ -379,8 +378,11 @@ class Translate:
         records = []
         with screed.open(reads) as seqfile:
             for read in seqfile:
+                description = read.name
+                if self.verbose:
+                    logger.info(description)
                 records.append(
-                    tuple((read.name, read.sequence)))
+                    tuple((description, read.sequence)))
         n_jobs = self.processes
         num_records = len(records)
         if num_records == 1:
@@ -639,7 +641,6 @@ def cli(
         Outputs a fasta-formatted sequence of translated peptides
     """
     # \b above prevents re-wrapping of paragraphs
-    startt = time.time()
     translate_obj = Translate(locals())
     translate_obj.set_coding_scores_all_files()
     coding_scores = translate_obj.get_coding_scores_all_files()
@@ -656,9 +657,6 @@ def cli(
     assemble_summary_obj.maybe_write_csv(coding_scores)
     assemble_summary_obj.maybe_write_parquet(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
-    print(
-        "time taken to translate is %.5f seconds"
-        % (time.time() - startt))
 
 
 if __name__ == "__main__":
