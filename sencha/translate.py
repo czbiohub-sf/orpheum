@@ -360,7 +360,9 @@ class Translate:
             )
         else:
             scores, fasta_seqs = self.check_peptide_content(description, sequence)
-        results = constants_translate.SingleFileScore(scores, fasta_seqs)
+        results = {
+            "scores": scores,
+            "fasta_seqs": fasta_seqs}
         return results
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
@@ -395,7 +397,7 @@ class Translate:
         pool.close()
         pool.join()
         for result in results:
-            for fasta_file_handle, seqs in result.fasta_seqs.items():
+            for fasta_file_handle, seqs in result["fasta_seqs"].items():
                 if fasta_file_handle == "coding_peptide":
                     for description, seq in seqs:
                         write_fasta(sys.stdout, description, seq)
@@ -406,7 +408,7 @@ class Translate:
                         )
         scoring_lines = []
         for result in results:
-            for line in result.scoring_lines:
+            for line in result["scores"]:
                 scoring_lines.append(line)
         # Concatenate all the lines into a single dataframe
         scoring_df = pd.DataFrame(
