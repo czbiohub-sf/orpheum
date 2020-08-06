@@ -360,9 +360,7 @@ class Translate:
             )
         else:
             scores, fasta_seqs = self.check_peptide_content(description, sequence)
-        results = {
-            "scores": scores,
-            "fasta_seqs": fasta_seqs}
+        results = {"scores": scores, "fasta_seqs": fasta_seqs}
         return results
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
