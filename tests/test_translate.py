@@ -444,4 +444,3 @@ def test_cli_empty_fasta_json_summary(tmpdir, empty_fasta, peptide_fasta):
     )
     assert result.exit_code == 0
     assert os.path.exists(json_summary)
-

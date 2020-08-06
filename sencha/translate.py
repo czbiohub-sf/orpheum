@@ -183,7 +183,6 @@ class Translate:
             "coding_nucleotide": self.coding_nucleotide_fasta,
             "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
             "low_complexity_peptide": self.low_complexity_peptide_fasta,
-
         }
         self.file_handles = {}
         for seqtype, fasta in self.fastas.items():
@@ -232,7 +231,7 @@ class Translate:
             "low_complexity_peptide": [],
             "coding_nucleotide": [],
             "noncoding_nucleotide": [],
-            "coding_peptide": []
+            "coding_peptide": [],
         }
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -403,7 +402,8 @@ class Translate:
                 else:
                     for description, seq in seqs:
                         self.maybe_write_fasta(
-                            self.file_handles[fasta_file_handle], description, seq)
+                            self.file_handles[fasta_file_handle], description, seq
+                        )
         scoring_lines = []
         for result in results:
             for line in result.scoring_lines:
