@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import pytest
-import warnings
 
 """
 conftest.py contains fixtures or functions-turned-variables that can be
@@ -147,6 +146,12 @@ def peptide_bloom_filter(
 @pytest.fixture
 def true_protein_coding_fasta_path(data_folder):
     return os.path.join(data_folder, "translate", "true_protein_coding.fasta")
+
+
+@pytest.fixture
+def true_protein_coding_fasta_string(true_protein_coding_fasta_path):
+    with open(true_protein_coding_fasta_path) as f:
+        return f.read()
 
 
 @pytest.fixture

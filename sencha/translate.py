@@ -31,15 +31,16 @@ logger = get_logger(__file__)
 
 def calculate_chunksize(total_jobs_todo, processes):
     """
-    Return a generator of strings after
-    splitting a string by the given separator
+    Return integer - chunksize representing the number of jobs
+    per process that needs to be run
 
-    sep : str
-        Separator between strings, default one space
+    total_jobs_todo : int
+        total number of jobs
+    processes; int
+        number of processes to be used for multiprocessing
     Returns
     -------
-    Yields generator of strings after
-    splitting a string by the given separator
+    Integer reprsenting number of jobs to be run on each process
     """
     chunksize, extra = divmod(total_jobs_todo, processes)
     if extra:
@@ -164,10 +165,6 @@ class Translate:
         self.peptide_ksize = peptide_bloom_filter.ksize()
         self.nucleotide_ksize = 3 * self.peptide_ksize
 
-    def set_ksizes(self, peptide_ksize):
-        self.peptide_ksize = peptide_ksize
-        self.nucleotide_ksize = 3 * peptide_ksize
-
     def maybe_write_fasta(self, file_handle, description, sequence):
         """Write fasta to file handle if it is not None"""
         if file_handle is not None:
@@ -186,6 +183,7 @@ class Translate:
             "coding_nucleotide": self.coding_nucleotide_fasta,
             "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
             "low_complexity_peptide": self.low_complexity_peptide_fasta,
+
         }
         self.file_handles = {}
         for seqtype, fasta in self.fastas.items():
@@ -234,6 +232,7 @@ class Translate:
             "low_complexity_peptide": [],
             "coding_nucleotide": [],
             "noncoding_nucleotide": [],
+            "coding_peptide": []
         }
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -297,7 +296,7 @@ class Translate:
                         description, frame
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
-                        write_fasta(sys.stdout, seqname, translation)
+                        fasta_seqs["coding_peptide"].append([seqname, translation])
                         fasta_seqs["coding_nucleotide"].append([seqname, sequence])
                         scoring_lines.append(
                             constants_translate.SingleReadScore(
@@ -391,17 +390,20 @@ class Translate:
             chunksize = calculate_chunksize(num_records, n_jobs)
 
         pool = multiprocessing.Pool(processes=n_jobs)
-        logger.info("Pooled %d and chunksize %d mapped", n_jobs, chunksize)
+        logger.info(f"Pooled {n_jobs} and chunksize {chunksize} mapped")
 
         results = pool.map(self.maybe_score_single_read, records, chunksize=chunksize)
         pool.close()
         pool.join()
         for result in results:
             for fasta_file_handle, seqs in result.fasta_seqs.items():
-                for description, seq in seqs:
-                    self.maybe_write_fasta(
-                        self.file_handles[fasta_file_handle], description, seq
-                    )
+                if fasta_file_handle == "coding_peptide":
+                    for description, seq in seqs:
+                        write_fasta(sys.stdout, description, seq)
+                else:
+                    for description, seq in seqs:
+                        self.maybe_write_fasta(
+                            self.file_handles[fasta_file_handle], description, seq)
         scoring_lines = []
         for result in results:
             for line in result.scoring_lines:
@@ -656,7 +658,7 @@ def cli(
     assemble_summary_obj.maybe_write_csv(coding_scores)
     assemble_summary_obj.maybe_write_parquet(coding_scores)
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
-    print("time taken to translate is %.5f seconds" % (time.time() - startt))
+    print("time taken to translate is {:.5f} seconds".format(time.time() - startt))
 
 
 if __name__ == "__main__":
