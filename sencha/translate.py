@@ -141,6 +141,18 @@ class Translate:
         self.jaccard_threshold = get_jaccard_threshold(
             self.jaccard_threshold, self.alphabet
         )
+        # Use global variable so the functions that are inside multiprocessing
+        # don't try to access the nodegraph by self.peptide_bloom_filter
+        # and hence avoiding the serialization of the NodeGraph which
+        # doesn't exist for nodegraph currently
+        # Con is that global variable definition inside a class defintion
+        # is advised to be avoided and is said that it might be enforced as incorrect
+        # NB PV: This is been said in the docs since Python2.7, but it hasn't changed, so I 
+        # suggest keeping the global variable declaration here for now
+        # https://docs.python.org/3.8/reference/simple_stmts.html#the-global-statement
+        # 1) One solution is that if we can call create and declare peptide_bloom_filter inside the 
+        # if__name__=main function but that would mean switching to argparse from click
+        # 2) Another solution is to make nodegraph serializable
         global peptide_bloom_filter
         peptide_bloom_filter = maybe_make_peptide_bloom_filter(
             self.peptides,
