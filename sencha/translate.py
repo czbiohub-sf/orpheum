@@ -143,8 +143,8 @@ class Translate:
         )
         # Use global variable so the functions that are inside multiprocessing
         # don't try to access the nodegraph by self.peptide_bloom_filter
-        # and hence avoiding the serialization of the NodeGraph which
-        # doesn't exist for nodegraph currently
+        # and hence avoiding the pickling error while serialization of the NodeGraph by multiprocessing
+        # which doesn't exist for nodegraph currently
         # Con is that global variable definition inside a class defintion
         # is advised to be avoided and is said that it might be enforced as incorrect
         # NB PV: This is been said in the docs since Python2.7, but it hasn't changed, so I 
