@@ -70,11 +70,14 @@ def per_read_false_positive_coding_rate(
 def load_nodegraph(*args, **kwargs):
     """Wrapper to load khmer-style bloom filter called a 'nodegraph'"""
     try:
-        # khmer 2.1.1
-        return khmer.load_nodegraph(*args, **kwargs)
-    except AttributeError:
-        # khmer 3+/master branch
-        return khmer.Nodegraph.load(*args, **kwargs)
+        return sourmash.load_nodegraph(*args, **kwargs)
+    except:
+        try:
+            # khmer 2.1.1
+            return khmer.load_nodegraph(*args, **kwargs)
+        except AttributeError:
+            # khmer 3+/master branch
+            return khmer.Nodegraph.load(*args, **kwargs)
 
 
 def maybe_read_peptide_file(peptide_file):

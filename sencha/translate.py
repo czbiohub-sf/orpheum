@@ -29,25 +29,6 @@ from sencha.translate_single_seq import TranslateSingleSeq
 logger = get_logger(__file__)
 
 
-def calculate_chunksize(total_jobs_todo, processes):
-    """
-    Return integer - chunksize representing the number of jobs
-    per process that needs to be run
-
-    total_jobs_todo : int
-        total number of jobs
-    processes; int
-        number of processes to be used for multiprocessing
-    Returns
-    -------
-    Integer reprsenting number of jobs to be run on each process
-    """
-    chunksize, extra = divmod(total_jobs_todo, processes)
-    if extra:
-        chunksize += 1
-    return chunksize
-
-
 def get_jaccard_threshold(jaccard_threshold, alphabet):
     if jaccard_threshold is None:
         if alphabet == "hp" or alphabet == "hydrophobic-polar":
@@ -394,16 +375,10 @@ class Translate:
                     logger.info(description)
                 records.append(tuple((description, read.sequence)))
         n_jobs = self.processes
-        num_records = len(records)
-        if num_records == 1:
-            chunksize = 1
-        else:
-            chunksize = calculate_chunksize(num_records, n_jobs)
 
         pool = multiprocessing.Pool(processes=n_jobs)
-        logger.info(f"Pooled {n_jobs} and chunksize {chunksize} mapped")
 
-        results = pool.map(self.maybe_score_single_read, records, chunksize=chunksize)
+        results = pool.map(self.maybe_score_single_read, records)
         pool.close()
         pool.join()
         for result in results:
