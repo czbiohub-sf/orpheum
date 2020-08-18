@@ -5,13 +5,12 @@ Partition reads into coding, noncoding, and low-complexity bins
 """
 import sys
 import warnings
-
+import time
 
 import click
 import numpy as np
 import pandas as pd
 import screed
-from tqdm import tqdm
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -345,7 +344,8 @@ class Translate:
             columns=constants_translate.SCORING_DF_COLUMNS)
 
         with screed.open(reads) as records:
-            for record in tqdm(records):
+            for record in records:
+                startt = time.time()
                 description = record["name"]
                 sequence = record["sequence"]
                 if self.verbose:
@@ -370,6 +370,7 @@ class Translate:
                         scoring_df = scoring_df.append(
                             {constants_translate.SCORING_DF_COLUMNS[
                                 index]: value}, ignore_index=True)
+                    print("completed in %.5f seconds" % (time.time() - startt), flush=True)
                 print("All records written into scoring_df")
 
         # Add the reads that were used to generate these scores as a column
