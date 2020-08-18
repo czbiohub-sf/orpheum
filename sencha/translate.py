@@ -132,7 +132,7 @@ class Translate:
             tablesize=self.tablesize,
         )
         self.verbose = True
-        logger.info("\tDone making peptide_bloom_filter!")
+        print("\tDone making peptide_bloom_filter!")
 
         if not self.peptides_are_bloom_filter:
             self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
@@ -155,7 +155,7 @@ class Translate:
         """Return an opened file handle to write and announce"""
         if self.verbose:
             announcement = constants_translate.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
-            logger.info("Writing {} to {}".format(announcement, filename))
+            print("Writing {} to {}".format(announcement, filename))
         return open(filename, "w")
 
     def maybe_open_fastas(self):
@@ -191,16 +191,16 @@ class Translate:
             1 for h in hashes if self.peptide_bloom_filter.get(h) > 0
         )
         if self.verbose:
-            logger.info("\ttranslation: \t".format(encoded))
-            logger.info("\tkmers:", " ".join(kmers))
+            print("\ttranslation: \t".format(encoded))
+            print("\tkmers:", " ".join(kmers))
 
         if self.verbose:
             kmers_in_peptide_db = {
                 (k, h): self.peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
             }
             # Print keys (kmers) only
-            logger.info("\tK-mers in peptide database:")
-            logger.info(kmers_in_peptide_db)
+            print("\tK-mers in peptide database:")
+            print(kmers_in_peptide_db)
 
         fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
@@ -260,7 +260,7 @@ class Translate:
                     )
                 else:
                     if self.verbose:
-                        logger.info(
+                        print(
                             "\t{} is above {}".format(
                                 translation, self.jaccard_threshold
                             )
@@ -341,14 +341,15 @@ class Translate:
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
 
-        scoring_lines = []
+        scoring_df = pd.DataFrame(
+            columns=constants_translate.SCORING_DF_COLUMNS)
 
         with screed.open(reads) as records:
             for record in tqdm(records):
                 description = record["name"]
                 sequence = record["sequence"]
                 if self.verbose:
-                    logger.info(description)
+                    print(description)
 
                 for (
                     jaccard,
@@ -357,7 +358,7 @@ class Translate:
                     frame,
                 ) in self.maybe_score_single_read(description, sequence):
                     if self.verbose:
-                        logger.info(
+                        print(
                             "Jaccard: {}, n_kmers = {} for frame {}".format(
                                 jaccard, n_kmers, frame
                             )
@@ -365,11 +366,9 @@ class Translate:
                     line = self.get_coding_score_line(
                         description, jaccard, n_kmers, special_case, frame
                     )
-                    scoring_lines.append(line)
-        # Concatenate all the lines into a single dataframe
-        scoring_df = pd.DataFrame(
-            scoring_lines, columns=constants_translate.SCORING_DF_COLUMNS
-        )
+                    scoring_df = scoring_df.append(
+                        {key: value for key, value in line.items()})
+                print("All records written into scoring_df")
 
         # Add the reads that were used to generate these scores as a column
         scoring_df["filename"] = reads
@@ -378,12 +377,15 @@ class Translate:
     def set_coding_scores_all_files(self):
         self.maybe_open_fastas()
         dfs = []
-        for reads_file in self.reads:
+        for i, reads_file in enumerate(self.reads):
+            print("processing started {} file".format(i))
             self.maybe_open_fastas()
             df = self.score_reads_per_file(reads_file)
             self.maybe_close_fastas()
             dfs.append(df)
+            print("processing ended {} file".format(i))
         self.coding_scores = pd.concat(dfs, ignore_index=True)
+        print("coding_scores set")
 
     def get_coding_scores_all_files(self):
         return self.coding_scores
@@ -592,7 +594,10 @@ def cli(
     # \b above prevents re-wrapping of paragraphs
     translate_obj = Translate(locals())
     translate_obj.set_coding_scores_all_files()
+    print("coding_scores calculation started")
     coding_scores = translate_obj.get_coding_scores_all_files()
+    print("coding_scores calculation endede")
+    print("assemble_summary_obj calculation started")
     assemble_summary_obj = CreateSaveSummary(
         reads,
         csv,
@@ -603,9 +608,16 @@ def cli(
         translate_obj.peptide_ksize,
         translate_obj.jaccard_threshold,
     )
+    print("assemble_summary_obj calculation ended")
+    print("maybe_write_csv calculation started")
     assemble_summary_obj.maybe_write_csv(coding_scores)
+    print("maybe_write_csv calculation ended")
+    print("maybe_write_parquet calculation started")
     assemble_summary_obj.maybe_write_parquet(coding_scores)
+    print("maybe_write_parquet calculation ended")
+    print("maybe_write_json_summary calculation started")
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
+    print("maybe_write_json_summary calculation ended")
 
 
 if __name__ == "__main__":

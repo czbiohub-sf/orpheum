@@ -34,7 +34,9 @@ class CreateSaveSummary:
     def maybe_write_csv(self, coding_scores):
         if self.csv:
             logger.info("Writing coding scores of reads to {}".format(self.csv))
+            print("coding scores writing to csv started")
             coding_scores.to_csv(self.csv, index=False)
+            print("coding scores writing to csv ended")
 
     def maybe_write_parquet(self, coding_scores):
         if self.parquet:
@@ -51,7 +53,9 @@ class CreateSaveSummary:
         if not self.json_summary:
             # Early exit if json_summary is not True
             return
+        print("make_empty_coding_categories started")
         empty_coding_categories = self.make_empty_coding_categories()
+        print("make_empty_coding_categories ended")
 
         if coding_scores.empty:
             summary = {
@@ -76,25 +80,33 @@ class CreateSaveSummary:
                 },
             }
         else:
+            print("generate_coding_summary started")
             summary = self.generate_coding_summary(coding_scores)
+            print("generate_coding_summary ended")
         with open(self.json_summary, "w") as f:
-            logger.info("Writing translate summary to {}".format(self.json_summary))
+            print("Writing translate summary to {}".format(self.json_summary))
             json.dump(summary, fp=f)
+            print("Dumped translate summary to {}".format(self.json_summary))
         return summary
 
     def generate_coding_summary(self, coding_scores):
+        print("get_n_translated_frames_per_read started")
         (
             translation_frame_percentages,
             translation_frame_counts,
         ) = self.get_n_translated_frames_per_read(coding_scores)
+        print("get_n_translated_frames_per_read ended")
 
         files = coding_scores.filename.unique().tolist()
+        print("get_n_per_coding_category started")
 
         (
             categorization_percentages,
             categorization_counts,
         ) = self.get_n_per_coding_category(coding_scores)
+        print("get_n_per_coding_category ended")
 
+        print("summary dictionary started")
         # Get Jaccard distributions, count, min, max, mean, stddev, median
         jaccard_info = coding_scores.jaccard_in_peptide_db.describe().to_dict()
         summary = {
@@ -109,6 +121,7 @@ class CreateSaveSummary:
             "peptide_ksize": self.peptide_ksize,
             "jaccard_threshold": self.jaccard_threshold,
         }
+        print("summary dictionary ended")
         return summary
 
     def get_n_per_coding_category(self, coding_scores):
