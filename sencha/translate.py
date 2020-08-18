@@ -366,8 +366,10 @@ class Translate:
                     line = self.get_coding_score_line(
                         description, jaccard, n_kmers, special_case, frame
                     )
-                    scoring_df = scoring_df.append(
-                        {key: value for key, value in line.items()})
+                    for index, value in enumerate(line):
+                        scoring_df = scoring_df.append(
+                            {constants_translate.SCORING_DF_COLUMNS[
+                                index]: value})
                 print("All records written into scoring_df")
 
         # Add the reads that were used to generate these scores as a column
