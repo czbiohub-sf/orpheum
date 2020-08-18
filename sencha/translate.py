@@ -369,7 +369,7 @@ class Translate:
                     for index, value in enumerate(line):
                         scoring_df = scoring_df.append(
                             {constants_translate.SCORING_DF_COLUMNS[
-                                index]: value})
+                                index]: value}, ignore_index=True)
                 print("All records written into scoring_df")
 
         # Add the reads that were used to generate these scores as a column
