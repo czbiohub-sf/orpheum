@@ -1,7 +1,6 @@
 import csv
 import itertools
 import json
-import statistics
 from collections import Counter
 
 import numpy as np
@@ -139,11 +138,11 @@ class CreateSaveSummary:
         # Get Jaccard distributions, count, min, max, mean, stddev, median
         jaccard_info = {
             "count": np.count_nonzero(self.jaccard_in_peptide_dbs),
-            "mean": statistics.mean(self.jaccard_in_peptide_dbs),
-            "min": min(self.jaccard_in_peptide_dbs),
-            "max": max(self.jaccard_in_peptide_dbs),
-            "median": statistics.median(self.jaccard_in_peptide_dbs),
-            "stddev": statistics.stdev(self.jaccard_in_peptide_dbs)
+            "mean": np.nanmean(self.jaccard_in_peptide_dbs),
+            "min": np.nanmin(self.jaccard_in_peptide_dbs),
+            "max": np.nanmax(self.jaccard_in_peptide_dbs),
+            "median": np.nanmedian(self.jaccard_in_peptide_dbs),
+            "stddev": np.nanstd(self.jaccard_in_peptide_dbs)
         }
 
         summary = {

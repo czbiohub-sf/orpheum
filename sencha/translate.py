@@ -341,7 +341,7 @@ class Translate:
 
         scoring_lines = []
         with screed.open(reads) as records:
-            for record in tqdm(records):
+            for record in records:
                 description = record["name"]
                 sequence = record["sequence"]
                 if self.verbose:
