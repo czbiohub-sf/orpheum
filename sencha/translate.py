@@ -9,7 +9,6 @@ import time
 
 import click
 import numpy as np
-import pandas as pd
 import screed
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
@@ -154,7 +153,7 @@ class Translate:
         """Return an opened file handle to write and announce"""
         if self.verbose:
             announcement = constants_translate.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
-            print("Writing {} to {}".format(announcement, filename))
+            logger.info("Writing {} to {}".format(announcement, filename))
         return open(filename, "w")
 
     def maybe_open_fastas(self):
@@ -190,16 +189,16 @@ class Translate:
             1 for h in hashes if self.peptide_bloom_filter.get(h) > 0
         )
         if self.verbose:
-            print("\ttranslation: \t".format(encoded))
-            print("\tkmers:", " ".join(kmers))
+            logger.info("\ttranslation: \t".format(encoded))
+            logger.info("\tkmers:", " ".join(kmers))
 
         if self.verbose:
             kmers_in_peptide_db = {
                 (k, h): self.peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
             }
             # Print keys (kmers) only
-            print("\tK-mers in peptide database:")
-            print(kmers_in_peptide_db)
+            logger.info("\tK-mers in peptide database:")
+            logger.info(kmers_in_peptide_db)
 
         fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
 
@@ -259,7 +258,7 @@ class Translate:
                     )
                 else:
                     if self.verbose:
-                        print(
+                        logger.info(
                             "\t{} is above {}".format(
                                 translation, self.jaccard_threshold
                             )
@@ -340,16 +339,14 @@ class Translate:
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
 
-        scoring_df = pd.DataFrame(
-            columns=constants_translate.SCORING_DF_COLUMNS)
-
+        scoring_lines = []
         with screed.open(reads) as records:
             for record in records:
                 startt = time.time()
                 description = record["name"]
                 sequence = record["sequence"]
                 if self.verbose:
-                    print(description)
+                    logger.info(description)
 
                 for (
                     jaccard,
@@ -358,7 +355,7 @@ class Translate:
                     frame,
                 ) in self.maybe_score_single_read(description, sequence):
                     if self.verbose:
-                        print(
+                        logger.info(
                             "Jaccard: {}, n_kmers = {} for frame {}".format(
                                 jaccard, n_kmers, frame
                             )
@@ -366,28 +363,23 @@ class Translate:
                     line = self.get_coding_score_line(
                         description, jaccard, n_kmers, special_case, frame
                     )
-                    for index, value in enumerate(line):
-                        scoring_df = scoring_df.append(
-                            {constants_translate.SCORING_DF_COLUMNS[
-                                index]: value}, ignore_index=True)
-                    print("completed in %.5f seconds" % (time.time() - startt), flush=True)
+                    line.append(reads)
+                    scoring_lines.append(line)
+                    print("completed in %.5f seconds" % (time.time() - startt))
                 print("All records written into scoring_df")
 
-        # Add the reads that were used to generate these scores as a column
-        scoring_df["filename"] = reads
-        return scoring_df
+        return scoring_lines
 
     def set_coding_scores_all_files(self):
         self.maybe_open_fastas()
-        dfs = []
+        scoring_lines = []
         for i, reads_file in enumerate(self.reads):
             print("processing started {} file".format(i))
             self.maybe_open_fastas()
-            df = self.score_reads_per_file(reads_file)
+            scoring_lines.extend(self.score_reads_per_file(reads_file))
             self.maybe_close_fastas()
-            dfs.append(df)
             print("processing ended {} file".format(i))
-        self.coding_scores = pd.concat(dfs, ignore_index=True)
+        self.coding_scores = scoring_lines
         print("coding_scores set")
 
     def get_coding_scores_all_files(self):

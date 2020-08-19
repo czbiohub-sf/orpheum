@@ -1,9 +1,17 @@
+import itertools
 import json
+import statistics
+from collections import Counter
 
+import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from sencha.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES,
     PROTEIN_CODING_CATEGORIES,
+    SCORING_DF_COLUMNS,
+    SCORING_DF_SCHEMA
 )
 from sencha.log_utils import get_logger
 
@@ -35,13 +43,35 @@ class CreateSaveSummary:
         if self.csv:
             logger.info("Writing coding scores of reads to {}".format(self.csv))
             print("coding scores writing to csv started")
-            coding_scores.to_csv(self.csv, index=False)
+            with open(self.csv, 'wb') as file:
+                file.write(SCORING_DF_COLUMNS)
+                file.write("\n")
+                for line in coding_scores:
+                    file.write(line)
+                    file.write('\n')
             print("coding scores writing to csv ended")
 
     def maybe_write_parquet(self, coding_scores):
         if self.parquet:
-            logger.info("Writing coding scores of reads to {}".format(self.parquet))
-            coding_scores.to_parquet(self.parquet, index=False)
+            logger.info("Writing coding scores of reads to {}".format(
+                self.parquet))
+            self.read_ids,
+            self.jaccard_in_peptide_dbs,
+            self.n_kmers,
+            self.categories,
+            self.translation_frames,
+            self.filenames = map(list, zip(*coding_scores))
+            batch = pa.RecordBatch.from_arrays(
+                [self.read_ids,
+                 self.jaccard_in_peptide_dbs,
+                 self.n_kmers,
+                 self.categories,
+                 self.translation_frames,
+                 self.filenames],
+                names=SCORING_DF_SCHEMA
+            )
+            pq.write_table(
+                pa.Table.from_batches([batch]), self.parquet)
 
     def make_empty_coding_categories(self):
         coding_categories = dict.fromkeys(PROTEIN_CODING_CATEGORIES.values(), 0)
@@ -57,7 +87,7 @@ class CreateSaveSummary:
         empty_coding_categories = self.make_empty_coding_categories()
         print("make_empty_coding_categories ended")
 
-        if coding_scores.empty:
+        if coding_scores == []:
             summary = {
                 "input_files": self.filenames,
                 "jaccard_info": {
@@ -97,7 +127,7 @@ class CreateSaveSummary:
         ) = self.get_n_translated_frames_per_read(coding_scores)
         print("get_n_translated_frames_per_read ended")
 
-        files = coding_scores.filename.unique().tolist()
+        files = np.unique(self.filenames).tolist()
         print("get_n_per_coding_category started")
 
         (
@@ -108,7 +138,15 @@ class CreateSaveSummary:
 
         print("summary dictionary started")
         # Get Jaccard distributions, count, min, max, mean, stddev, median
-        jaccard_info = coding_scores.jaccard_in_peptide_db.describe().to_dict()
+        jaccard_info = {
+            "count": np.count_nonzero(self.jaccard_in_peptide_dbs),
+            "mean": statistics.mean(self.jaccard_in_peptide_dbs),
+            "min": min(self.jaccard_in_peptide_dbs),
+            "max": max(self.jaccard_in_peptide_dbs),
+            "median": statistics.median(self.jaccard_in_peptide_dbs),
+            "stddev": statistics.stdev(self.jaccard_in_peptide_dbs)
+        }
+
         summary = {
             "input_files": files,
             "jaccard_info": jaccard_info,
@@ -127,13 +165,14 @@ class CreateSaveSummary:
     def get_n_per_coding_category(self, coding_scores):
         # Initialize to all zeros
         counts = self.make_empty_coding_categories()
-        read_id_category = coding_scores.filter(["read_id", "category"])
+        read_id_category = [
+            (read_id, category) for read_id, category in zip(
+                self.read_ids, self.categories)]
 
-        for read_id, categories_for_read_id in read_id_category.groupby("read_id"):
-            categories_for_read_id = read_id_category[
-                read_id_category.read_id == read_id
-            ]
-            unique_categories = categories_for_read_id.category.unique()
+        for read_id, categories_for_read_id in itertools.groupby(
+                read_id_category, key=lambda x: x[0]):
+            categories_for_read_id = list(dict(categories_for_read_id).values())
+            unique_categories = np.unique(categories_for_read_id).tolist()
 
             # If any of the frames is coding, then that read is called coding,
             # the remaining are non-coding, unless the reads too short
@@ -168,9 +207,11 @@ class CreateSaveSummary:
     def get_n_translated_frames_per_read(self, coding_scores):
         """Of all coding sequences, get number of possible translations"""
         col = "n_translated_frames"
-        predicted_coding = coding_scores.query('category == "Coding"')
 
-        n_coding_per_read = predicted_coding.read_id.value_counts()
+        predicted_coding = [
+            self.read_ids[index] for index, category in enumerate(
+                self.categories) if category == "Coding"]
+        n_coding_per_read = pd.series(Counter(predicted_coding))
         n_coding_per_read.index = n_coding_per_read.index.astype(str)
 
         n_coding_per_read.name = col
