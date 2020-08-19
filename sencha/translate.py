@@ -5,11 +5,11 @@ Partition reads into coding, noncoding, and low-complexity bins
 """
 import sys
 import warnings
-import time
 
 import click
 import numpy as np
 import screed
+from tqdm import tqdm
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -341,8 +341,7 @@ class Translate:
 
         scoring_lines = []
         with screed.open(reads) as records:
-            for record in records:
-                startt = time.time()
+            for record in tqdm(records):
                 description = record["name"]
                 sequence = record["sequence"]
                 if self.verbose:
@@ -365,20 +364,17 @@ class Translate:
                     )
                     line.append(reads)
                     scoring_lines.append(line)
-                    print("completed in %.5f seconds" % (time.time() - startt))
-                print("All records written into scoring_df")
-
         return scoring_lines
 
     def set_coding_scores_all_files(self):
         self.maybe_open_fastas()
         scoring_lines = []
         for i, reads_file in enumerate(self.reads):
-            print("processing started {} file".format(i))
+            print("processing started {}th file".format(i))
             self.maybe_open_fastas()
             scoring_lines.extend(self.score_reads_per_file(reads_file))
             self.maybe_close_fastas()
-            print("processing ended {} file".format(i))
+            print("processing ended {}th file".format(i))
         self.coding_scores = scoring_lines
         print("coding_scores set")
 

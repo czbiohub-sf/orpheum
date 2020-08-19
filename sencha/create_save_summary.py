@@ -1,3 +1,4 @@
+import csv
 import itertools
 import json
 import statistics
@@ -43,24 +44,28 @@ class CreateSaveSummary:
         if self.csv:
             logger.info("Writing coding scores of reads to {}".format(self.csv))
             print("coding scores writing to csv started")
-            with open(self.csv, 'wb') as file:
-                file.write(SCORING_DF_COLUMNS)
-                file.write("\n")
-                for line in coding_scores:
-                    file.write(line)
-                    file.write('\n')
+            # writing to csv file
+            with open(self.csv, 'w') as csvfile:
+                # creating a csv writer object
+                csvwriter = csv.writer(csvfile)
+
+                # writing the fields
+                csvwriter.writerow(SCORING_DF_COLUMNS)
+
+                # writing the data rows
+                csvwriter.writerows(coding_scores)
             print("coding scores writing to csv ended")
 
     def maybe_write_parquet(self, coding_scores):
         if self.parquet:
             logger.info("Writing coding scores of reads to {}".format(
                 self.parquet))
-            self.read_ids,
-            self.jaccard_in_peptide_dbs,
-            self.n_kmers,
-            self.categories,
-            self.translation_frames,
-            self.filenames = map(list, zip(*coding_scores))
+            (self.read_ids,
+             self.jaccard_in_peptide_dbs,
+             self.n_kmers,
+             self.categories,
+             self.translation_frames,
+             self.filenames) = map(list, zip(*coding_scores))
             batch = pa.RecordBatch.from_arrays(
                 [self.read_ids,
                  self.jaccard_in_peptide_dbs,
@@ -120,6 +125,12 @@ class CreateSaveSummary:
         return summary
 
     def generate_coding_summary(self, coding_scores):
+        (self.read_ids,
+         self.jaccard_in_peptide_dbs,
+         self.n_kmers,
+         self.categories,
+         self.translation_frames,
+         self.filenames) = map(list, zip(*coding_scores))
         print("get_n_translated_frames_per_read started")
         (
             translation_frame_percentages,
@@ -211,7 +222,7 @@ class CreateSaveSummary:
         predicted_coding = [
             self.read_ids[index] for index, category in enumerate(
                 self.categories) if category == "Coding"]
-        n_coding_per_read = pd.series(Counter(predicted_coding))
+        n_coding_per_read = pd.Series(Counter(predicted_coding))
         n_coding_per_read.index = n_coding_per_read.index.astype(str)
 
         n_coding_per_read.name = col
