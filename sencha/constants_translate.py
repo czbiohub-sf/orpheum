@@ -1,6 +1,5 @@
 import itertools
 from collections import namedtuple
-import pyarrow as pa
 from sencha.sequence_encodings import ALPHABET_ALIASES
 
 DEFAULT_JACCARD_THRESHOLD = 0.5

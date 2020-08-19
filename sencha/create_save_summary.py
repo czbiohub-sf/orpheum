@@ -46,7 +46,7 @@ class CreateSaveSummary:
             # writing to csv file
             with open(self.csv, 'w') as csvfile:
                 # creating a csv writer object
-                csvwriter = csv.writer(csvfile)
+                csvwriter = csv.writer(csvfile, lineterminator="\n")
 
                 # writing the fields
                 csvwriter.writerow(SCORING_DF_COLUMNS)
@@ -113,7 +113,7 @@ class CreateSaveSummary:
             summary = self.generate_coding_summary(coding_scores)
             print("generate_coding_summary ended")
         with open(self.json_summary, "w") as f:
-            print("Writing translate summary to {}".format(self.json_summary))
+            logger.info("Writing translate summary to {}".format(self.json_summary))
             json.dump(summary, fp=f)
             print("Dumped translate summary to {}".format(self.json_summary))
         return summary
