@@ -130,7 +130,7 @@ class Translate:
             tablesize=self.tablesize,
         )
         self.verbose = True
-        print("\tDone making peptide_bloom_filter!")
+        logger.info("\tDone making peptide_bloom_filter!")
 
         if not self.peptides_are_bloom_filter:
             self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(

@@ -16,22 +16,13 @@ SEQTYPE_TO_ANNOUNCEMENT = {
     " reads",
 }
 SCORING_DF_COLUMNS = [
-    "read_id",
-    "jaccard_in_peptide_db",
-    "n_kmers",
-    "category",
-    "translation_frame",
-    "filename"
+    'read_id',
+    'jaccard_in_peptide_db',
+    'n_kmers',
+    'category',
+    'translation_frame',
+    'filename'
 ]
-
-SCORING_DF_SCHEMA = pa.schema([
-    ('read_id', pa.string()),
-    ('jaccard_in_peptide_db', pa.float64()),
-    ('n_kmers', pa.int32()),
-    ('category', pa.string()),
-    ('translation_frame', pa.int8()),
-    ('filename', pa.string())
-])
 
 
 LOW_COMPLEXITY_PER_ALIAS = [

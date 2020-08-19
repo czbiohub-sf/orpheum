@@ -12,7 +12,6 @@ from sencha.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES,
     PROTEIN_CODING_CATEGORIES,
     SCORING_DF_COLUMNS,
-    SCORING_DF_SCHEMA
 )
 from sencha.log_utils import get_logger
 
@@ -60,12 +59,7 @@ class CreateSaveSummary:
         if self.parquet:
             logger.info("Writing coding scores of reads to {}".format(
                 self.parquet))
-            (self.read_ids,
-             self.jaccard_in_peptide_dbs,
-             self.n_kmers,
-             self.categories,
-             self.translation_frames,
-             self.filenames) = map(list, zip(*coding_scores))
+            self.read_ids, self.jaccard_in_peptide_dbs, self.n_kmers, self.categories, self.translation_frames, self.filenames = map(list, zip(*coding_scores))
             batch = pa.RecordBatch.from_arrays(
                 [self.read_ids,
                  self.jaccard_in_peptide_dbs,
@@ -73,7 +67,7 @@ class CreateSaveSummary:
                  self.categories,
                  self.translation_frames,
                  self.filenames],
-                names=SCORING_DF_SCHEMA
+                names=SCORING_DF_COLUMNS
             )
             pq.write_table(
                 pa.Table.from_batches([batch]), self.parquet)
@@ -125,12 +119,6 @@ class CreateSaveSummary:
         return summary
 
     def generate_coding_summary(self, coding_scores):
-        (self.read_ids,
-         self.jaccard_in_peptide_dbs,
-         self.n_kmers,
-         self.categories,
-         self.translation_frames,
-         self.filenames) = map(list, zip(*coding_scores))
         print("get_n_translated_frames_per_read started")
         (
             translation_frame_percentages,
@@ -175,6 +163,7 @@ class CreateSaveSummary:
 
     def get_n_per_coding_category(self, coding_scores):
         # Initialize to all zeros
+        self.read_ids, self.jaccard_in_peptide_dbs, self.n_kmers, self.categories, self.translation_frames, self.filenames = map(list, zip(*coding_scores))
         counts = self.make_empty_coding_categories()
         read_id_category = [
             (read_id, category) for read_id, category in zip(
@@ -218,7 +207,7 @@ class CreateSaveSummary:
     def get_n_translated_frames_per_read(self, coding_scores):
         """Of all coding sequences, get number of possible translations"""
         col = "n_translated_frames"
-
+        self.read_ids, self.jaccard_in_peptide_dbs, self.n_kmers, self.categories, self.translation_frames, self.filenames = map(list, zip(*coding_scores))
         predicted_coding = [
             self.read_ids[index] for index, category in enumerate(
                 self.categories) if category == "Coding"]
