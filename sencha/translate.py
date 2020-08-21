@@ -3,6 +3,8 @@ translate.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+import os
+import csv
 import sys
 import warnings
 
@@ -25,6 +27,65 @@ from sencha.translate_single_seq import TranslateSingleSeq
 
 
 logger = get_logger(__file__)
+
+
+def calculate_chunksize(total_jobs_todo, processes):
+    """
+    Return integer - chunksize representing the number of jobs
+    per process that needs to be run
+    total_jobs_todo : int
+        total number of jobs
+    processes; int
+        number of processes to be used for multiprocessing
+    Returns
+    -------
+    Integer reprsenting number of jobs to be run on each process
+    """
+    chunksize, extra = divmod(total_jobs_todo, processes)
+    if extra:
+        chunksize += 1
+    return chunksize
+
+
+def batch_iterator(iterator, batch_size):
+    """Returns lists of length batch_size.
+
+    This can be used on any iterator, for example to batch up
+    SeqRecord objects from Bio.SeqIO.parse(...), or to batch
+    Alignment objects from Bio.AlignIO.parse(...), or simply
+    lines from a file handle.
+
+    This is a generator function, and it returns lists of the
+    entries from the supplied iterator.  Each list will have
+    batch_size entries, although the final list may be shorter.
+    """
+    entry = True  # Make sure we loop once
+    while entry:
+        batch = []
+        while len(batch) < batch_size:
+            try:
+                entry = iterator.next()
+            except StopIteration:
+                entry = None
+            if entry is None:
+                # End of file
+                break
+            batch.append(entry)
+        if batch:
+            yield batch
+
+
+def split_fasta_files(reads, chunksize, outdir="/tmp"):
+    record_iter = screed.open(reads)
+    filenames = []
+    for i, batch in enumerate(batch_iterator(record_iter, chunksize)):
+        filename = os.path.join(outdir, 'gene_%i.fasta' % (i + 1))
+        with open(filename, 'w') as ouput_handle:
+            for record in batch:
+                description = record["name"]
+                sequence = record["sequence"]
+                write_fasta(ouput_handle, description, sequence)
+    return filenames
 
 
 def get_jaccard_threshold(jaccard_threshold, alphabet):
@@ -204,7 +265,7 @@ class Translate:
 
         return fraction_in_peptide_db, n_kmers
 
-    def check_peptide_content(self, description, sequence):
+    def check_peptide_content(self, description, sequence, coding_peptide_fasta):
         """Predict whether a nucleotide sequence could be protein-coding"""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -267,7 +328,7 @@ class Translate:
                         description, frame
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
-                        write_fasta(sys.stdout, seqname, translation)
+                        write_fasta(coding_peptide_fasta, seqname, translation)
                         self.maybe_write_fasta(
                             self.file_handles["coding_nucleotide"], seqname, sequence
                         )
@@ -317,15 +378,26 @@ class Translate:
             for i in [1, 2, 3, -1, -2, -3]
         ]
 
-    def maybe_score_single_read(self, description, sequence):
+    def maybe_score_single_read(self, reads, coding_peptide_fasta):
         """Check if read is low complexity/too short, otherwise score it"""
-        # Check if nucleotide sequence is low complexity
+        csv_name = coding_peptide_fasta.replace(".fasta", ".csv")
+        with open(csv_name, 'w') as csvfile:
+            # creating a csv writer object
+            csvwriter = csv.writer(csvfile, lineterminator="\n")
+            # writing the fields
+            csvwriter.writerow(constants_translate.SCORING_DF_COLUMNS)
+            with screed.open(reads) as records:
+                for record in tqdm(records):
+                    description = record["name"]
+                    sequence = record["sequence"]
+                # Check if nucleotide sequence is low complexity
+                if evaluate_is_fastp_low_complexity(sequence):
+                    scores = self.check_nucleotide_content(description, np.nan, sequence)
+                else:
+                    scores = self.check_peptide_content(description, sequence, coding_peptide_fasta)
 
-        if evaluate_is_fastp_low_complexity(sequence):
-            scores = self.check_nucleotide_content(description, np.nan, sequence)
-        else:
-            scores = self.check_peptide_content(description, sequence)
-        return scores
+                # writing the data rows
+                csvwriter.writerow(scores)
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
         if special_case is not None:
@@ -340,6 +412,10 @@ class Translate:
         """Assign a coding score to each read. Where the magic happens."""
 
         scoring_lines = []
+        num_records = 0
+        with screed.open(reads) as records:
+            for record in tqdm(records):
+                num_records += 1
         with screed.open(reads) as records:
             for record in records:
                 description = record["name"]
@@ -532,7 +608,7 @@ def cli(
         Whether or not to save the created bloom filter to file. If a string,
         save to this filename
     peptides_are_bloom_filter : bool
-        Input ilfe of peptides is already a bloom filter
+        Input file of peptides is already a bloom filter
     jaccard_threshold : float
         Value between 0 and 1. By default, the (empirically-chosen) "best"
         threshold is chosen for each alphabet. For "protein" and  "dayhoff",
