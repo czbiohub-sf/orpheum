@@ -341,7 +341,7 @@ class Translate:
 
         scoring_lines = []
         with screed.open(reads) as records:
-            for record in records:
+            for record in tqdm(records):
                 description = record["name"]
                 sequence = record["sequence"]
                 if self.verbose:
@@ -370,13 +370,10 @@ class Translate:
         self.maybe_open_fastas()
         scoring_lines = []
         for i, reads_file in enumerate(self.reads):
-            print("processing started {}th file".format(i))
             self.maybe_open_fastas()
             scoring_lines.extend(self.score_reads_per_file(reads_file))
             self.maybe_close_fastas()
-            print("processing ended {}th file".format(i))
         self.coding_scores = scoring_lines
-        print("coding_scores set")
 
     def get_coding_scores_all_files(self):
         return self.coding_scores
@@ -585,10 +582,7 @@ def cli(
     # \b above prevents re-wrapping of paragraphs
     translate_obj = Translate(locals())
     translate_obj.set_coding_scores_all_files()
-    print("coding_scores calculation started")
     coding_scores = translate_obj.get_coding_scores_all_files()
-    print("coding_scores calculation endede")
-    print("assemble_summary_obj calculation started")
     assemble_summary_obj = CreateSaveSummary(
         reads,
         csv,
@@ -599,16 +593,9 @@ def cli(
         translate_obj.peptide_ksize,
         translate_obj.jaccard_threshold,
     )
-    print("assemble_summary_obj calculation ended")
-    print("maybe_write_csv calculation started")
     assemble_summary_obj.maybe_write_csv(coding_scores)
-    print("maybe_write_csv calculation ended")
-    print("maybe_write_parquet calculation started")
     assemble_summary_obj.maybe_write_parquet(coding_scores)
-    print("maybe_write_parquet calculation ended")
-    print("maybe_write_json_summary calculation started")
     assemble_summary_obj.maybe_write_json_summary(coding_scores)
-    print("maybe_write_json_summary calculation ended")
 
 
 if __name__ == "__main__":

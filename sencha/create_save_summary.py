@@ -41,7 +41,6 @@ class CreateSaveSummary:
     def maybe_write_csv(self, coding_scores):
         if self.csv:
             logger.info("Writing coding scores of reads to {}".format(self.csv))
-            print("coding scores writing to csv started")
             # writing to csv file
             with open(self.csv, 'w') as csvfile:
                 # creating a csv writer object
@@ -52,7 +51,6 @@ class CreateSaveSummary:
 
                 # writing the data rows
                 csvwriter.writerows(coding_scores)
-            print("coding scores writing to csv ended")
 
     def maybe_write_parquet(self, coding_scores):
         if self.parquet:
@@ -81,9 +79,7 @@ class CreateSaveSummary:
         if not self.json_summary:
             # Early exit if json_summary is not True
             return
-        print("make_empty_coding_categories started")
         empty_coding_categories = self.make_empty_coding_categories()
-        print("make_empty_coding_categories ended")
 
         if coding_scores == []:
             summary = {
@@ -108,41 +104,34 @@ class CreateSaveSummary:
                 },
             }
         else:
-            print("generate_coding_summary started")
             summary = self.generate_coding_summary(coding_scores)
-            print("generate_coding_summary ended")
         with open(self.json_summary, "w") as f:
             logger.info("Writing translate summary to {}".format(self.json_summary))
             json.dump(summary, fp=f)
-            print("Dumped translate summary to {}".format(self.json_summary))
         return summary
 
     def generate_coding_summary(self, coding_scores):
-        print("get_n_translated_frames_per_read started")
         (
             translation_frame_percentages,
             translation_frame_counts,
         ) = self.get_n_translated_frames_per_read(coding_scores)
-        print("get_n_translated_frames_per_read ended")
 
         files = np.unique(self.filenames).tolist()
-        print("get_n_per_coding_category started")
 
         (
             categorization_percentages,
             categorization_counts,
         ) = self.get_n_per_coding_category(coding_scores)
-        print("get_n_per_coding_category ended")
-
-        print("summary dictionary started")
         # Get Jaccard distributions, count, min, max, mean, stddev, median
         jaccard_info = {
-            "count": np.count_nonzero(self.jaccard_in_peptide_dbs),
+            "count": int(np.count_nonzero(~np.isnan(self.jaccard_in_peptide_dbs))),
             "mean": np.nanmean(self.jaccard_in_peptide_dbs),
+            "std": np.nanstd(self.jaccard_in_peptide_dbs),
             "min": np.nanmin(self.jaccard_in_peptide_dbs),
-            "max": np.nanmax(self.jaccard_in_peptide_dbs),
-            "median": np.nanmedian(self.jaccard_in_peptide_dbs),
-            "stddev": np.nanstd(self.jaccard_in_peptide_dbs)
+            "25%": np.nanpercentile(self.jaccard_in_peptide_dbs, 25),
+            "50%": np.nanpercentile(self.jaccard_in_peptide_dbs, 50),
+            "75%": np.nanpercentile(self.jaccard_in_peptide_dbs, 75),
+            "max": np.nanmax(self.jaccard_in_peptide_dbs)
         }
 
         summary = {
@@ -157,7 +146,6 @@ class CreateSaveSummary:
             "peptide_ksize": self.peptide_ksize,
             "jaccard_threshold": self.jaccard_threshold,
         }
-        print("summary dictionary ended")
         return summary
 
     def get_n_per_coding_category(self, coding_scores):
@@ -170,7 +158,8 @@ class CreateSaveSummary:
 
         for read_id, categories_for_read_id in itertools.groupby(
                 read_id_category, key=lambda x: x[0]):
-            categories_for_read_id = list(dict(categories_for_read_id).values())
+            categories_for_read_id = [
+                read_category[1] for read_category in list(categories_for_read_id)]
             unique_categories = np.unique(categories_for_read_id).tolist()
 
             # If any of the frames is coding, then that read is called coding,
@@ -192,7 +181,6 @@ class CreateSaveSummary:
                 counts[unique_categories[0]] += 1
             else:
                 counts["Non-coding"] += 1
-
         # Convert to series to make percentage calculation easy
         categories = pd.Series(counts)
 

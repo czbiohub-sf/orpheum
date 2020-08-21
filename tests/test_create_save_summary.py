@@ -192,13 +192,12 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         reads, True, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
     )
     test_summary = create_ss.generate_coding_summary(single_alphabet_ksize_true_scores)
-    print(test_summary)
     true_summary = {
         "input_files": ["SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq"],
         "jaccard_info": {
-            "count": 44.0,
+            "count": 44,
             "mean": 0.085830733808675,
-            "std": 0.25321503253861455,
+            "std": 0.2503210514088884,
             "min": 0.0,
             "25%": 0.0,
             "50%": 0.0,
