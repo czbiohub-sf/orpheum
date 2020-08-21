@@ -45,7 +45,7 @@ def coding_scores_nonempty():
         ["read7", 0.9, 0, "Coding", 0, ""],
         ["read8", 0.9, 0, "Coding", 0, ""],
         ["read9", 0.9, 0, "Coding", 0, ""],
-        ["read10", 0.9, 0, "Coding", 0, ""]
+        ["read10", 0.9, 0, "Coding", 0, ""],
     ]
     return coding_scores
 
