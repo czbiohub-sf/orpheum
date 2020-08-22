@@ -38,20 +38,3 @@ def test_open_and_announce(tmpdir, capsys):
         fasta
     )
     assert captured.out in expected
-
-
-def test_maybe_open_fastas(tmpdir, capsys):
-    # Check if file handle is stdout
-    fasta_utils.set_coding_scores_all_files()
-    assert len(fasta_utils.fastas) == 4
-    assert len(fasta_utils.file_handles) == 4
-    fastas = [
-        fasta_utils.noncoding_nucleotide_fasta,
-        fasta_utils.coding_nucleotide_fasta,
-        fasta_utils.low_complexity_peptide_fasta,
-        fasta_utils.low_complexity_nucleotide_fasta,
-    ]
-    seqtypes = list(fasta_utils.file_handles.keys())
-    for key, value in fasta_utils.fastas.items():
-        assert value in fastas
-        assert key in seqtypes
