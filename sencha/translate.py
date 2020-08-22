@@ -398,9 +398,9 @@ class Translate:
             "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
             "low_complexity_peptide": self.low_complexity_peptide_fasta,
         }
-        fasta_utils.maybe_open_fastas(fastas)
+        file_handles = fasta_utils.maybe_open_fastas(fastas)
         # Combine fastas
-        for key, file_handle in fastas.items():
+        for key, file_handle in file_handles.items():
             for split in fasta_files_split:
                 fasta_prefix = split.replace(".fasta", "")
                 reads = fasta_prefix + "_" + key + ".fasta"
@@ -411,7 +411,7 @@ class Translate:
                         fasta_utils.maybe_write_fasta(
                             file_handle, description, sequence
                         )
-        fasta_utils.maybe_close_fastas(fastas)
+        fasta_utils.maybe_close_fastas(file_handles)
 
         # Combine and print coding_peptide fastas
         for split in fasta_files_split:
