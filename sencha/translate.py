@@ -345,7 +345,8 @@ class Translate:
                             line = self.get_coding_score_line(
                                 description, jaccard, n_kmers, special_case, frame
                             )
-                            line.append(reads)
+                            line.append(self.current_reads_file)
+                            csvwriter.writerow(line)
                     else:
                         for (
                             jaccard,
@@ -363,7 +364,7 @@ class Translate:
                             line = self.get_coding_score_line(
                                 description, jaccard, n_kmers, special_case, frame
                             )
-                            line.append(reads)
+                            line.append(self.current_reads_file)
                             # writing the data rows
                             csvwriter.writerow(line)
         fasta_utils.maybe_close_fastas(self.fastas)
@@ -407,7 +408,7 @@ class Translate:
                 fasta_prefix = split.replace(".fasta", "")
                 reads = fasta_prefix + "_" + key + ".fasta"
                 with screed.open(reads) as records:
-                    for record in records:
+                    for record in tqdm(records):
                         description = record["name"]
                         sequence = record["sequence"]
                         fasta_utils.maybe_write_fasta(
@@ -447,6 +448,7 @@ class Translate:
     def set_coding_scores_all_files(self):
         scoring_lines = []
         for i, reads_file in enumerate(self.reads):
+            self.current_reads_file = reads_file
             scoring_lines.extend(self.score_reads_per_file(reads_file))
         self.coding_scores = scoring_lines
 
