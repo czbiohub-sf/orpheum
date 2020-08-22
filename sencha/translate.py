@@ -3,7 +3,6 @@ translate.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
-import os
 import csv
 import sys
 import warnings
@@ -12,6 +11,7 @@ import click
 import numpy as np
 import screed
 from tqdm import tqdm
+from pathos import multiprocessing
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -22,70 +22,12 @@ from sencha.index import (
     maybe_save_peptide_bloom_filter,
 )
 import sencha.constants_index as constants_index
+import sencha.fasta_utils as fasta_utils
 import sencha.constants_translate as constants_translate
 from sencha.translate_single_seq import TranslateSingleSeq
 
 
 logger = get_logger(__file__)
-
-
-def calculate_chunksize(total_jobs_todo, processes):
-    """
-    Return integer - chunksize representing the number of jobs
-    per process that needs to be run
-    total_jobs_todo : int
-        total number of jobs
-    processes; int
-        number of processes to be used for multiprocessing
-    Returns
-    -------
-    Integer reprsenting number of jobs to be run on each process
-    """
-    chunksize, extra = divmod(total_jobs_todo, processes)
-    if extra:
-        chunksize += 1
-    return chunksize
-
-
-def batch_iterator(iterator, batch_size):
-    """Returns lists of length batch_size.
-
-    This can be used on any iterator, for example to batch up
-    SeqRecord objects from Bio.SeqIO.parse(...), or to batch
-    Alignment objects from Bio.AlignIO.parse(...), or simply
-    lines from a file handle.
-
-    This is a generator function, and it returns lists of the
-    entries from the supplied iterator.  Each list will have
-    batch_size entries, although the final list may be shorter.
-    """
-    entry = True  # Make sure we loop once
-    while entry:
-        batch = []
-        while len(batch) < batch_size:
-            try:
-                entry = iterator.next()
-            except StopIteration:
-                entry = None
-            if entry is None:
-                # End of file
-                break
-            batch.append(entry)
-        if batch:
-            yield batch
-
-
-def split_fasta_files(reads, chunksize, outdir="/tmp"):
-    record_iter = screed.open(reads)
-    filenames = []
-    for i, batch in enumerate(batch_iterator(record_iter, chunksize)):
-        filename = os.path.join(outdir, 'gene_%i.fasta' % (i + 1))
-        with open(filename, 'w') as ouput_handle:
-            for record in batch:
-                description = record["name"]
-                sequence = record["sequence"]
-                write_fasta(ouput_handle, description, sequence)
-    return filenames
 
 
 def get_jaccard_threshold(jaccard_threshold, alphabet):
@@ -167,10 +109,6 @@ def compute_kmer_complexity(seq, ksize):
     return complexity
 
 
-def write_fasta(file_handle, description, sequence):
-    file_handle.write(">{}\n{}\n".format(description, sequence))
-
-
 class Translate:
     def __init__(self, args):
         """Constructor"""
@@ -182,7 +120,20 @@ class Translate:
         self.jaccard_threshold = get_jaccard_threshold(
             self.jaccard_threshold, self.alphabet
         )
-        self.peptide_bloom_filter = maybe_make_peptide_bloom_filter(
+        # Use global variable so the functions that are inside multiprocessing
+        # don't try to access the nodegraph by self.peptide_bloom_filter
+        # and hence avoiding the pickling error while serialization of the NodeGraph by multiprocessing
+        # which doesn't exist for nodegraph currently
+        # Con is that global variable definition inside a class defintion
+        # is advised to be avoided and is said that it might be enforced as incorrect
+        # NB PV: This is been said in the docs since Python2.7, but it hasn't changed, so I
+        # suggest keeping the global variable declaration here for now
+        # https://docs.python.org/3.8/reference/simple_stmts.html#the-global-statement
+        # 1) One solution is that if we can call create and declare peptide_bloom_filter inside the
+        # if__name__=main function but that would mean switching to argparse from click
+        # 2) Another solution is to make nodegraph serializable
+        global peptide_bloom_filter
+        peptide_bloom_filter = maybe_make_peptide_bloom_filter(
             self.peptides,
             self.peptide_ksize,
             self.alphabet,
@@ -196,45 +147,14 @@ class Translate:
         if not self.peptides_are_bloom_filter:
             self.peptide_bloom_filter_filename = maybe_save_peptide_bloom_filter(
                 self.peptides,
-                self.peptide_bloom_filter,
+                peptide_bloom_filter,
                 self.alphabet,
                 self.save_peptide_bloom_filter,
             )
         else:
             self.peptide_bloom_filter_filename = self.peptides
-        self.peptide_ksize = self.peptide_bloom_filter.ksize()
+        self.peptide_ksize = peptide_bloom_filter.ksize()
         self.nucleotide_ksize = 3 * self.peptide_ksize
-
-    def maybe_write_fasta(self, file_handle, description, sequence):
-        """Write fasta to file handle if it is not None"""
-        if file_handle is not None:
-            write_fasta(file_handle, description, sequence)
-
-    def open_and_announce(self, filename, seqtype):
-        """Return an opened file handle to write and announce"""
-        if self.verbose:
-            announcement = constants_translate.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
-            logger.info("Writing {} to {}".format(announcement, filename))
-        return open(filename, "w")
-
-    def maybe_open_fastas(self):
-        self.fastas = {
-            "noncoding_nucleotide": self.noncoding_nucleotide_fasta,
-            "coding_nucleotide": self.coding_nucleotide_fasta,
-            "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
-            "low_complexity_peptide": self.low_complexity_peptide_fasta,
-        }
-        self.file_handles = {}
-        for seqtype, fasta in self.fastas.items():
-            if fasta is not None:
-                self.file_handles[seqtype] = self.open_and_announce(fasta, seqtype)
-            else:
-                self.file_handles[seqtype] = None
-
-    def maybe_close_fastas(self):
-        for file_handle in self.file_handles.values():
-            if file_handle is not None:
-                file_handle.close()
 
     def get_jaccard_threshold(self):
         return get_jaccard_threshold(self.jaccard_threshold, self.alphabet)
@@ -247,7 +167,7 @@ class Translate:
         hashes = [hash_murmur(kmer) for kmer in kmers]
         n_kmers = len(kmers)
         n_kmers_in_peptide_db = sum(
-            1 for h in hashes if self.peptide_bloom_filter.get(h) > 0
+            1 for h in hashes if peptide_bloom_filter.get(h) > 0
         )
         if self.verbose:
             logger.info("\ttranslation: \t".format(encoded))
@@ -255,7 +175,7 @@ class Translate:
 
         if self.verbose:
             kmers_in_peptide_db = {
-                (k, h): self.peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
+                (k, h): peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
             }
             # Print keys (kmers) only
             logger.info("\tK-mers in peptide database:")
@@ -265,7 +185,7 @@ class Translate:
 
         return fraction_in_peptide_db, n_kmers
 
-    def check_peptide_content(self, description, sequence, coding_peptide_fasta):
+    def check_peptide_content(self, description, sequence):
         """Predict whether a nucleotide sequence could be protein-coding"""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -302,8 +222,8 @@ class Translate:
                     encoded, self.peptide_ksize
                 )
                 if is_kmer_low_complex:
-                    self.maybe_write_fasta(
-                        self.file_handles["low_complexity_peptide"],
+                    fasta_utils.maybe_write_fasta(
+                        self.fastas["low_complexity_peptide"],
                         description + " translation_frame: {}.format(frame)",
                         translation,
                     )
@@ -328,9 +248,11 @@ class Translate:
                         description, frame
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
-                        write_fasta(coding_peptide_fasta, seqname, translation)
-                        self.maybe_write_fasta(
-                            self.file_handles["coding_nucleotide"], seqname, sequence
+                        fasta_utils.maybe_write_fasta(
+                            self.fastas["coding_peptide"], seqname, translation
+                        )
+                        fasta_utils.maybe_write_fasta(
+                            self.fastas["coding_nucleotide"], seqname, sequence
                         )
                         scoring_lines.append(
                             constants_translate.SingleReadScore(
@@ -341,8 +263,8 @@ class Translate:
                             )
                         )
                     else:
-                        self.maybe_write_fasta(
-                            self.file_handles["noncoding_nucleotide"], seqname, sequence
+                        fasta_utils.maybe_write_fasta(
+                            self.fastas["noncoding_nucleotide"], seqname, sequence
                         )
                         scoring_lines.append(
                             constants_translate.SingleReadScore(
@@ -366,8 +288,8 @@ class Translate:
         if n_kmers > 0:
             jaccard = np.nan
             special_case = "Low complexity nucleotide"
-            self.maybe_write_fasta(
-                self.file_handles["low_complexity_nucleotide"], description, sequence
+            fasta_utils.maybe_write_fasta(
+                self.fastas["low_complexity_nucleotide"], description, sequence
             )
         else:
             jaccard = np.nan
@@ -378,26 +300,73 @@ class Translate:
             for i in [1, 2, 3, -1, -2, -3]
         ]
 
-    def maybe_score_single_read(self, reads, coding_peptide_fasta):
+    def maybe_score_single_read(self, reads):
         """Check if read is low complexity/too short, otherwise score it"""
+        fasta_prefix = reads.replace(".fasta", "")
+        coding_peptide_fasta = fasta_prefix + "_coding_peptide.fasta"
         csv_name = coding_peptide_fasta.replace(".fasta", ".csv")
-        with open(csv_name, 'w') as csvfile:
+        self.fastas = {
+            "noncoding_nucleotide": fasta_prefix + "_" + "noncoding_nucleotide.fasta",
+            "coding_nucleotide": fasta_prefix + "_" + "coding_nucleotide.fasta",
+            "low_complexity_nucleotide": fasta_prefix
+            + "_"
+            + "low_complexity_nucleotide.fasta",
+            "low_complexity_peptide": fasta_prefix
+            + "_"
+            + "low_complexity_peptide.fasta",
+            "coding_peptide": coding_peptide_fasta,
+        }
+        self.fastas = fasta_utils.maybe_open_fastas(self.fastas)
+        with open(csv_name, "w") as csvfile:
             # creating a csv writer object
             csvwriter = csv.writer(csvfile, lineterminator="\n")
             # writing the fields
-            csvwriter.writerow(constants_translate.SCORING_DF_COLUMNS)
             with screed.open(reads) as records:
                 for record in tqdm(records):
                     description = record["name"]
                     sequence = record["sequence"]
-                # Check if nucleotide sequence is low complexity
-                if evaluate_is_fastp_low_complexity(sequence):
-                    scores = self.check_nucleotide_content(description, np.nan, sequence)
-                else:
-                    scores = self.check_peptide_content(description, sequence, coding_peptide_fasta)
+                    # Check if nucleotide sequence is low complexity
+                    if evaluate_is_fastp_low_complexity(sequence):
+                        for (
+                            jaccard,
+                            n_kmers,
+                            special_case,
+                            frame,
+                        ) in self.check_nucleotide_content(
+                            description, np.nan, sequence
+                        ):
+                            if self.verbose:
+                                logger.info(
+                                    "Jaccard: {}, n_kmers = {} for frame {}".format(
+                                        jaccard, n_kmers, frame
+                                    )
+                                )
 
+                            line = self.get_coding_score_line(
+                                description, jaccard, n_kmers, special_case, frame
+                            )
+                            line.append(reads)
+                    else:
+                        for (
+                            jaccard,
+                            n_kmers,
+                            special_case,
+                            frame,
+                        ) in self.check_peptide_content(description, sequence):
+                            if self.verbose:
+                                logger.info(
+                                    "Jaccard: {}, n_kmers = {} for frame {}".format(
+                                        jaccard, n_kmers, frame
+                                    )
+                                )
+
+                            line = self.get_coding_score_line(
+                                description, jaccard, n_kmers, special_case, frame
+                            )
+                            line.append(reads)
                 # writing the data rows
-                csvwriter.writerow(scores)
+                csvwriter.writerow(line)
+        fasta_utils.maybe_close_fastas(self.fastas)
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
         if special_case is not None:
@@ -411,44 +380,73 @@ class Translate:
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
 
-        scoring_lines = []
         num_records = 0
         with screed.open(reads) as records:
             for record in tqdm(records):
                 num_records += 1
-        with screed.open(reads) as records:
-            for record in tqdm(records):
-                description = record["name"]
-                sequence = record["sequence"]
-                if self.verbose:
-                    logger.info(description)
-
-                for (
-                    jaccard,
-                    n_kmers,
-                    special_case,
-                    frame,
-                ) in self.maybe_score_single_read(description, sequence):
-                    if self.verbose:
-                        logger.info(
-                            "Jaccard: {}, n_kmers = {} for frame {}".format(
-                                jaccard, n_kmers, frame
-                            )
+        chunksize = fasta_utils.calculate_chunksize(num_records, self.processes)
+        fasta_files_split = fasta_utils.split_fasta_files(
+            reads, chunksize, self.intermediate_directory
+        )
+        pool = multiprocessing.Pool(processes=self.processes)
+        pool.map(self.maybe_score_single_read, fasta_files_split)
+        pool.close()
+        pool.join()
+        fastas = {
+            "noncoding_nucleotide": self.noncoding_nucleotide_fasta,
+            "coding_nucleotide": self.coding_nucleotide_fasta,
+            "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
+            "low_complexity_peptide": self.low_complexity_peptide_fasta,
+        }
+        fasta_utils.maybe_open_fastas(fastas)
+        # Combine fastas
+        for key, file_handle in fastas.items():
+            for split in fasta_files_split:
+                fasta_prefix = split.replace(".fasta", "")
+                reads = fasta_prefix + "_" + key + ".fasta"
+                with screed.open(reads) as records:
+                    for record in tqdm(records):
+                        description = record["name"]
+                        sequence = record["sequence"]
+                        fasta_utils.maybe_write_fasta(
+                            file_handle, description, sequence
                         )
-                    line = self.get_coding_score_line(
-                        description, jaccard, n_kmers, special_case, frame
-                    )
-                    line.append(reads)
-                    scoring_lines.append(line)
+        fasta_utils.maybe_close_fastas(fastas)
+
+        # Combine and print coding_peptide fastas
+        for split in fasta_files_split:
+            fasta_prefix = split.replace(".fasta", "")
+            reads = fasta_prefix + "_" + "coding_peptide.fasta"
+            with screed.open(reads) as records:
+                for record in tqdm(records):
+                    description = record["name"]
+                    sequence = record["sequence"]
+                    fasta_utils.write_fasta(sys.stdout, description, sequence)
+                    print(description, sequence)
+
+        # combine and return scores
+        scoring_lines = []
+        # Combine and print coding_peptide fastas
+        for split in fasta_files_split:
+            csv_file = split.replace(".fasta", "_coding_peptide.csv")
+            with open(csv_file) as csvfile:
+                read_csv = csv.reader(csvfile, delimiter=",")
+                for row in read_csv:
+                    row = [
+                        str(row[0]),
+                        float(row[1]),
+                        float(row[2]),
+                        str(row[3]),
+                        int(row[4]),
+                        str(row[5]),
+                    ]
+                    scoring_lines.append(row)
         return scoring_lines
 
     def set_coding_scores_all_files(self):
-        self.maybe_open_fastas()
         scoring_lines = []
         for i, reads_file in enumerate(self.reads):
-            self.maybe_open_fastas()
             scoring_lines.extend(self.score_reads_per_file(reads_file))
-            self.maybe_close_fastas()
         self.coding_scores = scoring_lines
 
     def get_coding_scores_all_files(self):
@@ -560,6 +558,13 @@ class Translate:
     "start codon (ATG) and ending in a stop codon "
     "(TAG, TAA, TGA)",
 )
+@click.option(
+    "--intermediate-directory",
+    help="If specified this directory is expected to be already created and intermediate files are written here",
+)
+@click.option(
+    "--processes", default=4, help="number of cores to parallely process on",
+)
 @click.option("--verbose", is_flag=True, help="Print more output")
 def cli(
     peptides,
@@ -580,6 +585,8 @@ def cli(
     n_tables=constants_index.DEFAULT_N_TABLES,
     long_reads=False,
     verbose=False,
+    processes=4,
+    intermediate_directory="/tmp",
 ):
     """Writes coding peptides from reads to standard output
 
@@ -648,6 +655,10 @@ def cli(
     verbose : bool
         Whether or not to print lots of stuff. Can specify multiple, e.g. -vv
         if you really like having everything in stdout
+    processes: int
+        number of processes to parallel process on
+    intermediate_directory: str
+        Directory to save intermediate fastas and csv file
 
     \b
     Returns

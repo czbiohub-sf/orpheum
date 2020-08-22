@@ -9,6 +9,7 @@ SEQTYPE_TO_ANNOUNCEMENT = {
     "protein-coding peptides",
     "coding_nucleotide": "nucleotide sequence from reads WITH protein-coding translation"
     " frame nucleotides",
+    "coding_peptide": "Translated peptide sequence from reads for each frame of translation",
     "low_complexity_nucleotide": "nucleotide sequence from low complexity (low entropy) reads",
     "low_complexity_peptide": "peptide sequence from low "
     "complexity (low entropy) translated"
