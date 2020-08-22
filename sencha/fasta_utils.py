@@ -63,7 +63,6 @@ def split_fasta_files(reads, chunksize, outdir):
         with open(filename, "w") as ouput_handle:
             for record in batch:
                 description = record["name"]
-                print(description)
                 sequence = record["sequence"]
                 write_fasta(ouput_handle, description, sequence)
         filenames.append(filename)
