@@ -15,12 +15,12 @@ SEQTYPE_TO_ANNOUNCEMENT = {
     " reads",
 }
 SCORING_DF_COLUMNS = [
-    'read_id',
-    'jaccard_in_peptide_db',
-    'n_kmers',
-    'category',
-    'translation_frame',
-    'filename'
+    "read_id",
+    "jaccard_in_peptide_db",
+    "n_kmers",
+    "category",
+    "translation_frame",
+    "filename",
 ]
 
 
