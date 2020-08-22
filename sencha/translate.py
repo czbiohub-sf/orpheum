@@ -364,8 +364,8 @@ class Translate:
                                 description, jaccard, n_kmers, special_case, frame
                             )
                             line.append(reads)
-                # writing the data rows
-                csvwriter.writerow(line)
+                            # writing the data rows
+                            csvwriter.writerow(line)
         fasta_utils.maybe_close_fastas(self.fastas)
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
@@ -382,8 +382,10 @@ class Translate:
 
         num_records = 0
         with screed.open(reads) as records:
-            for record in tqdm(records):
+            for record in records:
                 num_records += 1
+        if num_records == 0:
+            return []
         chunksize = fasta_utils.calculate_chunksize(num_records, self.processes)
         fasta_files_split = fasta_utils.split_fasta_files(
             reads, chunksize, self.intermediate_directory
@@ -405,7 +407,7 @@ class Translate:
                 fasta_prefix = split.replace(".fasta", "")
                 reads = fasta_prefix + "_" + key + ".fasta"
                 with screed.open(reads) as records:
-                    for record in tqdm(records):
+                    for record in records:
                         description = record["name"]
                         sequence = record["sequence"]
                         fasta_utils.maybe_write_fasta(
@@ -418,11 +420,10 @@ class Translate:
             fasta_prefix = split.replace(".fasta", "")
             reads = fasta_prefix + "_" + "coding_peptide.fasta"
             with screed.open(reads) as records:
-                for record in tqdm(records):
+                for record in records:
                     description = record["name"]
                     sequence = record["sequence"]
                     fasta_utils.write_fasta(sys.stdout, description, sequence)
-                    print(description, sequence)
 
         # combine and return scores
         scoring_lines = []
@@ -560,6 +561,7 @@ class Translate:
 )
 @click.option(
     "--intermediate-directory",
+    default="/tmp",
     help="If specified this directory is expected to be already created and intermediate files are written here",
 )
 @click.option(
