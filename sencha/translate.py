@@ -6,10 +6,8 @@ Partition reads into coding, noncoding, and low-complexity bins
 import sys
 import warnings
 
-
 import click
 import numpy as np
-import pandas as pd
 import screed
 from tqdm import tqdm
 from sourmash._minhash import hash_murmur
@@ -342,7 +340,6 @@ class Translate:
         """Assign a coding score to each read. Where the magic happens."""
 
         scoring_lines = []
-
         with screed.open(reads) as records:
             for record in tqdm(records):
                 description = record["name"]
@@ -365,25 +362,18 @@ class Translate:
                     line = self.get_coding_score_line(
                         description, jaccard, n_kmers, special_case, frame
                     )
+                    line.append(reads)
                     scoring_lines.append(line)
-        # Concatenate all the lines into a single dataframe
-        scoring_df = pd.DataFrame(
-            scoring_lines, columns=constants_translate.SCORING_DF_COLUMNS
-        )
-
-        # Add the reads that were used to generate these scores as a column
-        scoring_df["filename"] = reads
-        return scoring_df
+        return scoring_lines
 
     def set_coding_scores_all_files(self):
         self.maybe_open_fastas()
-        dfs = []
+        scoring_lines = []
         for reads_file in self.reads:
             self.maybe_open_fastas()
-            df = self.score_reads_per_file(reads_file)
+            scoring_lines.extend(self.score_reads_per_file(reads_file))
             self.maybe_close_fastas()
-            dfs.append(df)
-        self.coding_scores = pd.concat(dfs, ignore_index=True)
+        self.coding_scores = scoring_lines
 
     def get_coding_scores_all_files(self):
         return self.coding_scores

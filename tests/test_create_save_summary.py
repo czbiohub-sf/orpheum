@@ -11,50 +11,43 @@ from sencha.constants_translate import (
 
 @pytest.fixture()
 def coding_scores_empty():
-    coding_scores = pd.DataFrame(
-        columns=["read_id", "jaccard_in_peptide_db", "n_kmers", "category", "filename"]
-    )
-    return coding_scores
+    return []
 
 
 @pytest.fixture()
 def coding_scores_nonempty():
     # Make fake dataframe with "read_id" and "category" columns only
     # for testing
-    data = {
-        "read_id": [
-            "read0",
-            "read0",
-            "read0",
-            "read0",
-            "read0",
-            "read0",
-            "read1",
-            "read1",
-            "read1",
-            "read1",
-            "read1",
-            "read2",
-            "read2",
-            "read2",
-            "read2",
-            "read3",
-            "read3",
-            "read3",
-            "read4",
-            "read4",
-            "read5",
-            "read5",
-            "read6",
-            "read7",
-            "read8",
-            "read9",
-            "read10",
-        ],
-    }
-    df = pd.DataFrame(data)
-    df["category"] = "Coding"
-    return df
+    coding_scores = [
+        ["read0", 0.9, 0, "Coding", 0, ""],
+        ["read0", 0.9, 0, "Coding", 0, ""],
+        ["read0", 0.9, 0, "Coding", 0, ""],
+        ["read0", 0.9, 0, "Coding", 0, ""],
+        ["read0", 0.9, 0, "Coding", 0, ""],
+        ["read0", 0.9, 0, "Coding", 0, ""],
+        ["read1", 0.9, 0, "Coding", 0, ""],
+        ["read1", 0.9, 0, "Coding", 0, ""],
+        ["read1", 0.9, 0, "Coding", 0, ""],
+        ["read1", 0.9, 0, "Coding", 0, ""],
+        ["read1", 0.9, 0, "Coding", 0, ""],
+        ["read2", 0.9, 0, "Coding", 0, ""],
+        ["read2", 0.9, 0, "Coding", 0, ""],
+        ["read2", 0.9, 0, "Coding", 0, ""],
+        ["read2", 0.9, 0, "Coding", 0, ""],
+        ["read3", 0.9, 0, "Coding", 0, ""],
+        ["read3", 0.9, 0, "Coding", 0, ""],
+        ["read3", 0.9, 0, "Coding", 0, ""],
+        ["read4", 0.9, 0, "Coding", 0, ""],
+        ["read4", 0.9, 0, "Coding", 0, ""],
+        ["read5", 0.9, 0, "Coding", 0, ""],
+        ["read5", 0.9, 0, "Coding", 0, ""],
+        ["read6", 0.9, 0, "Coding", 0, ""],
+        ["read7", 0.9, 0, "Coding", 0, ""],
+        ["read8", 0.9, 0, "Coding", 0, ""],
+        ["read9", 0.9, 0, "Coding", 0, ""],
+        ["read10", 0.9, 0, "Coding", 0, ""],
+    ]
+    return coding_scores
 
 
 @pytest.fixture
@@ -81,7 +74,8 @@ def true_scores_parquet(data_folder):
 
 @pytest.fixture
 def single_alphabet_ksize_true_scores(true_scores_path):
-    return pd.read_csv(true_scores_path)
+    df = pd.read_csv(true_scores_path)
+    return df.values.tolist()
 
 
 def test_maybe_write_json_summary_empty(
@@ -155,20 +149,20 @@ def test_get_n_per_coding_category(
         peptide_ksize,
         jaccard_threshold,
     )
-    data = [
-        ["read1", "Non-coding"],
-        ["read1", "Coding"],
-        ["read1", "Non-coding"],
-        ["read2", "Translation frame has stop codon(s)"],
-        ["read3", "Coding"],
-        ["read4", "Non-coding"],
-        ["read5", "Low complexity nucleotide"],
-        ["read6", "Read length was shorter than 3 * peptide k-mer size"],
-        ["read7", LOW_COMPLEXITY_CATEGORIES[alphabet]],
-    ]
-    df = pd.DataFrame(data, columns=["read_id", "category"])
 
-    test_counts, test_percentages = create_ss.get_n_per_coding_category(df)
+    data = [
+        ["read1", 0.9, 0, "Non-coding", 0, ""],
+        ["read1", 0.9, 0, "Coding", 0, ""],
+        ["read1", 0.9, 0, "Non-coding", 0, ""],
+        ["read2", 0.9, 0, "Translation frame has stop codon(s)", 0, ""],
+        ["read3", 0.9, 0, "Coding", 0, ""],
+        ["read4", 0.9, 0, "Non-coding", 0, ""],
+        ["read5", 0.9, 0, "Low complexity nucleotide", 0, ""],
+        ["read6", 0.9, 0, "Read length was shorter than 3 * peptide k-mer size", 0, ""],
+        ["read7", 0.9, 0, LOW_COMPLEXITY_CATEGORIES[alphabet], 0, ""],
+    ]
+
+    test_counts, test_percentages = create_ss.get_n_per_coding_category(data)
     canonical_alphabet = ALIAS_TO_ALPHABET[alphabet]
     # read1 and read3 are coding, there is zero too_short_peptide
     true_counts = {
@@ -198,13 +192,12 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         reads, True, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
     )
     test_summary = create_ss.generate_coding_summary(single_alphabet_ksize_true_scores)
-    print(test_summary)
     true_summary = {
         "input_files": ["SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq"],
         "jaccard_info": {
-            "count": 44.0,
+            "count": 44,
             "mean": 0.085830733808675,
-            "std": 0.25321503253861455,
+            "std": 0.2503210514088884,
             "min": 0.0,
             "25%": 0.0,
             "50%": 0.0,

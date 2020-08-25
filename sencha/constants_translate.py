@@ -1,6 +1,5 @@
 import itertools
-from collections import namedtuple, defaultdict
-
+from collections import namedtuple
 from sencha.sequence_encodings import ALPHABET_ALIASES
 
 DEFAULT_JACCARD_THRESHOLD = 0.5
@@ -21,7 +20,9 @@ SCORING_DF_COLUMNS = [
     "n_kmers",
     "category",
     "translation_frame",
+    "filename",
 ]
+
 
 LOW_COMPLEXITY_PER_ALIAS = [
     list(
