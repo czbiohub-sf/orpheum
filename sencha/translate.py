@@ -434,7 +434,7 @@ class Translate:
             with open(csv_file) as csvfile:
                 read_csv = csv.reader(csvfile, delimiter=",")
                 for row in read_csv:
-                    row = [
+                    line = [
                         str(row[0]),
                         float(row[1]),
                         float(row[2]),
@@ -442,7 +442,7 @@ class Translate:
                         int(row[4]),
                         str(row[5]),
                     ]
-                    scoring_lines.append(row)
+                    scoring_lines.append(line)
         return scoring_lines
 
     def set_coding_scores_all_files(self):
