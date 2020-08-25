@@ -447,7 +447,7 @@ class Translate:
 
     def set_coding_scores_all_files(self):
         scoring_lines = []
-        for i, reads_file in enumerate(self.reads):
+        for reads_file in self.reads:
             self.current_reads_file = reads_file
             scoring_lines.extend(self.score_reads_per_file(reads_file))
         self.coding_scores = scoring_lines
