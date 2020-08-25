@@ -369,7 +369,7 @@ class Translate:
     def set_coding_scores_all_files(self):
         self.maybe_open_fastas()
         scoring_lines = []
-        for i, reads_file in enumerate(self.reads):
+        for reads_file in self.reads:
             self.maybe_open_fastas()
             scoring_lines.extend(self.score_reads_per_file(reads_file))
             self.maybe_close_fastas()
