@@ -155,6 +155,7 @@ class Translate:
             self.peptide_bloom_filter_filename = self.peptides
         self.peptide_ksize = peptide_bloom_filter.ksize()
         self.nucleotide_ksize = 3 * self.peptide_ksize
+        self.coding_scores = []
 
     def get_jaccard_threshold(self):
         return get_jaccard_threshold(self.jaccard_threshold, self.alphabet)
@@ -428,8 +429,6 @@ class Translate:
                     sys.stdout.flush()
 
         # combine and return scores
-        scoring_lines = []
-        # Combine and print coding_peptide fastas
         for split in fasta_files_split:
             csv_file = split.replace(".fasta", "_coding_peptide.csv")
             with open(csv_file) as csvfile:
@@ -443,15 +442,12 @@ class Translate:
                         int(row[4]),
                         str(row[5]),
                     ]
-                    scoring_lines.append(line)
-        return scoring_lines
+                    self.coding_scores.append(line)
 
     def set_coding_scores_all_files(self):
-        scoring_lines = []
         for reads_file in self.reads:
             self.current_reads_file = reads_file
-            scoring_lines.extend(self.score_reads_per_file(reads_file))
-        self.coding_scores = scoring_lines
+            self.score_reads_per_file(reads_file)
 
     def get_coding_scores_all_files(self):
         return self.coding_scores
@@ -674,7 +670,6 @@ def cli(
     # \b above prevents re-wrapping of paragraphs
     translate_obj = Translate(locals())
     translate_obj.set_coding_scores_all_files()
-    coding_scores = translate_obj.get_coding_scores_all_files()
     assemble_summary_obj = CreateSaveSummary(
         reads,
         csv,
@@ -684,11 +679,12 @@ def cli(
         alphabet,
         translate_obj.peptide_ksize,
         translate_obj.jaccard_threshold,
+        translate_obj.coding_scores
     )
-    assemble_summary_obj.maybe_write_csv(coding_scores)
-    assemble_summary_obj.maybe_write_parquet(coding_scores)
-    assemble_summary_obj.maybe_write_json_summary(coding_scores)
-
+    del translate_obj.coding_scores
+    assemble_summary_obj.maybe_write_csv()
+    assemble_summary_obj.maybe_write_parquet()
+    assemble_summary_obj.maybe_write_json_summary()
 
 if __name__ == "__main__":
     cli()
