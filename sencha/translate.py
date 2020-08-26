@@ -425,6 +425,7 @@ class Translate:
                     description = record["name"]
                     sequence = record["sequence"]
                     fasta_utils.write_fasta(sys.stdout, description, sequence)
+                    sys.stdout.flush()
 
         # combine and return scores
         scoring_lines = []

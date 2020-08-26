@@ -4,7 +4,6 @@ import json
 from collections import Counter
 
 import numpy as np
-import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from sencha.constants_translate import (
@@ -198,19 +197,13 @@ class CreateSaveSummary:
                 counts[unique_categories[0]] += 1
             else:
                 counts["Non-coding"] += 1
-        # Convert to series to make percentage calculation easy
-        categories = pd.Series(counts)
-
-        # Initialize to all zeros
-        percentages = self.make_empty_coding_categories()
-        percentages_series = 100 * categories / categories.sum()
+        total = sum(list(counts.values()))
+        percentages = {category: 100 * count / total for category, count in counts.items()}
         # Replace with observations
-        percentages.update(percentages_series.to_dict())
         return percentages, counts
 
     def get_n_translated_frames_per_read(self, coding_scores):
         """Of all coding sequences, get number of possible translations"""
-        col = "n_translated_frames"
         (
             self.read_ids,
             self.jaccard_in_peptide_dbs,
@@ -224,23 +217,17 @@ class CreateSaveSummary:
             for index, category in enumerate(self.categories)
             if category == "Coding"
         ]
-        n_coding_per_read = pd.Series(Counter(predicted_coding))
-        n_coding_per_read.index = n_coding_per_read.index.astype(str)
+        n_coding_per_read = Counter(predicted_coding)
 
-        n_coding_per_read.name = col
-        n_coding_per_read_df = n_coding_per_read.to_frame()
+        coding_per_read_histogram = Counter(n_coding_per_read.values())
+        total = sum(list(coding_per_read_histogram.values()))
+        histogram_for_json = {
+            "Number of reads with {} putative protein-coding translations".format(key): value
+            for key, value in coding_per_read_histogram.items()
+        }
+        percentages_for_json = {
+            "Number of reads with {} putative protein-coding translations".format(key): 100 * value / total
+            for key, value in coding_per_read_histogram.items()
+        }
 
-        # Number of reading frames per read, per filename
-        coding_per_read_histogram = n_coding_per_read_df[col].value_counts()
-        index = coding_per_read_histogram.index.astype(str)
-        coding_per_read_histogram.index = (
-            "Number of reads with " + index + " putative protein-coding translations"
-        )
-
-        # Total number of coding reads
-        total = coding_per_read_histogram.sum()
-
-        coding_per_read_histogram_percentages = 100 * coding_per_read_histogram / total
-        histogram_for_json = coding_per_read_histogram.to_dict()
-        percentages_for_json = coding_per_read_histogram_percentages.to_dict()
         return percentages_for_json, histogram_for_json
