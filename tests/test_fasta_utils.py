@@ -4,6 +4,38 @@ import sys
 import sencha.fasta_utils as fasta_utils
 
 
+def test_calculate_chunksize():
+    tota_jobs_todo = 100
+    processes = 1
+    obtained = fasta_utils.calculate_chunksize(tota_jobs_todo, processes)
+    assert tota_jobs_todo == obtained
+    tota_jobs_todo = 51
+    processes = 5
+    expected = 11
+    obtained = fasta_utils.calculate_chunksize(tota_jobs_todo, processes)
+    assert expected == obtained
+
+
+def test_batch_iterator():
+    description = "test"
+    sequence = "seq"
+    fasta_utils.batch_iterator(sys.stdout, description, sequence)
+
+
+def test_split_fasta_files():
+    description = "test"
+    sequence = "seq"
+    fasta_utils.split_fasta_files(sys.stdout, description, sequence)
+
+
+def test_maybe_open_fastas():
+    pass
+
+
+def test_maybe_close_fastas():
+    pass
+
+
 def test_write_fasta(capsys):
     description = "test"
     sequence = "seq"
