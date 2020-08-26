@@ -119,13 +119,14 @@ class CreateSaveSummary:
             json.dump(summary, fp=f)
         # Delete these attributes once the summary is set
         # For large csv files containing lots of coding_scores use a lot of RAM
-        del self.read_ids
-        del self.jaccard_in_peptide_dbs
-        del self.n_kmers
-        del self.categories
-        del self.translation_frames
-        del self.filenames
-        del self.coding_scores
+        if self.coding_scores != []:
+            del self.read_ids
+            del self.jaccard_in_peptide_dbs
+            del self.n_kmers
+            del self.categories
+            del self.translation_frames
+            del self.filenames
+            del self.coding_scores
         return summary
 
     def generate_coding_summary(self):
