@@ -589,7 +589,7 @@ def cli(
     n_tables=constants_index.DEFAULT_N_TABLES,
     long_reads=False,
     verbose=False,
-    processes=4,
+    processes=1,
     intermediate_directory="/tmp",
 ):
     """Writes coding peptides from reads to standard output
