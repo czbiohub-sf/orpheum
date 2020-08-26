@@ -679,12 +679,13 @@ def cli(
         alphabet,
         translate_obj.peptide_ksize,
         translate_obj.jaccard_threshold,
-        translate_obj.coding_scores
+        translate_obj.coding_scores,
     )
     del translate_obj.coding_scores
     assemble_summary_obj.maybe_write_csv()
     assemble_summary_obj.maybe_write_parquet()
     assemble_summary_obj.maybe_write_json_summary()
+
 
 if __name__ == "__main__":
     cli()

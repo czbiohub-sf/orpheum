@@ -90,7 +90,7 @@ def test_maybe_write_json_summary_empty(
         alphabet,
         peptide_ksize,
         DEFAULT_JACCARD_THRESHOLD,
-        coding_scores_empty
+        coding_scores_empty,
     )
     summary = create_ss.maybe_write_json_summary()
     assert summary["input_files"] == ["nonexistent.fa"]
@@ -109,7 +109,7 @@ def test_get_n_translated_frames_per_read(
         alphabet,
         peptide_ksize,
         DEFAULT_JACCARD_THRESHOLD,
-        coding_scores_nonempty
+        coding_scores_nonempty,
     )
     percentages, histogram = create_ss.get_n_translated_frames_per_read()
     assert histogram == {
@@ -160,7 +160,7 @@ def test_get_n_per_coding_category(
         alphabet,
         peptide_ksize,
         jaccard_threshold,
-        data
+        data,
     )
 
     test_counts, test_percentages = create_ss.get_n_per_coding_category()
@@ -190,7 +190,15 @@ def test_get_n_per_coding_category(
 
 def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_scores):
     create_ss = CreateSaveSummary(
-        reads, True, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5, single_alphabet_ksize_true_scores
+        reads,
+        True,
+        True,
+        True,
+        "bloom_filter.nodegraph",
+        "protein",
+        7,
+        0.5,
+        single_alphabet_ksize_true_scores,
     )
     test_summary = create_ss.generate_coding_summary()
     true_summary = {
@@ -240,8 +248,15 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
 
 def test_maybe_write_csv(reads, single_alphabet_ksize_true_scores, true_scores_path):
     create_ss = CreateSaveSummary(
-        reads, true_scores_path, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5,
-        single_alphabet_ksize_true_scores
+        reads,
+        true_scores_path,
+        True,
+        True,
+        "bloom_filter.nodegraph",
+        "protein",
+        7,
+        0.5,
+        single_alphabet_ksize_true_scores,
     )
     create_ss.maybe_write_csv()
 
@@ -258,7 +273,7 @@ def test_maybe_write_parquet(
         "protein",
         7,
         0.5,
-        single_alphabet_ksize_true_scores
+        single_alphabet_ksize_true_scores,
     )
     create_ss.maybe_write_parquet()
 
@@ -273,7 +288,7 @@ def test_make_empty_coding_categories(single_alphabet_ksize_true_scores):
         "protein",
         7,
         0.5,
-        single_alphabet_ksize_true_scores
+        single_alphabet_ksize_true_scores,
     )
     test_coding_categories = {
         "Translation is shorter than peptide k-mer size + 1": 0,

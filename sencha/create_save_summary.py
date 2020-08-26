@@ -27,7 +27,7 @@ class CreateSaveSummary:
         alphabet,
         peptide_ksize,
         jaccard_threshold,
-        coding_scores
+        coding_scores,
     ):
         self.filenames = filenames
         self.csv = csv
@@ -199,7 +199,9 @@ class CreateSaveSummary:
             else:
                 counts["Non-coding"] += 1
         total = sum(list(counts.values()))
-        percentages = {category: 100 * count / total for category, count in counts.items()}
+        percentages = {
+            category: 100 * count / total for category, count in counts.items()
+        }
         # Replace with observations
         return percentages, counts
 
@@ -215,11 +217,17 @@ class CreateSaveSummary:
         coding_per_read_histogram = Counter(n_coding_per_read.values())
         total = sum(list(coding_per_read_histogram.values()))
         histogram_for_json = {
-            "Number of reads with {} putative protein-coding translations".format(key): value
+            "Number of reads with {} putative protein-coding translations".format(
+                key
+            ): value
             for key, value in coding_per_read_histogram.items()
         }
         percentages_for_json = {
-            "Number of reads with {} putative protein-coding translations".format(key): 100 * value / total
+            "Number of reads with {} putative protein-coding translations".format(
+                key
+            ): 100
+            * value
+            / total
             for key, value in coding_per_read_histogram.items()
         }
 
