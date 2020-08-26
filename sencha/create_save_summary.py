@@ -38,14 +38,15 @@ class CreateSaveSummary:
         self.peptide_ksize = peptide_ksize
         self.jaccard_threshold = jaccard_threshold
         self.coding_scores = coding_scores
-        (
-            self.read_ids,
-            self.jaccard_in_peptide_dbs,
-            self.n_kmers,
-            self.categories,
-            self.translation_frames,
-            self.filenames,
-        ) = map(list, zip(*self.coding_scores))
+        if self.coding_scores != []:
+            (
+                self.read_ids,
+                self.jaccard_in_peptide_dbs,
+                self.n_kmers,
+                self.categories,
+                self.translation_frames,
+                self.filenames,
+            ) = map(list, zip(*self.coding_scores))
 
     def maybe_write_csv(self):
         if self.csv:
