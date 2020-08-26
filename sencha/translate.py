@@ -564,7 +564,9 @@ class Translate:
     help="If specified this directory is expected to be already created and intermediate files are written here",
 )
 @click.option(
-    "--processes", default=4, help="number of cores to parallely process on",
+    "--processes",
+    default=4,
+    help="number of cores to parallely process on",
 )
 @click.option("--verbose", is_flag=True, help="Print more output")
 def cli(
