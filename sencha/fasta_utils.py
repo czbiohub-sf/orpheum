@@ -83,7 +83,8 @@ def open_and_announce(filename, seqtype):
     """Return an opened file handle to write and announce"""
     announcement = constants_translate.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
     logger.info("Writing {} to {}".format(announcement, filename))
-    return open(filename, "w")
+    # append mode if the fasta already exists don't overwrite it but add to it
+    return open(filename, "a")
 
 
 def maybe_open_fastas(fastas):

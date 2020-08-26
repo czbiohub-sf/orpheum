@@ -403,7 +403,8 @@ class Translate:
             "low_complexity_peptide": self.low_complexity_peptide_fasta,
         }
         file_handles = fasta_utils.maybe_open_fastas(fastas)
-        # Combine fastas
+        # Combine from each of the split fasta's 4 different fastas above to one 
+        # as in the above file handles
         for key, file_handle in file_handles.items():
             for split in fasta_files_split:
                 fasta_prefix = split.replace(".fasta", "")

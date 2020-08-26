@@ -104,7 +104,7 @@ def make_peptide_bloom_filter(
         peptides = [peptides]
     for peptide_fasta in peptides:
         records = maybe_read_peptide_file(peptide_fasta)
-        for record in records:
+        for record in tqdm(records):
             if "*" in record["sequence"]:
                 continue
             sequence = encode_peptide(record["sequence"], molecule)

@@ -117,6 +117,8 @@ class CreateSaveSummary:
         with open(self.json_summary, "w") as f:
             logger.info("Writing translate summary to {}".format(self.json_summary))
             json.dump(summary, fp=f)
+        # Delete these attributes once the summary is set
+        # For large csv files containing lots of coding_scores use a lot of RAM
         del self.read_ids
         del self.jaccard_in_peptide_dbs
         del self.n_kmers
