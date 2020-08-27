@@ -350,7 +350,8 @@ class Translate:
                                 description, jaccard, n_kmers, special_case, frame
                             )
                             line.append(self.current_reads_file)
-                            csvwriter.writerow(line)
+                            if line:
+                                csvwriter.writerow(line)
                     else:
                         for (
                             jaccard,
@@ -370,7 +371,8 @@ class Translate:
                             )
                             line.append(self.current_reads_file)
                             # writing the data rows
-                            csvwriter.writerow(line)
+                            if line:
+                                csvwriter.writerow(line)
         fasta_utils.maybe_close_fastas(self.fastas)
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
@@ -430,16 +432,18 @@ class Translate:
             csv_file = split.replace(".fasta", "_coding_peptide.csv")
             with open(csv_file) as csvfile:
                 read_csv = csv.reader(csvfile, delimiter=",")
+                csvfile.seek(0)
                 for row in read_csv:
-                    line = [
-                        str(row[0]),
-                        float(row[1]),
-                        float(row[2]),
-                        str(row[3]),
-                        int(row[4]),
-                        str(row[5]),
-                    ]
-                    self.coding_scores.append(line)
+                    if len(row) == 6:
+                        line = [
+                            str(row[0]),
+                            float(row[1]),
+                            float(row[2]),
+                            str(row[3]),
+                            int(row[4]),
+                            str(row[5]),
+                        ]
+                        self.coding_scores.append(line)
 
     def set_coding_scores_all_files(self):
         fastas = {
