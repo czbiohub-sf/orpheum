@@ -21,3 +21,4 @@ setuptools==39.1.0
 sourmash.egg==info
 sourmash==3.2.2
 tqdm==4.31.1
+pathos>=0.2.5

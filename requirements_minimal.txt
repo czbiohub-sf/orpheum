@@ -8,3 +8,4 @@ httmock
 seaborn
 scikit-learn
 networkx
+pathos
