@@ -4,6 +4,7 @@ translate.py
 Partition reads into coding, noncoding, and low-complexity bins
 """
 import csv
+import os
 import sys
 import warnings
 
@@ -156,6 +157,8 @@ class Translate:
         self.peptide_ksize = peptide_bloom_filter.ksize()
         self.nucleotide_ksize = 3 * self.peptide_ksize
         self.coding_scores = []
+        if not os.path.exists(os.path.abspath(self.intermediate_directory)):
+            os.makedirs(self.intermediate_directory)
 
     def get_jaccard_threshold(self):
         return get_jaccard_threshold(self.jaccard_threshold, self.alphabet)
@@ -396,27 +399,20 @@ class Translate:
         pool.map(self.maybe_score_single_read, fasta_files_split)
         pool.close()
         pool.join()
-        fastas = {
-            "noncoding_nucleotide": self.noncoding_nucleotide_fasta,
-            "coding_nucleotide": self.coding_nucleotide_fasta,
-            "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
-            "low_complexity_peptide": self.low_complexity_peptide_fasta,
-        }
-        file_handles = fasta_utils.maybe_open_fastas(fastas)
+
         # Combine from each of the split fasta's 4 different fastas above to one
         # as in the above file handles
-        for key, file_handle in file_handles.items():
+        for key, file_handle in self.file_handles.items():
             for split in fasta_files_split:
                 fasta_prefix = split.replace(".fasta", "")
                 reads = fasta_prefix + "_" + key + ".fasta"
                 with screed.open(reads) as records:
-                    for record in tqdm(records):
+                    for record in records:
                         description = record["name"]
                         sequence = record["sequence"]
                         fasta_utils.maybe_write_fasta(
                             file_handle, description, sequence
                         )
-        fasta_utils.maybe_close_fastas(file_handles)
 
         # Combine and print coding_peptide fastas
         for split in fasta_files_split:
@@ -446,9 +442,17 @@ class Translate:
                     self.coding_scores.append(line)
 
     def set_coding_scores_all_files(self):
+        fastas = {
+            "noncoding_nucleotide": self.noncoding_nucleotide_fasta,
+            "coding_nucleotide": self.coding_nucleotide_fasta,
+            "low_complexity_nucleotide": self.low_complexity_nucleotide_fasta,
+            "low_complexity_peptide": self.low_complexity_peptide_fasta,
+        }
+        self.file_handles = fasta_utils.maybe_open_fastas(fastas)
         for reads_file in self.reads:
             self.current_reads_file = reads_file
             self.score_reads_per_file(reads_file)
+        fasta_utils.maybe_close_fastas(self.file_handles)
 
     def get_coding_scores_all_files(self):
         return self.coding_scores
@@ -566,7 +570,7 @@ class Translate:
 )
 @click.option(
     "--processes",
-    default=4,
+    default=1,
     help="number of cores to parallely process on",
 )
 @click.option("--verbose", is_flag=True, help="Print more output")

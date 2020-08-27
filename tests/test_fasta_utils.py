@@ -1,5 +1,8 @@
 import os
 import sys
+import tempfile
+
+import screed
 
 import sencha.fasta_utils as fasta_utils
 
@@ -17,23 +20,55 @@ def test_calculate_chunksize():
 
 
 def test_batch_iterator():
+    expected_batches = {0: [0, 1, 2], 1: [3, 4, 5], 2: [6, 7, 8], 3: [9, 10]}
+    for i, batch in enumerate(fasta_utils.batch_iterator(iter(range(11)), 3)):
+        assert batch == expected_batches[i]
+
+
+def test_split_fasta_files(reads):
+    temp_folder = tempfile.mkdtemp()
+    filenames = fasta_utils.split_fasta_files(reads, 4, temp_folder)
+    assert len(filenames) == 6
+    expected_record_counts = {0: 4, 1: 4, 2: 4, 3: 4, 4: 4, 5: 3}
+    for i, filename in enumerate(filenames):
+        count = 0
+        for record in screed.open(filename):
+            count += 1
+        assert count == expected_record_counts[i]
+
+
+def test_maybe_open_fastas(tmpdir, capsys):
     description = "test"
     sequence = "seq"
-    fasta_utils.batch_iterator(sys.stdout, description, sequence)
+    fasta = tmpdir + "test.fasta"
+    fasta_utils.write_fasta(fasta, description, sequence)
+    description = "test2"
+    sequence = "seq2"
+    fasta2 = tmpdir + "test2.fasta"
+    fasta_utils.write_fasta(fasta, description, sequence)
+    test_fastas = {"test_fasta": fasta, "test1_fasta": fasta2}
+    announcement_dict = {"test_fasta": "Writing test1", "test1_fasta": "Writing test2"}
+    file_handles = fasta_utils.maybe_open_fastas(test_fastas, announcement_dict)
+    captured = capsys.readouterr()
+    fasta_keys = list(test_fastas.keys())
+    for key, value in file_handles.items():
+        assert key in fasta_keys
+        assert captured.out in announcement_dict[key]
 
 
-def test_split_fasta_files():
+def test_maybe_close_fastas(tmpdir):
     description = "test"
     sequence = "seq"
-    fasta_utils.split_fasta_files(sys.stdout, description, sequence)
-
-
-def test_maybe_open_fastas():
-    pass
-
-
-def test_maybe_close_fastas():
-    pass
+    fasta = tmpdir + "test.fasta"
+    fasta_utils.write_fasta(fasta, description, sequence)
+    description = "test2"
+    sequence = "seq2"
+    fasta2 = tmpdir + "test2.fasta"
+    fasta_utils.write_fasta(fasta, description, sequence)
+    test_fastas = {"test_fasta": fasta, "test1_fasta": fasta2}
+    announcement_dict = {"test_fasta": "Writing test1", "test1_fasta": "Writing test2"}
+    file_handles = fasta_utils.maybe_open_fastas(test_fastas, announcement_dict)
+    fasta_utils.maybe_close_fastas(file_handles)
 
 
 def test_write_fasta(capsys):

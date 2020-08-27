@@ -56,6 +56,8 @@ def batch_iterator(iterator, batch_size):
 
 
 def split_fasta_files(reads, chunksize, outdir):
+    if not os.path.exists(os.path.abspath(outdir)):
+        os.makedirs(outdir)
     record_iter = iter(screed.open(reads))
     filenames = []
     for i, batch in enumerate(batch_iterator(record_iter, chunksize)):
@@ -79,21 +81,24 @@ def maybe_write_fasta(file_handle, description, sequence):
         write_fasta(file_handle, description, sequence)
 
 
-def open_and_announce(filename, seqtype):
+def open_and_announce(
+    filename, key, announcement_dict=constants_translate.SEQTYPE_TO_ANNOUNCEMENT
+):
     """Return an opened file handle to write and announce"""
-    announcement = constants_translate.SEQTYPE_TO_ANNOUNCEMENT[seqtype]
+    announcement = announcement_dict[key]
     logger.info("Writing {} to {}".format(announcement, filename))
-    # append mode if the fasta already exists don't overwrite it but add to it
-    return open(filename, "a")
+    return open(filename, "w")
 
 
-def maybe_open_fastas(fastas):
+def maybe_open_fastas(
+    fastas, announcement_dict=constants_translate.SEQTYPE_TO_ANNOUNCEMENT
+):
     file_handles = {}
-    for seqtype, fasta in fastas.items():
+    for key, fasta in fastas.items():
         if fasta is not None:
-            file_handles[seqtype] = open_and_announce(fasta, seqtype)
+            file_handles[key] = open_and_announce(fasta, key, announcement_dict)
         else:
-            file_handles[seqtype] = None
+            file_handles[key] = None
     return file_handles
 
 

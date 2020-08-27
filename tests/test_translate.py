@@ -174,7 +174,34 @@ def test_cli_peptide_fasta(
     assert result.exit_code == 0
     # CliRunner jams together the stderr and stdout so just check if the
     # true string is contained in the output
-    print(result.output)
+    assert true_protein_coding_fasta_string in result.output
+
+    # Make sure "Writing translate summary to" didn't get accidentally
+    # written to stdout instead of stderr
+    assert "Writing translate summary to" not in true_protein_coding_fasta_string
+
+
+def test_cli_peptide_fasta_processes(
+    reads, peptide_fasta, alphabet, peptide_ksize, true_protein_coding_fasta_string
+):
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--peptide-ksize",
+            peptide_ksize,
+            "--alphabet",
+            alphabet,
+            "--processes",
+            4,
+            peptide_fasta,
+            reads,
+        ],
+    )
+    assert result.exit_code == 0
+    # CliRunner jams together the stderr and stdout so just check if the
+    # true string is contained in the output
     assert true_protein_coding_fasta_string in result.output
 
     # Make sure "Writing translate summary to" didn't get accidentally
