@@ -1,5 +1,4 @@
 import os
-import sys
 
 import numpy as np
 import pandas as pd
@@ -45,6 +44,8 @@ def translate_class(tmpdir, reads, peptide_fasta):
         n_tables=constants_index.DEFAULT_N_TABLES,
         long_reads=False,
         verbose=True,
+        processes=4,
+        intermediate_directory="/tmp",
     )
     translate_obj = translate.Translate(args)
     return translate_obj
@@ -124,59 +125,6 @@ def test_compute_kmer_complexity(type_seq):
         assert test == 35.0
 
 
-def test_write_fasta(capsys):
-    description = "test"
-    sequence = "seq"
-    translate.write_fasta(sys.stdout, description, sequence)
-    captured = capsys.readouterr()
-    assert captured.out == ">test\nseq\n"
-
-
-def test_maybe_write_fasta(tmpdir, capsys, translate_class):
-    # Check if file handle is stdout
-    description = "test"
-    sequence = "seq"
-    translate_class.maybe_write_fasta(sys.stdout, description, sequence)
-    captured = capsys.readouterr()
-    assert captured.out == ">test\nseq\n"
-    # check if file handle is None
-    translate_class.maybe_write_fasta(None, description, sequence)
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    fasta = os.path.join(tmpdir, "test_maybe_write_fasta.fasta")
-    # check if file handle is a temporary fasta file
-    translate_class.maybe_write_fasta(open(fasta, "w"), description, sequence)
-    assert captured.out == ""
-
-
-def test_open_and_announce(tmpdir, capsys, translate_class):
-    # Check if expected announcement is made
-    fasta = os.path.join(tmpdir, "test_noncoding_nucleotide.fasta")
-    translate_class.open_and_announce(fasta, "noncoding_nucleotide")
-    captured = capsys.readouterr()
-    expected = "Writing nucleotide sequence from reads WITHOUT matches to protein-coding peptides to {}\n".format(
-        fasta
-    )
-    assert captured.out in expected
-
-
-def test_maybe_open_fastas(tmpdir, capsys, translate_class):
-    # Check if file handle is stdout
-    translate_class.set_coding_scores_all_files()
-    assert len(translate_class.fastas) == 4
-    assert len(translate_class.file_handles) == 4
-    fastas = [
-        translate_class.noncoding_nucleotide_fasta,
-        translate_class.coding_nucleotide_fasta,
-        translate_class.low_complexity_peptide_fasta,
-        translate_class.low_complexity_nucleotide_fasta,
-    ]
-    seqtypes = list(translate_class.file_handles.keys())
-    for key, value in translate_class.fastas.items():
-        assert value in fastas
-        assert key in seqtypes
-
-
 def test_translate_get_jaccard_threshold(translate_class):
     assert (
         translate_class.get_jaccard_threshold()
@@ -226,7 +174,34 @@ def test_cli_peptide_fasta(
     assert result.exit_code == 0
     # CliRunner jams together the stderr and stdout so just check if the
     # true string is contained in the output
-    print(result.output)
+    assert true_protein_coding_fasta_string in result.output
+
+    # Make sure "Writing translate summary to" didn't get accidentally
+    # written to stdout instead of stderr
+    assert "Writing translate summary to" not in true_protein_coding_fasta_string
+
+
+def test_cli_peptide_fasta_processes(
+    reads, peptide_fasta, alphabet, peptide_ksize, true_protein_coding_fasta_string
+):
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--peptide-ksize",
+            peptide_ksize,
+            "--alphabet",
+            alphabet,
+            "--processes",
+            4,
+            peptide_fasta,
+            reads,
+        ],
+    )
+    assert result.exit_code == 0
+    # CliRunner jams together the stderr and stdout so just check if the
+    # true string is contained in the output
     assert true_protein_coding_fasta_string in result.output
 
     # Make sure "Writing translate summary to" didn't get accidentally

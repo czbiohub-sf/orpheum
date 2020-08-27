@@ -50,6 +50,11 @@ sencha translate reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 
 #### Save the "coding scores" to a csv or parquet file
 
+```
+sencha translate reference-proteome.fa.gz *.fastq.gz --processes 4 --intermediate-directory intermediate > coding_peptides.fasta
+```
+#### Save the "coding scores" to a csv or parquet file
+
 The "coding score" of each read is calculated by translating each read in six
 frames, then is calculatating the
 [Jaccard index](https://en.wikipedia.org/wiki/Jaccard_index) between any of the
