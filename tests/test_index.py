@@ -101,12 +101,7 @@ def test_cli_minimum(peptide_fasta):
     from sencha.index import cli
 
     runner = CliRunner()
-    result = runner.invoke(
-        cli,
-        [
-            peptide_fasta,
-        ],
-    )
+    result = runner.invoke(cli, [peptide_fasta,])
     assert result.exit_code == 0
 
 

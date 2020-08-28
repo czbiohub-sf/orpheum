@@ -90,9 +90,8 @@ def test_maybe_write_json_summary_empty(
         alphabet,
         peptide_ksize,
         DEFAULT_JACCARD_THRESHOLD,
-        coding_scores_empty,
     )
-    summary = create_ss.maybe_write_json_summary()
+    summary = create_ss.maybe_write_json_summary(coding_scores_empty)
     assert summary["input_files"] == ["nonexistent.fa"]
     assert summary["jaccard_info"]["count"] == 0
 
@@ -109,9 +108,10 @@ def test_get_n_translated_frames_per_read(
         alphabet,
         peptide_ksize,
         DEFAULT_JACCARD_THRESHOLD,
-        coding_scores_nonempty,
     )
-    percentages, histogram = create_ss.get_n_translated_frames_per_read()
+    percentages, histogram = create_ss.get_n_translated_frames_per_read(
+        coding_scores_nonempty
+    )
     assert histogram == {
         "Number of reads with 1 putative protein-coding translations": 5,
         "Number of reads with 2 putative protein-coding translations": 2,
@@ -139,6 +139,17 @@ def test_get_n_per_coding_category(
 ):
     from sencha.sequence_encodings import ALIAS_TO_ALPHABET
 
+    create_ss = CreateSaveSummary(
+        ["nonexistent.fa"],
+        True,
+        True,
+        True,
+        peptide_bloom_filter_path,
+        alphabet,
+        peptide_ksize,
+        jaccard_threshold,
+    )
+
     data = [
         ["read1", 0.9, 0, "Non-coding", 0, ""],
         ["read1", 0.9, 0, "Coding", 0, ""],
@@ -151,19 +162,7 @@ def test_get_n_per_coding_category(
         ["read7", 0.9, 0, LOW_COMPLEXITY_CATEGORIES[alphabet], 0, ""],
     ]
 
-    create_ss = CreateSaveSummary(
-        ["nonexistent.fa"],
-        True,
-        True,
-        True,
-        peptide_bloom_filter_path,
-        alphabet,
-        peptide_ksize,
-        jaccard_threshold,
-        data,
-    )
-
-    test_counts, test_percentages = create_ss.get_n_per_coding_category()
+    test_counts, test_percentages = create_ss.get_n_per_coding_category(data)
     canonical_alphabet = ALIAS_TO_ALPHABET[alphabet]
     # read1 and read3 are coding, there is zero too_short_peptide
     true_counts = {
@@ -190,17 +189,9 @@ def test_get_n_per_coding_category(
 
 def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_scores):
     create_ss = CreateSaveSummary(
-        reads,
-        True,
-        True,
-        True,
-        "bloom_filter.nodegraph",
-        "protein",
-        7,
-        0.5,
-        single_alphabet_ksize_true_scores,
+        reads, True, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
     )
-    test_summary = create_ss.generate_coding_summary()
+    test_summary = create_ss.generate_coding_summary(single_alphabet_ksize_true_scores)
     true_summary = {
         "input_files": ["SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled_n22.fq"],
         "jaccard_info": {
@@ -248,17 +239,9 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
 
 def test_maybe_write_csv(reads, single_alphabet_ksize_true_scores, true_scores_path):
     create_ss = CreateSaveSummary(
-        reads,
-        true_scores_path,
-        True,
-        True,
-        "bloom_filter.nodegraph",
-        "protein",
-        7,
-        0.5,
-        single_alphabet_ksize_true_scores,
+        reads, true_scores_path, True, True, "bloom_filter.nodegraph", "protein", 7, 0.5
     )
-    create_ss.maybe_write_csv()
+    create_ss.maybe_write_csv(single_alphabet_ksize_true_scores)
 
 
 def test_maybe_write_parquet(
@@ -273,12 +256,11 @@ def test_maybe_write_parquet(
         "protein",
         7,
         0.5,
-        single_alphabet_ksize_true_scores,
     )
-    create_ss.maybe_write_parquet()
+    create_ss.maybe_write_parquet(single_alphabet_ksize_true_scores)
 
 
-def test_make_empty_coding_categories(single_alphabet_ksize_true_scores):
+def test_make_empty_coding_categories():
     create_ss = CreateSaveSummary(
         ["nonexistent.fa"],
         True,
@@ -288,7 +270,6 @@ def test_make_empty_coding_categories(single_alphabet_ksize_true_scores):
         "protein",
         7,
         0.5,
-        single_alphabet_ksize_true_scores,
     )
     test_coding_categories = {
         "Translation is shorter than peptide k-mer size + 1": 0,

@@ -4,6 +4,7 @@ import json
 from collections import Counter
 
 import numpy as np
+import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from sencha.constants_translate import (
@@ -27,7 +28,6 @@ class CreateSaveSummary:
         alphabet,
         peptide_ksize,
         jaccard_threshold,
-        coding_scores,
     ):
         self.filenames = filenames
         self.csv = csv
@@ -37,18 +37,8 @@ class CreateSaveSummary:
         self.alphabet = alphabet
         self.peptide_ksize = peptide_ksize
         self.jaccard_threshold = jaccard_threshold
-        self.coding_scores = coding_scores
-        if self.coding_scores != []:
-            (
-                self.read_ids,
-                self.jaccard_in_peptide_dbs,
-                self.n_kmers,
-                self.categories,
-                self.translation_frames,
-                self.filenames,
-            ) = map(list, zip(*self.coding_scores))
 
-    def maybe_write_csv(self):
+    def maybe_write_csv(self, coding_scores):
         if self.csv:
             logger.info("Writing coding scores of reads to {}".format(self.csv))
             # writing to csv file
@@ -60,11 +50,19 @@ class CreateSaveSummary:
                 csvwriter.writerow(SCORING_DF_COLUMNS)
 
                 # writing the data rows
-                csvwriter.writerows(self.coding_scores)
+                csvwriter.writerows(coding_scores)
 
-    def maybe_write_parquet(self):
+    def maybe_write_parquet(self, coding_scores):
         if self.parquet:
             logger.info("Writing coding scores of reads to {}".format(self.parquet))
+            (
+                self.read_ids,
+                self.jaccard_in_peptide_dbs,
+                self.n_kmers,
+                self.categories,
+                self.translation_frames,
+                self.filenames,
+            ) = map(list, zip(*coding_scores))
             batch = pa.RecordBatch.from_arrays(
                 [
                     self.read_ids,
@@ -84,13 +82,13 @@ class CreateSaveSummary:
         coding_categories[molecule_low_complexity_key] = 0
         return coding_categories
 
-    def maybe_write_json_summary(self):
+    def maybe_write_json_summary(self, coding_scores):
         if not self.json_summary:
             # Early exit if json_summary is not True
             return
         empty_coding_categories = self.make_empty_coding_categories()
 
-        if self.coding_scores == []:
+        if coding_scores == []:
             summary = {
                 "input_files": self.filenames,
                 "jaccard_info": {
@@ -113,34 +111,24 @@ class CreateSaveSummary:
                 },
             }
         else:
-            summary = self.generate_coding_summary()
+            summary = self.generate_coding_summary(coding_scores)
         with open(self.json_summary, "w") as f:
             logger.info("Writing translate summary to {}".format(self.json_summary))
             json.dump(summary, fp=f)
-        # Delete these attributes once the summary is set
-        # For large csv files containing lots of coding_scores use a lot of RAM
-        if self.coding_scores != []:
-            del self.read_ids
-            del self.jaccard_in_peptide_dbs
-            del self.n_kmers
-            del self.categories
-            del self.translation_frames
-            del self.filenames
-            del self.coding_scores
         return summary
 
-    def generate_coding_summary(self):
+    def generate_coding_summary(self, coding_scores):
         (
             translation_frame_percentages,
             translation_frame_counts,
-        ) = self.get_n_translated_frames_per_read()
+        ) = self.get_n_translated_frames_per_read(coding_scores)
 
         files = np.unique(self.filenames).tolist()
 
         (
             categorization_percentages,
             categorization_counts,
-        ) = self.get_n_per_coding_category()
+        ) = self.get_n_per_coding_category(coding_scores)
         # Get Jaccard distributions, count, min, max, mean, stddev, median
         jaccard_info = {
             "count": int(np.count_nonzero(~np.isnan(self.jaccard_in_peptide_dbs))),
@@ -167,8 +155,16 @@ class CreateSaveSummary:
         }
         return summary
 
-    def get_n_per_coding_category(self):
+    def get_n_per_coding_category(self, coding_scores):
         # Initialize to all zeros
+        (
+            self.read_ids,
+            self.jaccard_in_peptide_dbs,
+            self.n_kmers,
+            self.categories,
+            self.translation_frames,
+            self.filenames,
+        ) = map(list, zip(*coding_scores))
         counts = self.make_empty_coding_categories()
         read_id_category = [
             (read_id, category)
@@ -202,37 +198,49 @@ class CreateSaveSummary:
                 counts[unique_categories[0]] += 1
             else:
                 counts["Non-coding"] += 1
-        total = sum(list(counts.values()))
-        percentages = {
-            category: 100 * count / total for category, count in counts.items()
-        }
+        # Convert to series to make percentage calculation easy
+        categories = pd.Series(counts)
+
+        # Initialize to all zeros
+        percentages = self.make_empty_coding_categories()
+        percentages_series = 100 * categories / categories.sum()
         # Replace with observations
+        percentages.update(percentages_series.to_dict())
         return percentages, counts
 
-    def get_n_translated_frames_per_read(self):
+    def get_n_translated_frames_per_read(self, coding_scores):
         """Of all coding sequences, get number of possible translations"""
+        col = "n_translated_frames"
+        (
+            self.read_ids,
+            self.jaccard_in_peptide_dbs,
+            self.n_kmers,
+            self.categories,
+            self.translation_frames,
+            self.filenames,
+        ) = map(list, zip(*coding_scores))
         predicted_coding = [
             self.read_ids[index]
             for index, category in enumerate(self.categories)
             if category == "Coding"
         ]
-        n_coding_per_read = Counter(predicted_coding)
+        n_coding_per_read = pd.Series(Counter(predicted_coding))
+        n_coding_per_read.index = n_coding_per_read.index.astype(str)
 
-        coding_per_read_histogram = Counter(n_coding_per_read.values())
-        total = sum(list(coding_per_read_histogram.values()))
-        histogram_for_json = {
-            "Number of reads with {} putative protein-coding translations".format(
-                key
-            ): value
-            for key, value in coding_per_read_histogram.items()
-        }
-        percentages_for_json = {
-            "Number of reads with {} putative protein-coding translations".format(
-                key
-            ): 100
-            * value
-            / total
-            for key, value in coding_per_read_histogram.items()
-        }
+        n_coding_per_read.name = col
+        n_coding_per_read_df = n_coding_per_read.to_frame()
 
+        # Number of reading frames per read, per filename
+        coding_per_read_histogram = n_coding_per_read_df[col].value_counts()
+        index = coding_per_read_histogram.index.astype(str)
+        coding_per_read_histogram.index = (
+            "Number of reads with " + index + " putative protein-coding translations"
+        )
+
+        # Total number of coding reads
+        total = coding_per_read_histogram.sum()
+
+        coding_per_read_histogram_percentages = 100 * coding_per_read_histogram / total
+        histogram_for_json = coding_per_read_histogram.to_dict()
+        percentages_for_json = coding_per_read_histogram_percentages.to_dict()
         return percentages_for_json, histogram_for_json
