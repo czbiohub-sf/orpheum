@@ -80,6 +80,7 @@ def evaluate_is_fastp_low_complexity(seq):
 
 
 def compute_fastp_complexity(seq):
+    assert len(seq) != 0, "seq is {}".format(seq)
     n_different_consecutively = sum(
         1 for i in range(len(seq) - 1) if seq[i] != seq[i + 1]
     )
@@ -92,7 +93,6 @@ def evaluate_is_kmer_low_complexity(seq, ksize):
     By this definition, the sequence is not complex if its number of unique
     k-mers is smaller than half the number of expected k-mers
     """
-    # Ignore Biopython warning of seq objects being strings now
     try:
         kmers = kmerize(seq, ksize)
     except ValueError:
@@ -189,35 +189,28 @@ class Translate:
 
         return fraction_in_peptide_db, n_kmers
 
-    def check_peptide_content(self, description, sequence):
+    def check_peptide_content(self, description, sequence, fastas):
         """Predict whether a nucleotide sequence could be protein-coding"""
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             translations = TranslateSingleSeq(
                 sequence, self.verbose
             ).six_frame_translation()
-        scoring_lines = []
 
         for frame, translation in translations.items():
             if "*" in translation:
-                scoring_lines.append(
-                    constants_translate.SingleReadScore(
-                        np.nan,
-                        np.nan,
-                        constants_translate.PROTEIN_CODING_CATEGORIES["stop_codons"],
-                        frame,
-                    )
+                yield constants_translate.SingleReadScore(
+                    np.nan,
+                    np.nan,
+                    constants_translate.PROTEIN_CODING_CATEGORIES["stop_codons"],
+                    frame,
                 )
             elif len(translation) <= self.peptide_ksize:
-                scoring_lines.append(
-                    constants_translate.SingleReadScore(
-                        np.nan,
-                        np.nan,
-                        constants_translate.PROTEIN_CODING_CATEGORIES[
-                            "too_short_peptide"
-                        ],
-                        frame,
-                    )
+                yield constants_translate.SingleReadScore(
+                    np.nan,
+                    np.nan,
+                    constants_translate.PROTEIN_CODING_CATEGORIES["too_short_peptide"],
+                    frame,
                 )
             else:
                 encoded = encode_peptide(str(translation), self.alphabet)
@@ -227,19 +220,15 @@ class Translate:
                 )
                 if is_kmer_low_complex:
                     fasta_utils.maybe_write_fasta(
-                        self.fastas["low_complexity_peptide"],
+                        fastas["low_complexity_peptide"],
                         description + " translation_frame: {}.format(frame)",
                         translation,
                     )
-                    scoring_lines.append(
-                        constants_translate.SingleReadScore(
-                            np.nan,
-                            n_kmers,
-                            constants_translate.LOW_COMPLEXITY_CATEGORIES[
-                                self.alphabet
-                            ],
-                            frame,
-                        )
+                    yield constants_translate.SingleReadScore(
+                        np.nan,
+                        n_kmers,
+                        constants_translate.LOW_COMPLEXITY_CATEGORIES[self.alphabet],
+                        frame,
                     )
                 else:
                     if self.verbose:
@@ -253,36 +242,29 @@ class Translate:
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
                         fasta_utils.maybe_write_fasta(
-                            self.fastas["coding_peptide"], seqname, translation
+                            fastas["coding_peptide"], seqname, translation
                         )
                         fasta_utils.maybe_write_fasta(
-                            self.fastas["coding_nucleotide"], seqname, sequence
+                            fastas["coding_nucleotide"], seqname, sequence
                         )
-                        scoring_lines.append(
-                            constants_translate.SingleReadScore(
-                                fraction_in_peptide_db,
-                                n_kmers,
-                                constants_translate.PROTEIN_CODING_CATEGORIES["coding"],
-                                frame,
-                            )
+                        yield constants_translate.SingleReadScore(
+                            fraction_in_peptide_db,
+                            n_kmers,
+                            constants_translate.PROTEIN_CODING_CATEGORIES["coding"],
+                            frame,
                         )
                     else:
                         fasta_utils.maybe_write_fasta(
-                            self.fastas["noncoding_nucleotide"], seqname, sequence
+                            fastas["noncoding_nucleotide"], seqname, sequence
                         )
-                        scoring_lines.append(
-                            constants_translate.SingleReadScore(
-                                fraction_in_peptide_db,
-                                n_kmers,
-                                constants_translate.PROTEIN_CODING_CATEGORIES[
-                                    "non_coding"
-                                ],
-                                frame,
-                            )
+                        yield constants_translate.SingleReadScore(
+                            fraction_in_peptide_db,
+                            n_kmers,
+                            constants_translate.PROTEIN_CODING_CATEGORIES["non_coding"],
+                            frame,
                         )
-        return scoring_lines
 
-    def check_nucleotide_content(self, description, n_kmers, sequence):
+    def check_nucleotide_content(self, description, n_kmers, sequence, fastas):
         """If passes, then this read can move on to checking protein translations
 
         Evaluates if this reads' nucleotide content doesn't
@@ -293,23 +275,23 @@ class Translate:
             jaccard = np.nan
             special_case = "Low complexity nucleotide"
             fasta_utils.maybe_write_fasta(
-                self.fastas["low_complexity_nucleotide"], description, sequence
+                fastas["low_complexity_nucleotide"], description, sequence
             )
         else:
             jaccard = np.nan
             n_kmers = np.nan
             special_case = "Read length was shorter than 3 * peptide " "k-mer size"
-        return [
-            constants_translate.SingleReadScore(jaccard, n_kmers, special_case, i)
-            for i in [1, 2, 3, -1, -2, -3]
-        ]
+            for i in [1, 2, 3, -1, -2, -3]:
+                yield constants_translate.SingleReadScore(
+                    jaccard, n_kmers, special_case, i
+                )
 
     def maybe_score_single_read(self, reads):
         """Check if read is low complexity/too short, otherwise score it"""
         fasta_prefix = reads.replace(".fasta", "")
         coding_peptide_fasta = fasta_prefix + "_coding_peptide.fasta"
         csv_name = coding_peptide_fasta.replace(".fasta", ".csv")
-        self.fastas = {
+        fastas = {
             "noncoding_nucleotide": fasta_prefix + "_" + "noncoding_nucleotide.fasta",
             "coding_nucleotide": fasta_prefix + "_" + "coding_nucleotide.fasta",
             "low_complexity_nucleotide": fasta_prefix
@@ -320,10 +302,10 @@ class Translate:
             + "low_complexity_peptide.fasta",
             "coding_peptide": coding_peptide_fasta,
         }
-        self.fastas = fasta_utils.maybe_open_fastas(self.fastas)
-        with open(csv_name, "w") as csvfile:
+        fastas = fasta_utils.maybe_open_fastas(fastas)
+        with open(csv_name, "w", newline="") as csvfile:
             # creating a csv writer object
-            csvwriter = csv.writer(csvfile, lineterminator="\n")
+            csvwriter = csv.writer(csvfile)
             # writing the fields
             with screed.open(reads) as records:
                 for record in tqdm(records):
@@ -337,7 +319,7 @@ class Translate:
                             special_case,
                             frame,
                         ) in self.check_nucleotide_content(
-                            description, np.nan, sequence
+                            description, np.nan, sequence, fastas
                         ):
                             if self.verbose:
                                 logger.info(
@@ -358,7 +340,7 @@ class Translate:
                             n_kmers,
                             special_case,
                             frame,
-                        ) in self.check_peptide_content(description, sequence):
+                        ) in self.check_peptide_content(description, sequence, fastas):
                             if self.verbose:
                                 logger.info(
                                     "Jaccard: {}, n_kmers = {} for frame {}".format(
@@ -373,7 +355,7 @@ class Translate:
                             # writing the data rows
                             if line:
                                 csvwriter.writerow(line)
-        fasta_utils.maybe_close_fastas(self.fastas)
+        fasta_utils.maybe_close_fastas(fastas)
 
     def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
         if special_case is not None:
@@ -434,16 +416,20 @@ class Translate:
                 read_csv = csv.reader(csvfile, delimiter=",")
                 csvfile.seek(0)
                 for row in read_csv:
+                    assert len(row) == 6, "row is {}".format(row)
                     if len(row) == 6:
-                        line = [
-                            str(row[0]),
-                            float(row[1]),
-                            float(row[2]),
-                            str(row[3]),
-                            int(row[4]),
-                            str(row[5]),
-                        ]
-                        self.coding_scores.append(line)
+                        try:
+                            line = [
+                                str(row[0]),
+                                float(row[1]),
+                                float(row[2]),
+                                str(row[3]),
+                                int(row[4]),
+                                str(row[5]),
+                            ]
+                            self.coding_scores.append(line)
+                        except:
+                            assert 1 == 0, "problems in casting ros {}".format(row)
 
     def set_coding_scores_all_files(self):
         fastas = {
