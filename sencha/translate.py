@@ -75,6 +75,7 @@ def evaluate_is_fastp_low_complexity(seq):
     is_low_complexity : bool
         Whether or not the sequence passes the complexity threshold
     """
+    assert len(seq) != 0, "seq is {}".format(seq)
     complexity = compute_fastp_complexity(seq)
     return complexity < constants_translate.COMPLEXITY_THRESHOLD
 
@@ -311,6 +312,7 @@ class Translate:
                 for record in tqdm(records):
                     description = record["name"]
                     sequence = record["sequence"]
+                    assert len(sequence) != 0, "seq is {}".format(sequence)
                     # Check if nucleotide sequence is low complexity
                     if evaluate_is_fastp_low_complexity(sequence):
                         for (
