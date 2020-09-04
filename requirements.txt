@@ -15,4 +15,3 @@ pyarrow
 s3fs
 fastparquet
 pytest
-pathos

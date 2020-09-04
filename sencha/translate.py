@@ -6,13 +6,12 @@ Partition reads into coding, noncoding, and low-complexity bins
 import csv
 import os
 import sys
-import warnings
+from functools import partial
 
 import click
 import numpy as np
 import screed
-from tqdm import tqdm
-from pathos import multiprocessing
+import multiprocessing
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -56,7 +55,7 @@ def validate_jaccard(ctx, param, value):
         )
 
 
-def evaluate_is_fastp_low_complexity(seq):
+def evaluate_is_fastp_low_complexity(sequence):
     """Use fastp's definition of complexity
     By this definition, low complexity sequence is defined by consecutive runs
     of same base in a row, e.g.
@@ -65,7 +64,7 @@ def evaluate_is_fastp_low_complexity(seq):
     https://github.com/OpenGene/fastp
     Parameters
     ----------
-    seq : str
+    sequence : str
         Sequence to compute complexity on
     complexity_threshold : float, defaault 0.3
         Value between 0 and 1. The default is 0.3 because that is the default
@@ -75,40 +74,262 @@ def evaluate_is_fastp_low_complexity(seq):
     is_low_complexity : bool
         Whether or not the sequence passes the complexity threshold
     """
-    assert len(seq) != 0, "seq is {}".format(seq)
-    complexity = compute_fastp_complexity(seq)
+    assert len(sequence) != 0, "sequence is {}".format(sequence)
+    complexity = compute_fastp_complexity(sequence)
     return complexity < constants_translate.COMPLEXITY_THRESHOLD
 
 
-def compute_fastp_complexity(seq):
-    assert len(seq) != 0, "seq is {}".format(seq)
+def compute_fastp_complexity(sequence):
+    assert len(sequence) != 0, "sequence is {}".format(sequence)
     n_different_consecutively = sum(
-        1 for i in range(len(seq) - 1) if seq[i] != seq[i + 1]
+        1 for i in range(len(sequence) - 1) if sequence[i] != sequence[i + 1]
     )
-    complexity = n_different_consecutively / len(seq)
+    complexity = n_different_consecutively / len(sequence)
     return complexity
 
 
-def evaluate_is_kmer_low_complexity(seq, ksize):
+def evaluate_is_kmer_low_complexity(sequence, ksize):
     """Check if sequence is low complexity, i.e. mostly repetitive
     By this definition, the sequence is not complex if its number of unique
     k-mers is smaller than half the number of expected k-mers
     """
     try:
-        kmers = kmerize(seq, ksize)
+        kmers = kmerize(sequence, ksize)
     except ValueError:
         # k-mer size is larger than sequence
         return None, None
     n_kmers = len(kmers)
-    complexity = compute_kmer_complexity(seq, ksize)
+    complexity = compute_kmer_complexity(sequence, ksize)
     is_low_complexity = n_kmers <= complexity
     return is_low_complexity
 
 
-def compute_kmer_complexity(seq, ksize):
-    n_possible_kmers_on_sequence = len(seq) - ksize + 1
+def compute_kmer_complexity(sequence, ksize):
+    n_possible_kmers_on_sequence = len(sequence) - ksize + 1
     complexity = n_possible_kmers_on_sequence / 2
     return complexity
+
+
+def score_single_translation(translation, alphabet, peptide_ksize, verbose=False):
+    """Score a single translation based on
+    fraction of kmers in peptide bloom filter"""
+    encoded = encode_peptide(translation, alphabet)
+    kmers = list(set(kmerize(str(encoded), peptide_ksize)))
+    hashes = [hash_murmur(kmer) for kmer in kmers]
+    n_kmers = len(kmers)
+    n_kmers_in_peptide_db = sum(1 for h in hashes if peptide_bloom_filter.get(h) > 0)
+    if verbose:
+        logger.info("\ttranslation: \t".format(encoded))
+        logger.info("\tkmers:", " ".join(kmers))
+
+    if verbose:
+        kmers_in_peptide_db = {
+            (k, h): peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
+        }
+        # Print keys (kmers) only
+        logger.info("\tK-mers in peptide database:")
+        logger.info(kmers_in_peptide_db)
+
+    fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
+
+    return fraction_in_peptide_db, n_kmers
+
+
+def check_peptide_content(
+    description,
+    sequence,
+    fastas,
+    alphabet,
+    peptide_ksize,
+    jaccard_threshold,
+    verbose=False,
+):
+    """Predict whether a nucleotide sequence could be protein-coding"""
+
+    translations = TranslateSingleSeq(sequence, verbose).six_frame_translation()
+
+    for frame, translation in translations.items():
+        if "*" in translation:
+            yield constants_translate.SingleReadScore(
+                np.nan,
+                np.nan,
+                constants_translate.PROTEIN_CODING_CATEGORIES["stop_codons"],
+                frame,
+            )
+        elif len(translation) <= peptide_ksize:
+            yield constants_translate.SingleReadScore(
+                np.nan,
+                np.nan,
+                constants_translate.PROTEIN_CODING_CATEGORIES["too_short_peptide"],
+                frame,
+            )
+        else:
+            encoded = encode_peptide(str(translation), alphabet)
+            fraction_in_peptide_db, n_kmers = score_single_translation(
+                encoded, alphabet, peptide_ksize, verbose
+            )
+            is_kmer_low_complex = evaluate_is_kmer_low_complexity(
+                encoded, peptide_ksize
+            )
+            if is_kmer_low_complex:
+                fasta_utils.maybe_write_fasta(
+                    fastas["low_complexity_peptide"],
+                    description + " translation_frame: {}.format(frame)",
+                    translation,
+                )
+                yield constants_translate.SingleReadScore(
+                    np.nan,
+                    n_kmers,
+                    constants_translate.LOW_COMPLEXITY_CATEGORIES[alphabet],
+                    frame,
+                )
+            else:
+                if verbose:
+                    logger.info(
+                        "\t{} is above {}".format(translation, jaccard_threshold)
+                    )
+                sequencename = "{} translation_frame: {} ".format(
+                    description, frame
+                ) + "jaccard: {}".format(fraction_in_peptide_db)
+                if fraction_in_peptide_db > jaccard_threshold:
+                    fasta_utils.maybe_write_fasta(
+                        fastas["coding_peptide"], sequencename, translation
+                    )
+                    fasta_utils.maybe_write_fasta(
+                        fastas["coding_nucleotide"], sequencename, sequence
+                    )
+                    yield constants_translate.SingleReadScore(
+                        fraction_in_peptide_db,
+                        n_kmers,
+                        constants_translate.PROTEIN_CODING_CATEGORIES["coding"],
+                        frame,
+                    )
+                else:
+                    fasta_utils.maybe_write_fasta(
+                        fastas["noncoding_nucleotide"], sequencename, sequence
+                    )
+                    yield constants_translate.SingleReadScore(
+                        fraction_in_peptide_db,
+                        n_kmers,
+                        constants_translate.PROTEIN_CODING_CATEGORIES["non_coding"],
+                        frame,
+                    )
+
+
+def check_nucleotide_content(description, n_kmers, sequence, fastas):
+    """If passes, then this read can move on to checking protein translations
+
+    Evaluates if this reads' nucleotide content doesn't
+    pass thresholds to be
+    checked for protein-coding-ness
+    """
+    if n_kmers > 0:
+        jaccard = np.nan
+        special_case = "Low complexity nucleotide"
+        fasta_utils.maybe_write_fasta(
+            fastas["low_complexity_nucleotide"], description, sequence
+        )
+    else:
+        jaccard = np.nan
+        n_kmers = np.nan
+        special_case = "Read length was shorter than 3 * peptide " "k-mer size"
+        for i in [1, 2, 3, -1, -2, -3]:
+            yield constants_translate.SingleReadScore(jaccard, n_kmers, special_case, i)
+
+
+def get_coding_score_line(
+    description, jaccard, n_kmers, special_case, frame, jaccard_threshold
+):
+    if special_case is not None:
+        line = [description, jaccard, n_kmers, special_case, frame]
+    elif jaccard > jaccard_threshold:
+        line = [description, jaccard, n_kmers, "Coding", frame]
+    else:
+        line = [description, jaccard, n_kmers, "Non-coding", frame]
+    return line
+
+
+def maybe_score_single_read(
+    alphabet, peptide_ksize, jaccard_threshold, current_reads_file, verbose, fasta_path
+):
+    """Check if read is low complexity/too short, otherwise score it"""
+    fasta_prefix = fasta_path.replace(".fasta", "")
+    coding_peptide_fasta = fasta_prefix + "_coding_peptide.fasta"
+    csv_name = coding_peptide_fasta.replace(".fasta", ".csv")
+    fastas = {
+        "noncoding_nucleotide": fasta_prefix + "_" + "noncoding_nucleotide.fasta",
+        "coding_nucleotide": fasta_prefix + "_" + "coding_nucleotide.fasta",
+        "low_complexity_nucleotide": fasta_prefix
+        + "_"
+        + "low_complexity_nucleotide.fasta",
+        "low_complexity_peptide": fasta_prefix + "_" + "low_complexity_peptide.fasta",
+        "coding_peptide": coding_peptide_fasta,
+    }
+    fastas = fasta_utils.maybe_open_fastas(fastas)
+    lines = []
+    # writing the fields
+    with screed.open(fasta_path) as records:
+        for record in records:
+            description = record["name"]
+            sequence = record["sequence"]
+            assert len(sequence) != 0, "sequence is {}".format(sequence)
+            # Check if nucleotide sequence is low complexity
+            if evaluate_is_fastp_low_complexity(sequence):
+                for (
+                    jaccard,
+                    n_kmers,
+                    special_case,
+                    frame,
+                ) in check_nucleotide_content(description, np.nan, sequence, fastas):
+                    if verbose:
+                        logger.info(
+                            "Jaccard: {}, n_kmers = {} for frame {}".format(
+                                jaccard, n_kmers, frame
+                            )
+                        )
+
+                    line = get_coding_score_line(
+                        description,
+                        jaccard,
+                        n_kmers,
+                        special_case,
+                        frame,
+                        jaccard_threshold,
+                    )
+                    line.append(current_reads_file)
+            else:
+                for (jaccard, n_kmers, special_case, frame,) in check_peptide_content(
+                    description,
+                    sequence,
+                    fastas,
+                    alphabet,
+                    peptide_ksize,
+                    jaccard_threshold,
+                    verbose,
+                ):
+                    if verbose:
+                        logger.info(
+                            "Jaccard: {}, n_kmers = {} for frame {}".format(
+                                jaccard, n_kmers, frame
+                            )
+                        )
+
+                    line = get_coding_score_line(
+                        description,
+                        jaccard,
+                        n_kmers,
+                        special_case,
+                        frame,
+                        jaccard_threshold,
+                    )
+                    line.append(current_reads_file)
+            lines.append(line)
+    # writing the data rows
+    with open(csv_name, "w", newline="") as csvfile:
+        # creating a csv writer object
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerows(lines)
+    fasta_utils.maybe_close_fastas(fastas)
 
 
 class Translate:
@@ -164,213 +385,8 @@ class Translate:
     def get_jaccard_threshold(self):
         return get_jaccard_threshold(self.jaccard_threshold, self.alphabet)
 
-    def score_single_translation(self, translation):
-        """Score a single translation based on
-        fraction of kmers in peptide bloom filter"""
-        encoded = encode_peptide(translation, self.alphabet)
-        kmers = list(set(kmerize(str(encoded), self.peptide_ksize)))
-        hashes = [hash_murmur(kmer) for kmer in kmers]
-        n_kmers = len(kmers)
-        n_kmers_in_peptide_db = sum(
-            1 for h in hashes if peptide_bloom_filter.get(h) > 0
-        )
-        if self.verbose:
-            logger.info("\ttranslation: \t".format(encoded))
-            logger.info("\tkmers:", " ".join(kmers))
-
-        if self.verbose:
-            kmers_in_peptide_db = {
-                (k, h): peptide_bloom_filter.get(h) for k, h in zip(kmers, hashes)
-            }
-            # Print keys (kmers) only
-            logger.info("\tK-mers in peptide database:")
-            logger.info(kmers_in_peptide_db)
-
-        fraction_in_peptide_db = n_kmers_in_peptide_db / n_kmers
-
-        return fraction_in_peptide_db, n_kmers
-
-    def check_peptide_content(self, description, sequence, fastas):
-        """Predict whether a nucleotide sequence could be protein-coding"""
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            translations = TranslateSingleSeq(
-                sequence, self.verbose
-            ).six_frame_translation()
-
-        for frame, translation in translations.items():
-            if "*" in translation:
-                yield constants_translate.SingleReadScore(
-                    np.nan,
-                    np.nan,
-                    constants_translate.PROTEIN_CODING_CATEGORIES["stop_codons"],
-                    frame,
-                )
-            elif len(translation) <= self.peptide_ksize:
-                yield constants_translate.SingleReadScore(
-                    np.nan,
-                    np.nan,
-                    constants_translate.PROTEIN_CODING_CATEGORIES["too_short_peptide"],
-                    frame,
-                )
-            else:
-                encoded = encode_peptide(str(translation), self.alphabet)
-                fraction_in_peptide_db, n_kmers = self.score_single_translation(encoded)
-                is_kmer_low_complex = evaluate_is_kmer_low_complexity(
-                    encoded, self.peptide_ksize
-                )
-                if is_kmer_low_complex:
-                    fasta_utils.maybe_write_fasta(
-                        fastas["low_complexity_peptide"],
-                        description + " translation_frame: {}.format(frame)",
-                        translation,
-                    )
-                    yield constants_translate.SingleReadScore(
-                        np.nan,
-                        n_kmers,
-                        constants_translate.LOW_COMPLEXITY_CATEGORIES[self.alphabet],
-                        frame,
-                    )
-                else:
-                    if self.verbose:
-                        logger.info(
-                            "\t{} is above {}".format(
-                                translation, self.jaccard_threshold
-                            )
-                        )
-                    seqname = "{} translation_frame: {} ".format(
-                        description, frame
-                    ) + "jaccard: {}".format(fraction_in_peptide_db)
-                    if fraction_in_peptide_db > self.jaccard_threshold:
-                        fasta_utils.maybe_write_fasta(
-                            fastas["coding_peptide"], seqname, translation
-                        )
-                        fasta_utils.maybe_write_fasta(
-                            fastas["coding_nucleotide"], seqname, sequence
-                        )
-                        yield constants_translate.SingleReadScore(
-                            fraction_in_peptide_db,
-                            n_kmers,
-                            constants_translate.PROTEIN_CODING_CATEGORIES["coding"],
-                            frame,
-                        )
-                    else:
-                        fasta_utils.maybe_write_fasta(
-                            fastas["noncoding_nucleotide"], seqname, sequence
-                        )
-                        yield constants_translate.SingleReadScore(
-                            fraction_in_peptide_db,
-                            n_kmers,
-                            constants_translate.PROTEIN_CODING_CATEGORIES["non_coding"],
-                            frame,
-                        )
-
-    def check_nucleotide_content(self, description, n_kmers, sequence, fastas):
-        """If passes, then this read can move on to checking protein translations
-
-        Evaluates if this reads' nucleotide content doesn't
-        pass thresholds to be
-        checked for protein-coding-ness
-        """
-        if n_kmers > 0:
-            jaccard = np.nan
-            special_case = "Low complexity nucleotide"
-            fasta_utils.maybe_write_fasta(
-                fastas["low_complexity_nucleotide"], description, sequence
-            )
-        else:
-            jaccard = np.nan
-            n_kmers = np.nan
-            special_case = "Read length was shorter than 3 * peptide " "k-mer size"
-            for i in [1, 2, 3, -1, -2, -3]:
-                yield constants_translate.SingleReadScore(
-                    jaccard, n_kmers, special_case, i
-                )
-
-    def maybe_score_single_read(self, reads):
-        """Check if read is low complexity/too short, otherwise score it"""
-        fasta_prefix = reads.replace(".fasta", "")
-        coding_peptide_fasta = fasta_prefix + "_coding_peptide.fasta"
-        csv_name = coding_peptide_fasta.replace(".fasta", ".csv")
-        fastas = {
-            "noncoding_nucleotide": fasta_prefix + "_" + "noncoding_nucleotide.fasta",
-            "coding_nucleotide": fasta_prefix + "_" + "coding_nucleotide.fasta",
-            "low_complexity_nucleotide": fasta_prefix
-            + "_"
-            + "low_complexity_nucleotide.fasta",
-            "low_complexity_peptide": fasta_prefix
-            + "_"
-            + "low_complexity_peptide.fasta",
-            "coding_peptide": coding_peptide_fasta,
-        }
-        fastas = fasta_utils.maybe_open_fastas(fastas)
-        with open(csv_name, "w", newline="") as csvfile:
-            # creating a csv writer object
-            csvwriter = csv.writer(csvfile)
-            # writing the fields
-            with screed.open(reads) as records:
-                for record in tqdm(records):
-                    description = record["name"]
-                    sequence = record["sequence"]
-                    assert len(sequence) != 0, "seq is {}".format(sequence)
-                    # Check if nucleotide sequence is low complexity
-                    if evaluate_is_fastp_low_complexity(sequence):
-                        for (
-                            jaccard,
-                            n_kmers,
-                            special_case,
-                            frame,
-                        ) in self.check_nucleotide_content(
-                            description, np.nan, sequence, fastas
-                        ):
-                            if self.verbose:
-                                logger.info(
-                                    "Jaccard: {}, n_kmers = {} for frame {}".format(
-                                        jaccard, n_kmers, frame
-                                    )
-                                )
-
-                            line = self.get_coding_score_line(
-                                description, jaccard, n_kmers, special_case, frame
-                            )
-                            line.append(self.current_reads_file)
-                            if line:
-                                csvwriter.writerow(line)
-                    else:
-                        for (
-                            jaccard,
-                            n_kmers,
-                            special_case,
-                            frame,
-                        ) in self.check_peptide_content(description, sequence, fastas):
-                            if self.verbose:
-                                logger.info(
-                                    "Jaccard: {}, n_kmers = {} for frame {}".format(
-                                        jaccard, n_kmers, frame
-                                    )
-                                )
-
-                            line = self.get_coding_score_line(
-                                description, jaccard, n_kmers, special_case, frame
-                            )
-                            line.append(self.current_reads_file)
-                            # writing the data rows
-                            if line:
-                                csvwriter.writerow(line)
-        fasta_utils.maybe_close_fastas(fastas)
-
-    def get_coding_score_line(self, description, jaccard, n_kmers, special_case, frame):
-        if special_case is not None:
-            line = [description, jaccard, n_kmers, special_case, frame]
-        elif jaccard > self.jaccard_threshold:
-            line = [description, jaccard, n_kmers, "Coding", frame]
-        else:
-            line = [description, jaccard, n_kmers, "Non-coding", frame]
-        return line
-
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
-
         num_records = 0
         with screed.open(reads) as records:
             for record in records:
@@ -382,7 +398,15 @@ class Translate:
             reads, chunksize, self.intermediate_directory
         )
         pool = multiprocessing.Pool(processes=self.processes)
-        pool.map(self.maybe_score_single_read, fasta_files_split)
+        func = partial(
+            maybe_score_single_read,
+            self.alphabet,
+            self.peptide_ksize,
+            self.get_jaccard_threshold(),
+            reads,
+            self.verbose,
+        )
+        pool.map(func, fasta_files_split)
         pool.close()
         pool.join()
 
@@ -391,8 +415,8 @@ class Translate:
         for key, file_handle in self.file_handles.items():
             for split in fasta_files_split:
                 fasta_prefix = split.replace(".fasta", "")
-                reads = fasta_prefix + "_" + key + ".fasta"
-                with screed.open(reads) as records:
+                fasta_path = fasta_prefix + "_" + key + ".fasta"
+                with screed.open(fasta_path) as records:
                     for record in records:
                         description = record["name"]
                         sequence = record["sequence"]
@@ -403,20 +427,18 @@ class Translate:
         # Combine and print coding_peptide fastas
         for split in fasta_files_split:
             fasta_prefix = split.replace(".fasta", "")
-            reads = fasta_prefix + "_" + "coding_peptide.fasta"
-            with screed.open(reads) as records:
+            fasta_path = fasta_prefix + "_" + "coding_peptide.fasta"
+            with screed.open(fasta_path) as records:
                 for record in records:
                     description = record["name"]
                     sequence = record["sequence"]
                     fasta_utils.write_fasta(sys.stdout, description, sequence)
-                    sys.stdout.flush()
 
         # combine and return scores
         for split in fasta_files_split:
             csv_file = split.replace(".fasta", "_coding_peptide.csv")
             with open(csv_file) as csvfile:
                 read_csv = csv.reader(csvfile, delimiter=",")
-                csvfile.seek(0)
                 for row in read_csv:
                     assert len(row) == 6, "row is {}".format(row)
                     if len(row) == 6:
@@ -442,7 +464,6 @@ class Translate:
         }
         self.file_handles = fasta_utils.maybe_open_fastas(fastas)
         for reads_file in self.reads:
-            self.current_reads_file = reads_file
             self.score_reads_per_file(reads_file)
         fasta_utils.maybe_close_fastas(self.file_handles)
 
@@ -618,7 +639,7 @@ def cli(
         threshold is chosen for each alphabet. For "protein" and  "dayhoff",
         the default is 0.5, and for "hydrophobic-polar," it is 0.8, since it is
         so lossy it's more likely to match random sequence. These thresholds
-        were determined empirically with a pre-chosen human RNA-seq dataset and
+        were determined empirically with a pre-chosen human RNA-sequence dataset and
         human peptides.
     alphabet : str
         One of "protein"|"peptide", "dayhoff", or "hydrophobic-polar"|"hp" to
@@ -639,7 +660,7 @@ def cli(
     parquet : str
         Save the coding scores as a parquet to this file
     long_reads : bool -- NOT IMPLEMENTED!!
-        Input sequencing reads are long reads. Not implemented, but the plan
+        Input sequenceuencing reads are long reads. Not implemented, but the plan
         is, instead of doing 6-frame translation as on the short reads, test
         all ATG (start codon) to stop codon reading frames for the one(s) that
         matches the known peptide database best. Unknown whether this requires
