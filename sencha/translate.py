@@ -297,6 +297,7 @@ def maybe_score_single_read(
                         jaccard_threshold,
                     )
                     line.append(current_reads_file)
+                    lines.append(line)
             else:
                 for (jaccard, n_kmers, special_case, frame,) in check_peptide_content(
                     description,
@@ -323,13 +324,13 @@ def maybe_score_single_read(
                         jaccard_threshold,
                     )
                     line.append(current_reads_file)
-            lines.append(line)
+                    lines.append(line)
+    fasta_utils.maybe_close_fastas(fastas)
     # writing the data rows
     with open(csv_name, "w", newline="") as csvfile:
         # creating a csv writer object
         csvwriter = csv.writer(csvfile)
         csvwriter.writerows(lines)
-    fasta_utils.maybe_close_fastas(fastas)
 
 
 class Translate:

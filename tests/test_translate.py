@@ -133,8 +133,11 @@ def test_translate_get_jaccard_threshold(translate_class):
 
 
 def test_score_single_translation(translations_for_single_seq, translate_class):
-    fraction_in_peptide_db, n_kmers = translate_class.score_single_translation(
-        translations_for_single_seq
+    fraction_in_peptide_db, n_kmers = translate.score_single_translation(
+        translations_for_single_seq,
+        translate_class.alphabet,
+        translate_class.peptide_ksize,
+        translate_class.verbose,
     )
     np.testing.assert_almost_equal(fraction_in_peptide_db, 0.19, 0.05)
     assert n_kmers == 82
@@ -143,15 +146,27 @@ def test_score_single_translation(translations_for_single_seq, translate_class):
 def test_get_coding_score_line(translate_class, translations_for_single_seq):
 
     # Convert to BioPython sequence object for translation
-    result = translate_class.get_coding_score_line(
-        "description", 0.5, 40, "test special case", -2
+    result = translate.get_coding_score_line(
+        "description",
+        0.5,
+        40,
+        "test special case",
+        -2,
+        translate_class.get_jaccard_threshold(),
     )
     assert result == ["description", 0.5, 40, "test special case", -2]
-    result = translate_class.get_coding_score_line(
-        "description", 1.0, 40, "test special case", 1
+    result = translate.get_coding_score_line(
+        "description",
+        1.0,
+        40,
+        "test special case",
+        1,
+        translate_class.get_jaccard_threshold(),
     )
     assert result == ["description", 1.0, 40, "test special case", 1]
-    result = translate_class.get_coding_score_line("description", 1.0, 40, None, -3)
+    result = translate.get_coding_score_line(
+        "description", 1.0, 40, None, -3, translate_class.get_jaccard_threshold()
+    )
     assert result == ["description", 1.0, 40, "Coding", -3]
 
 
