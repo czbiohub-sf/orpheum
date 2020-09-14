@@ -248,7 +248,7 @@ class Translate:
                                 translation, self.jaccard_threshold
                             )
                         )
-                    seqname = "{} translation_frame: {} ".format(
+                    seqname = "{}__translation-frame:{}".format(
                         description, frame
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
