@@ -456,6 +456,10 @@ class Translate:
                         except:
                             assert 1 == 0, "problems in casting ros {}".format(row)
 
+        # Delete the split fasta files
+        for split in fasta_files_split:
+            os.remove(split)
+
     def set_coding_scores_all_files(self):
         fastas = {
             "noncoding_nucleotide": self.noncoding_nucleotide_fasta,

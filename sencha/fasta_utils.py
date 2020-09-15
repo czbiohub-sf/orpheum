@@ -58,10 +58,11 @@ def batch_iterator(iterator, batch_size):
 def split_fasta_files(reads, chunksize, outdir):
     if not os.path.exists(os.path.abspath(outdir)):
         os.makedirs(outdir)
+    basename = os.path.basename(reads).split('.')[0]
     record_iter = iter(screed.open(reads))
     filenames = []
     for i, batch in enumerate(batch_iterator(record_iter, chunksize)):
-        filename = os.path.join(outdir, "split_%i.fasta" % (i + 1))
+        filename = os.path.join(outdir, "{}_{}.fasta".format(basename, i + 1))
         with open(filename, "w") as ouput_handle:
             for record in batch:
                 description = record["name"]
