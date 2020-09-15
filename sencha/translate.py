@@ -424,6 +424,7 @@ class Translate:
                         fasta_utils.maybe_write_fasta(
                             file_handle, description, sequence
                         )
+                os.remove(fasta_path)
 
         # Combine and print coding_peptide fastas
         for split in fasta_files_split:
@@ -434,6 +435,7 @@ class Translate:
                     description = record["name"]
                     sequence = record["sequence"]
                     fasta_utils.write_fasta(sys.stdout, description, sequence)
+            os.remove(fasta_path)
 
         # combine and return scores
         for split in fasta_files_split:
@@ -455,6 +457,7 @@ class Translate:
                             self.coding_scores.append(line)
                         except:
                             assert 1 == 0, "problems in casting ros {}".format(row)
+            os.remove(csv_file)
 
         # Delete the split fasta files
         for split in fasta_files_split:
