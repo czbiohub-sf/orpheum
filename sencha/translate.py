@@ -263,7 +263,7 @@ class Translate:
                                 translation, self.jaccard_threshold
                             )
                         )
-                    seqname = "{} translation_frame: {} ".format(
+                    seqname = "{}__translation_frame: {} ".format(
                         description, frame
                     ) + "jaccard: {}".format(fraction_in_peptide_db)
                     if fraction_in_peptide_db > self.jaccard_threshold:
@@ -582,7 +582,6 @@ def cli(
     # \b above prevents re-wrapping of paragraphs
     translate_obj = Translate(locals())
     translate_obj.set_coding_scores_all_files()
-    coding_scores = translate_obj.get_coding_scores_all_files()
     assemble_summary_obj = CreateSaveSummary(
         reads,
         csv,
@@ -592,10 +591,12 @@ def cli(
         alphabet,
         translate_obj.peptide_ksize,
         translate_obj.jaccard_threshold,
+        translate_obj.coding_scores,
     )
-    assemble_summary_obj.maybe_write_csv(coding_scores)
-    assemble_summary_obj.maybe_write_parquet(coding_scores)
-    assemble_summary_obj.maybe_write_json_summary(coding_scores)
+    del translate_obj.coding_scores
+    assemble_summary_obj.maybe_write_csv()
+    assemble_summary_obj.maybe_write_parquet()
+    assemble_summary_obj.maybe_write_json_summary()
 
 
 if __name__ == "__main__":
