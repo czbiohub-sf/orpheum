@@ -263,9 +263,10 @@ class Translate:
                                 translation, self.jaccard_threshold
                             )
                         )
-                    seqname = "{}__translation_frame: {} ".format(
+                    seqname = "{}__translation_frame:{}".format(
                         description, frame
-                    ) + "jaccard: {}".format(fraction_in_peptide_db)
+                    ) + "__jaccard:{}".format(fraction_in_peptide_db)
+                    seqname = seqname.replace(" ", "__")
                     if fraction_in_peptide_db > self.jaccard_threshold:
                         write_fasta(sys.stdout, seqname, translation)
                         self.maybe_write_fasta(
