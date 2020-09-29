@@ -269,6 +269,7 @@ class Translate:
                     seqname = seqname.replace(" ", "__")
                     if fraction_in_peptide_db > self.jaccard_threshold:
                         write_fasta(sys.stdout, seqname, translation)
+                        sys.stdout.flush()
                         self.maybe_write_fasta(
                             self.file_handles["coding_nucleotide"], seqname, sequence
                         )
