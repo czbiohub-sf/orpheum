@@ -226,7 +226,6 @@ def test_cli_peptide_fasta(
     assert result.exit_code == 0
     # CliRunner jams together the stderr and stdout so just check if the
     # true string is contained in the output
-    print(result.output)
     assert true_protein_coding_fasta_string in result.output
 
     # Make sure "Writing translate summary to" didn't get accidentally
