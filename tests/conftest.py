@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import pytest
-import warnings
 
 """
 conftest.py contains fixtures or functions-turned-variables that can be
