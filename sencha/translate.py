@@ -3,13 +3,14 @@ translate.py
 
 Partition reads into coding, noncoding, and low-complexity bins
 """
+import itertools
 import sys
 import warnings
+import functools
 
 import click
 import numpy as np
 import screed
-from tqdm import tqdm
 from sourmash._minhash import hash_murmur
 from sencha.log_utils import get_logger
 from sencha.sequence_encodings import encode_peptide
@@ -338,44 +339,44 @@ class Translate:
             line = [description, jaccard, n_kmers, "Non-coding", frame]
         return line
 
+    def score_reads_per_record(self, reads_path, record):
+        description = record["name"]
+        sequence = record["sequence"]
+        if self.verbose:
+            logger.info(description)
+        lines = []
+        for (
+            jaccard,
+            n_kmers,
+            special_case,
+            frame,
+        ) in self.maybe_score_single_read(description, sequence):
+            if self.verbose:
+                logger.info(
+                    "Jaccard: {}, n_kmers = {} for frame {}".format(
+                        jaccard, n_kmers, frame
+                    )
+                )
+            line = self.get_coding_score_line(
+                description, jaccard, n_kmers, special_case, frame
+            )
+            line.append(reads_path)
+            lines.append(line)
+        return lines
+
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
-
-        scoring_lines = []
+        func = functools.partial(self.score_reads_per_record, reads)
         with screed.open(reads) as records:
-            for record in tqdm(records):
-                description = record["name"]
-                sequence = record["sequence"]
-                if self.verbose:
-                    logger.info(description)
-
-                for (
-                    jaccard,
-                    n_kmers,
-                    special_case,
-                    frame,
-                ) in self.maybe_score_single_read(description, sequence):
-                    if self.verbose:
-                        logger.info(
-                            "Jaccard: {}, n_kmers = {} for frame {}".format(
-                                jaccard, n_kmers, frame
-                            )
-                        )
-                    line = self.get_coding_score_line(
-                        description, jaccard, n_kmers, special_case, frame
-                    )
-                    line.append(reads)
-                    scoring_lines.append(line)
+            scoring_lines = list(itertools.chain.from_iterable(map(func, records)))
         return scoring_lines
 
     def set_coding_scores_all_files(self):
         self.maybe_open_fastas()
-        scoring_lines = []
-        for reads_file in self.reads:
-            self.maybe_open_fastas()
-            scoring_lines.extend(self.score_reads_per_file(reads_file))
-            self.maybe_close_fastas()
-        self.coding_scores = scoring_lines
+        self.coding_scores = list(
+            itertools.chain.from_iterable(map(self.score_reads_per_file, self.reads))
+        )
+        self.maybe_close_fastas()
 
     def get_coding_scores_all_files(self):
         return self.coding_scores
