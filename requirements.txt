@@ -11,7 +11,7 @@ tqdm
 ipykernel
 joblib
 notebook
-pyarrow
+#pyarrow
 s3fs
-fastparquet
+#fastparquet
 pytest
