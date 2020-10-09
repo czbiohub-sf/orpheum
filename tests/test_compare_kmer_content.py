@@ -152,150 +152,150 @@ def ksize_args():
 @pytest.fixture
 def true_comparison_csv_kmax3():
     return """id1,id2,ksize,jaccard,alphabet
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,peptide20
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,peptide20
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,hsdm17
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,hsdm17
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,sdm12
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,sdm12
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,aa9
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,aa9
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,botvinnik8
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,botvinnik8
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,dayhoff6
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,dayhoff6
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,gbmr4
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,gbmr4
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,hp2
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,hp2
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.0,peptide20
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,peptide20
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.05263157894736842,hsdm17
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,hsdm17
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.17647058823529413,sdm12
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,sdm12
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.4666666666666667,aa9
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,aa9
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.2631578947368421,botvinnik8
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,botvinnik8
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.4666666666666667,dayhoff6
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.05263157894736842,dayhoff6
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.8,gbmr4
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.75,gbmr4
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,hp2
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,hp2
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.047619047619047616,peptide20
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,peptide20
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.15789473684210525,hsdm17
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,hsdm17
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.375,sdm12
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,sdm12
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.5333333333333333,aa9
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.05555555555555555,aa9
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.2631578947368421,botvinnik8
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.05,botvinnik8
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.6428571428571429,dayhoff6
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.2631578947368421,dayhoff6
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.6666666666666666,gbmr4
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.6,gbmr4
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hp2
-SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hp2
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.0,peptide20
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,peptide20
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.05263157894736842,hsdm17
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,hsdm17
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.17647058823529413,sdm12
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,sdm12
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.4666666666666667,aa9
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,aa9
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.2631578947368421,botvinnik8
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,botvinnik8
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.4666666666666667,dayhoff6
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.05263157894736842,dayhoff6
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.8,gbmr4
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.75,gbmr4
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,hp2
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,hp2
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,peptide20
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,peptide20
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,hsdm17
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,hsdm17
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,sdm12
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,sdm12
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,aa9
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,aa9
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,botvinnik8
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,botvinnik8
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,dayhoff6
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,dayhoff6
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,gbmr4
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,gbmr4
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,hp2
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,hp2
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.14285714285714285,peptide20
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,peptide20
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.23809523809523808,hsdm17
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.05,hsdm17
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.5625,sdm12
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.2777777777777778,sdm12
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.5294117647058824,aa9
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.1,aa9
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.3157894736842105,botvinnik8
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.0,botvinnik8
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.7857142857142857,dayhoff6
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.2631578947368421,dayhoff6
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,0.8,gbmr4
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,0.5,gbmr4
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hp2
-SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hp2
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.047619047619047616,peptide20
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,peptide20
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.15789473684210525,hsdm17
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,hsdm17
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.375,sdm12
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.0,sdm12
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.5333333333333333,aa9
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.05555555555555555,aa9
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.2631578947368421,botvinnik8
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.05,botvinnik8
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.6428571428571429,dayhoff6
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.2631578947368421,dayhoff6
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,0.6666666666666666,gbmr4
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,0.6,gbmr4
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,2,1.0,hp2
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.10559374 Ibis_Run100924_C3PO:6:51:17601:17119/1 translation_frame: -2 jaccard: 1.0,3,1.0,hp2
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.14285714285714285,peptide20
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,peptide20
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.23809523809523808,hsdm17
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.05,hsdm17
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.5625,sdm12
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.2777777777777778,sdm12
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.5294117647058824,aa9
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.1,aa9
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.3157894736842105,botvinnik8
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.0,botvinnik8
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.7857142857142857,dayhoff6
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.2631578947368421,dayhoff6
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,0.8,gbmr4
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,0.5,gbmr4
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,2,1.0,hp2
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.2740879 Ibis_Run100924_C3PO:6:13:11155:5248/1 translation_frame: -1 jaccard: 1.0,3,1.0,hp2
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,peptide20
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,peptide20
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hsdm17
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hsdm17
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,sdm12
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,sdm12
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,aa9
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,aa9
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,botvinnik8
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,botvinnik8
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,dayhoff6
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,dayhoff6
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,gbmr4
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,gbmr4
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,2,1.0,hp2
-SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,SRR306838.4880582 Ibis_Run100924_C3PO:6:23:17413:5436/1 translation_frame: 2 jaccard: 1.0,3,1.0,hp2
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,peptide20
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,peptide20
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,hsdm17
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,hsdm17
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,sdm12
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,sdm12
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,aa9
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,aa9
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,botvinnik8
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,botvinnik8
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,dayhoff6
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,dayhoff6
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,gbmr4
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,gbmr4
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,hp2
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,hp2
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.0,peptide20
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,peptide20
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.05263157894736842,hsdm17
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,hsdm17
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.17647058823529413,sdm12
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,sdm12
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.4666666666666667,aa9
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,aa9
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.2631578947368421,botvinnik8
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,botvinnik8
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.4666666666666667,dayhoff6
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.05263157894736842,dayhoff6
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.8,gbmr4
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.75,gbmr4
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,hp2
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,hp2
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.047619047619047616,peptide20
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.0,peptide20
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.15789473684210525,hsdm17
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.0,hsdm17
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.375,sdm12
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.0,sdm12
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.5333333333333333,aa9
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.05555555555555555,aa9
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.2631578947368421,botvinnik8
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.05,botvinnik8
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.6428571428571429,dayhoff6
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.2631578947368421,dayhoff6
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.6666666666666666,gbmr4
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.6,gbmr4
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,hp2
+SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,hp2
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.0,peptide20
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,peptide20
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.05263157894736842,hsdm17
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,hsdm17
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.17647058823529413,sdm12
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,sdm12
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.4666666666666667,aa9
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,aa9
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.2631578947368421,botvinnik8
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,botvinnik8
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.4666666666666667,dayhoff6
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.05263157894736842,dayhoff6
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.8,gbmr4
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.75,gbmr4
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,hp2
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,hp2
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,peptide20
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,peptide20
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,hsdm17
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,hsdm17
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,sdm12
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,sdm12
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,aa9
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,aa9
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,botvinnik8
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,botvinnik8
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,dayhoff6
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,dayhoff6
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,gbmr4
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,gbmr4
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,hp2
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,hp2
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.14285714285714285,peptide20
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.0,peptide20
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.23809523809523808,hsdm17
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.05,hsdm17
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.5625,sdm12
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.2777777777777778,sdm12
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.5294117647058824,aa9
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.1,aa9
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.3157894736842105,botvinnik8
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.0,botvinnik8
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.7857142857142857,dayhoff6
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.2631578947368421,dayhoff6
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,0.8,gbmr4
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,0.5,gbmr4
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,hp2
+SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,hp2
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.047619047619047616,peptide20
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,peptide20
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.15789473684210525,hsdm17
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,hsdm17
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.375,sdm12
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.0,sdm12
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.5333333333333333,aa9
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.05555555555555555,aa9
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.2631578947368421,botvinnik8
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.05,botvinnik8
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.6428571428571429,dayhoff6
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.2631578947368421,dayhoff6
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,0.6666666666666666,gbmr4
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,0.6,gbmr4
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,2,1.0,hp2
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.10559374__Ibis_Run100924_C3PO:6:51:17601:17119/1__translation_frame:-2__jaccard:1.0,3,1.0,hp2
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.14285714285714285,peptide20
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,peptide20
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.23809523809523808,hsdm17
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.05,hsdm17
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.5625,sdm12
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.2777777777777778,sdm12
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.5294117647058824,aa9
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.1,aa9
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.3157894736842105,botvinnik8
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.0,botvinnik8
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.7857142857142857,dayhoff6
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.2631578947368421,dayhoff6
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,0.8,gbmr4
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,0.5,gbmr4
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,2,1.0,hp2
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.2740879__Ibis_Run100924_C3PO:6:13:11155:5248/1__translation_frame:-1__jaccard:1.0,3,1.0,hp2
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,peptide20
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,peptide20
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,hsdm17
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,hsdm17
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,sdm12
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,sdm12
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,aa9
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,aa9
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,botvinnik8
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,botvinnik8
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,dayhoff6
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,dayhoff6
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,gbmr4
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,gbmr4
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,2,1.0,hp2
+SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,SRR306838.4880582__Ibis_Run100924_C3PO:6:23:17413:5436/1__translation_frame:2__jaccard:1.0,3,1.0,hp2
 """
 
 
