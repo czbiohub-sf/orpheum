@@ -4,8 +4,6 @@ import json
 from collections import Counter
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
 from sencha.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES,
     PROTEIN_CODING_CATEGORIES,
@@ -64,6 +62,8 @@ class CreateSaveSummary:
 
     def maybe_write_parquet(self):
         if self.parquet:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
             logger.info("Writing coding scores of reads to {}".format(self.parquet))
             batch = pa.RecordBatch.from_arrays(
                 [
@@ -135,8 +135,6 @@ class CreateSaveSummary:
             translation_frame_counts,
         ) = self.get_n_translated_frames_per_read()
 
-        files = np.unique(self.filenames).tolist()
-
         (
             categorization_percentages,
             categorization_counts,
@@ -154,7 +152,7 @@ class CreateSaveSummary:
         }
 
         summary = {
-            "input_files": files,
+            "files": self.filenames,
             "jaccard_info": jaccard_info,
             "categorization_counts": categorization_counts,
             "categorization_percentages": categorization_percentages,
