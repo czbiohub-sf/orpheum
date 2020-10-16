@@ -1,6 +1,7 @@
 import csv
 import itertools
 import json
+import os
 from collections import Counter
 
 import numpy as np
@@ -27,7 +28,7 @@ class CreateSaveSummary:
         jaccard_threshold,
         coding_scores,
     ):
-        self.unique_filenames = filenames
+        self.unique_filenames = [os.path.basename(f) for f in filenames]
         self.csv = csv
         self.parquet = parquet
         self.json_summary = json_summary
