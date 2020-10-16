@@ -64,6 +64,7 @@ class CreateSaveSummary:
         if self.parquet:
             import pyarrow as pa
             import pyarrow.parquet as pq
+
             logger.info("Writing coding scores of reads to {}".format(self.parquet))
             batch = pa.RecordBatch.from_arrays(
                 [
