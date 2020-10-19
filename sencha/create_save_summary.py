@@ -1,11 +1,10 @@
 import csv
 import itertools
 import json
+import os
 from collections import Counter
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
 from sencha.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES,
     PROTEIN_CODING_CATEGORIES,
@@ -29,7 +28,9 @@ class CreateSaveSummary:
         jaccard_threshold,
         coding_scores,
     ):
-        self.filenames = filenames
+        if type(filenames) is str:
+            filenames = [filenames]
+        self.unique_filenames = [os.path.basename(f) for f in filenames]
         self.csv = csv
         self.parquet = parquet
         self.json_summary = json_summary
@@ -64,6 +65,9 @@ class CreateSaveSummary:
 
     def maybe_write_parquet(self):
         if self.parquet:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+
             logger.info("Writing coding scores of reads to {}".format(self.parquet))
             batch = pa.RecordBatch.from_arrays(
                 [
@@ -92,7 +96,7 @@ class CreateSaveSummary:
 
         if self.coding_scores == []:
             summary = {
-                "input_files": self.filenames,
+                "input_files": self.unique_filenames,
                 "jaccard_info": {
                     "count": 0,
                     "mean": None,
@@ -135,8 +139,6 @@ class CreateSaveSummary:
             translation_frame_counts,
         ) = self.get_n_translated_frames_per_read()
 
-        files = np.unique(self.filenames).tolist()
-
         (
             categorization_percentages,
             categorization_counts,
@@ -154,7 +156,7 @@ class CreateSaveSummary:
         }
 
         summary = {
-            "input_files": files,
+            "input_files": self.unique_filenames,
             "jaccard_info": jaccard_info,
             "categorization_counts": categorization_counts,
             "categorization_percentages": categorization_percentages,
