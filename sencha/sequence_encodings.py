@@ -276,12 +276,48 @@ BOTVINNIK_MAPPING = {
     "P": "m",
 }
 
-PURINE_PYRIMIDINE_MAPPING = {"A": "R", "C": "Y", "G": "R", "T": "Y"}
-AMINO_KETO_MAPPING = {"A": "M", "C": "M", "G": "K", "T": "K"}
-WEAK_STRONG_MAPPING = {"A": "W", "C": "S", "G": "S", "T": "W"}
+### nucleotide mappings
+PURINE_PYRIMIDINE_MAPPING = {
+    "A": "R",
+    "C": "Y",
+    "G": "R",
+    "T": "Y"
+}
+
+AMINO_KETO_MAPPING = {
+    "A": "M",
+    "C": "M",
+    "G": "K",
+    "T": "K"
+}
+
+WEAK_STRONG_MAPPING = {
+    "A": "W",
+    "C": "S",
+    "G": "S",
+    "T": "W"
+}
+
+
+## build translation for each mapping
+
+# peptide translation
+DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
+DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_V2_MAPPING)
+HP_TRANSLATION = str.maketrans(HP_MAPPING)
+AA9_TRANSLATION = str.maketrans(AA9_MAPPING)
+GBMR4_TRANSLATION = str.maketrans(GBMR4_MAPPING)
+SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
+HSDM17_TRANSLATION = str.maketrans(HSDM17_MAPPING)
+BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
+
+#nucleotide translation
 AMINO_KETO_TRANSLATION = str.maketrans(AMINO_KETO_MAPPING)
 WEAK_STRONG_TRANSLATION = str.maketrans(WEAK_STRONG_MAPPING)
 PURINE_PYRIMIDINE_TRANSLATION = str.maketrans(PURINE_PYRIMIDINE_MAPPING)
+
+
+## relate names to mappings and encodings
 
 PEPTIDE_MAPPINGS = {
     "hp": HP_MAPPING,
@@ -294,15 +330,6 @@ PEPTIDE_MAPPINGS = {
     "sdm12": SDM12_MAPPING,
     "hsdm17": HSDM17_MAPPING,
 }
-
-DAYHOFF_TRANSLATION = str.maketrans(DAYHOFF_MAPPING)
-DAYHOFF_V2_TRANSLATION = str.maketrans(DAYHOFF_V2_MAPPING)
-HP_TRANSLATION = str.maketrans(HP_MAPPING)
-AA9_TRANSLATION = str.maketrans(AA9_MAPPING)
-GBMR4_TRANSLATION = str.maketrans(GBMR4_MAPPING)
-SDM12_TRANSLATION = str.maketrans(SDM12_MAPPING)
-HSDM17_TRANSLATION = str.maketrans(HSDM17_MAPPING)
-BOTVINNIK_TRANSLATION = str.maketrans(BOTVINNIK_MAPPING)
 
 PEPTIDE_ENCODINGS = {
     "hp": HP_TRANSLATION,
@@ -328,6 +355,20 @@ HP_LIKE = (
     "hp2",
 )
 
+NUCLEOTIDE_MAPPINGS = {
+    "purine-pyrimidine": PURINE_PYRIMIDINE_MAPPING,
+    "weak-strong": WEAK_STRONG_MAPPING,
+    "amino-keto": AMINO_KETO_MAPPING,
+}
+
+NUCLEOTIDE_ENCODINGS = {
+    "purine-pyrimidine": PURINE_PYRIMIDINE_TRANSLATION,
+    "weak-strong": WEAK_STRONG_TRANSLATION,
+    "amino-keto": AMINO_KETO_TRANSLATION,
+}
+
+
+## valid molecules
 VALID_PEPTIDE_MOLECULES = (
     "protein",
     "peptide",
@@ -431,6 +472,33 @@ def weak_strong_ize(seq):
 def purine_pyrimidize(seq):
     return seq.translate(PURINE_PYRIMIDINE_TRANSLATION)
 
+
+# Nucleic acid utils
+
+COMPLEMENT_NUCLEOTIDE = {
+    "A": "T",
+    "C": "G",
+    "G": "C",
+    "T": "A",
+    "N": "N"
+}
+
+def complement(s):
+    # https://github.com/dib-lab/sourmash/blob/master/utils/compute-dna-mh-another-way.py
+    """
+    Return complement of 's'.
+    """
+    c = "".join(COMPLEMENT_NUCLEOTIDE[n] for n in s)
+    return c
+
+
+def reverse(s):
+    # https://github.com/dib-lab/sourmash/blob/master/utils/compute-dna-mh-another-way.py
+    """
+    Return reverse of 's'.
+    """
+    r = "".join(reversed(s))
+    return r
 
 # Amino acid mappings
 def dayhoffize(seq):
