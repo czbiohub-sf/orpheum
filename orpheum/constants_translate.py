@@ -1,6 +1,6 @@
 import itertools
 from collections import namedtuple
-from sencha.sequence_encodings import ALPHABET_ALIASES
+from orpheum.sequence_encodings import ALPHABET_ALIASES
 
 DEFAULT_JACCARD_THRESHOLD = 0.5
 DEFAULT_HP_JACCARD_THRESHOLD = 0.8

@@ -70,7 +70,7 @@ def ensembl_mock(url, request):
 
     try:
         filename = os.path.join(
-            pytest.config.rootdir, f"sencha/tests/data/{ensembl_id}.pkl"
+            pytest.config.rootdir, f"orpheum/tests/data/{ensembl_id}.pkl"
         )
         with open(filename, "rb") as testing_file:
             testing_data = pickle.load(testing_file)
@@ -92,7 +92,7 @@ def ensembl_mock(url, request):
 
 @pytest.mark.skip
 def test_lookup(ensembl_protein_id):
-    from sencha.ensembl import lookup
+    from orpheum.ensembl import lookup
 
     with HTTMock(ensembl_mock):
         test = lookup(ensembl_protein_id)
@@ -103,7 +103,7 @@ def test_lookup(ensembl_protein_id):
 
 @pytest.mark.skip
 def test_lookup_expand_true(ensembl_transcript_id):
-    from sencha.ensembl import lookup
+    from orpheum.ensembl import lookup
 
     with HTTMock(ensembl_mock):
         test = lookup(ensembl_transcript_id, expand=True)
@@ -147,7 +147,7 @@ def test_lookup_expand_true(ensembl_transcript_id):
 
 @pytest.mark.skip
 def test_get_orthologues(ensembl_gene_id):
-    from sencha.ensembl import get_orthologues
+    from orpheum.ensembl import get_orthologues
 
     with HTTMock(ensembl_mock):
         test = get_orthologues(ensembl_gene_id, "mouse")

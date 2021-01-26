@@ -1,6 +1,6 @@
 .. _tutorial:
 
-sencha Tutorial
+orpheum Tutorial
 =================
 
 Installation

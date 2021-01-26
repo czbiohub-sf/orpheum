@@ -5,15 +5,15 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
-from sencha.translate import cli
+from orpheum.translate import cli
 from click.testing import CliRunner
 
-import sencha.translate as translate
-import sencha.constants_translate as constants_translate
-import sencha.constants_index as constants_index
+import orpheum.translate as translate
+import orpheum.constants_translate as constants_translate
+import orpheum.constants_index as constants_index
 
 
-KHTOOLS = "sencha"
+KHTOOLS = "orpheum"
 TRANSLATE = "translate"
 CMD = KHTOOLS + " " + TRANSLATE
 

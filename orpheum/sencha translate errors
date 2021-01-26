@@ -1,0 +1,68 @@
+sencha translate \
+  --processes 10 \
+  --intermediate-directory /mnt/ibm_lg/pranathi/immune-evolution/sencha_intermediate2/ \
+  --molecule dayhoff \
+  --coding-nucleotide-fasta TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC__coding_reads_nucleotides.fasta \
+  --noncoding-nucleotide-fasta TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC__noncoding_reads_nucleotides.fasta \
+  --csv TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC__coding_scores.csv \
+  --json-summary TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC__coding_summary.json \
+  --jaccard-threshold 0.95 \
+  --peptide-ksize 9 \
+  --peptides-are-bloom-filter \
+  metazoa_odb10__molecule-dayhoff_ksize-9.bloomfilter \
+  TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC_R1_trimmed.fastq.gz > TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC__coding_reads_peptides.fasta
+
+  11it [00:00, 7771.15it/s]
+8it [00:00, 12524.98it/s]
+6it [00:00, 7155.48it/s]
+5it [00:00, 7833.96it/s]
+8it [00:00, 13454.06it/s]
+10it [00:00, 5638.26it/s]
+15it [00:00, 25890.77it/s]
+8it [00:00, 8481.91it/s]
+6it [00:00, 15363.75it/s]
+1it [00:00, 3368.92it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+3it [00:00, 403.84it/s]
+3it [00:00, 794.48it/s]
+2it [00:00, 2177.16it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+Traceback (most recent call last):
+  File "/home/pranathi/miniconda3/envs/nf-core-kmermaid-1.0.0dev/bin/sencha", line 8, in <module>
+    sys.exit(cli())
+  File "/home/pranathi/miniconda3/envs/nf-core-kmermaid-1.0.0dev/lib/python3.6/site-packages/click/core.py", line 829, in __call__
+    return self.main(*args, **kwargs)
+  File "/home/pranathi/miniconda3/envs/nf-core-kmermaid-1.0.0dev/lib/python3.6/site-packages/click/core.py", line 782, in main
+    rv = self.invoke(ctx)
+  File "/home/pranathi/miniconda3/envs/nf-core-kmermaid-1.0.0dev/lib/python3.6/site-packages/click/core.py", line 1259, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/home/pranathi/miniconda3/envs/nf-core-kmermaid-1.0.0dev/lib/python3.6/site-packages/click/core.py", line 1066, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/home/pranathi/miniconda3/envs/nf-core-kmermaid-1.0.0dev/lib/python3.6/site-packages/click/core.py", line 610, in invoke
+    return callback(*args, **kwargs)
+  File "/home/pranathi/.local/lib/python3.6/site-packages/sencha-1.0.1.dev65+g0e1d781-py3.6.egg/sencha/translate.py", line 672, in cli
+    translate_obj.set_coding_scores_all_files()
+  File "/home/pranathi/.local/lib/python3.6/site-packages/sencha-1.0.1.dev65+g0e1d781-py3.6.egg/sencha/translate.py", line 450, in set_coding_scores_all_files
+    self.score_reads_per_file(reads_file)
+  File "/home/pranathi/.local/lib/python3.6/site-packages/sencha-1.0.1.dev65+g0e1d781-py3.6.egg/sencha/translate.py", line 440, in score_reads_per_file
+    float(row[2]),
+ValueError: could not convert string to float: 'TSP2_Lung_proxmedialdistal_1_1_possorted_genome_bam__unaligned__GGGTATTTCAAGAGGC_R1_trimmed.fastq.gz'
+(nf-c
+

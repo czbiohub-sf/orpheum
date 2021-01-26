@@ -7,7 +7,7 @@ import pytest
 conftest.py contains fixtures or functions-turned-variables that can be
 used in any test
 """
-from sencha.constants_index import (
+from orpheum.constants_index import (
     DEFAULT_PROTEIN_KSIZE,
     DEFAULT_DAYHOFF_KSIZE,
     DEFAULT_HP_KSIZE,
@@ -23,7 +23,7 @@ def reads(data_folder):
 
 @pytest.fixture
 def jaccard_threshold(alphabet):
-    from sencha.translate import get_jaccard_threshold
+    from orpheum.translate import get_jaccard_threshold
 
     threshold = get_jaccard_threshold(None, alphabet)
     return threshold
@@ -128,13 +128,13 @@ def peptide_bloom_filter_path(data_folder, alphabet, peptide_ksize):
 def peptide_bloom_filter(
     peptide_bloom_filter_path, peptide_fasta, alphabet, peptide_ksize
 ):
-    from sencha.index import load_nodegraph
+    from orpheum.index import load_nodegraph
 
     """Load bloom filter from path if exists, otherwise, make it"""
     try:
         return load_nodegraph(peptide_bloom_filter_path)
     except (OSError):
-        from sencha.index import make_peptide_bloom_filter
+        from orpheum.index import make_peptide_bloom_filter
 
         bloom_filter = make_peptide_bloom_filter(
             peptide_fasta, peptide_ksize, alphabet, tablesize=1e6
