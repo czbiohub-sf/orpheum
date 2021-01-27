@@ -4,14 +4,14 @@
 test_commandline
 ----------------------------------
 
-Tests for `sencha` module.
+Tests for `orpheum` module.
 """
 
 from click.testing import CliRunner
 
 
 def test_cli():
-    from sencha.commandline import cli
+    from orpheum.commandline import cli
 
     runner = CliRunner()
     result = runner.invoke(cli)
@@ -20,7 +20,7 @@ def test_cli():
 
 
 def test_cli_short_help():
-    from sencha.commandline import cli
+    from orpheum.commandline import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, ["-h"])
@@ -29,7 +29,7 @@ def test_cli_short_help():
 
 
 def test_cli_long_help():
-    from sencha.commandline import cli
+    from orpheum.commandline import cli
 
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])

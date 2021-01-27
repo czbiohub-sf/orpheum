@@ -7,10 +7,10 @@ import screed
 from sourmash._minhash import hash_murmur
 from tqdm import tqdm
 
-from sencha.compare_kmer_content import kmerize
-from sencha.sequence_encodings import encode_peptide, BEST_KSIZES, ALPHABET_SIZES
-import sencha.constants_index as constants_index
-from sencha.log_utils import get_logger
+from orpheum.compare_kmer_content import kmerize
+from orpheum.sequence_encodings import encode_peptide, BEST_KSIZES, ALPHABET_SIZES
+import orpheum.constants_index as constants_index
+from orpheum.log_utils import get_logger
 
 logger = get_logger(__file__)
 

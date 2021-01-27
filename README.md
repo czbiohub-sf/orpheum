@@ -1,20 +1,16 @@
-sencha
+orpheum
 ================================
-![Tests](https://github.com/czbiohub/sencha/workflows/Pytest/badge.svg)
-![Linting](https://github.com/czbiohub/sencha/workflows/Lint%20with%20flake8/badge.svg)
-[![codecov](https://codecov.io/gh/czbiohub/sencha/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/sencha)
+![Tests](https://github.com/czbiohub/orpheum/workflows/Pytest/badge.svg)
+![Linting](https://github.com/czbiohub/orpheum/workflows/Lint%20with%20flake8/badge.svg)
+[![codecov](https://codecov.io/gh/czbiohub/orpheum/branch/master/graph/badge.svg)](https://codecov.io/gh/czbiohub/orpheum)
 
-What is sencha?
+What is orpheum?
 -------------------------------------
 
 Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.
 
 -   Free software: MIT license
--   Documentation: https://czbiohub.github.io/sencha
-
-The name is inspired from the naming pattern of [sourmash](https://github.com/dib-lab/sourmash)
-combined with [@olgabot](https://github.com/olgabot/)'s love of tea.
-([Sencha](https://en.wikipedia.org/wiki/Sencha) is a Japanese green tea.)
+-   Documentation: https://czbiohub.github.io/orpheum
 
 Installation
 ------------
@@ -22,7 +18,7 @@ Installation
 The package can be installed from PyPI using `pip` here:
 
 ```
-pip install sencha
+pip install orpheum
 ```
 
 ### Developmental install
@@ -30,8 +26,8 @@ pip install sencha
 To install this code and play around with the code locally, clone this github repository and use `pip` to install:
 
 ```
-git clone https://github.com/czbiohub/sencha.git
-cd sencha
+git clone https://github.com/czbiohub/orpheum.git
+cd orpheum
 
 # The "." means "install *this*, the folder where I am now"
 pip install .
@@ -45,7 +41,7 @@ Usage
 A reference proteome *must* be supplied as the first argument.
 
 ```
-sencha translate reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the "coding scores" to a csv or parquet file
@@ -59,12 +55,12 @@ see the coding scores for all reads, use the `--csv` flag or `--parquet` flag.
 
 csv:
 ```
-sencha translate --csv coding_scores.csv reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate --csv coding_scores.csv reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 parquet:
 ```
-sencha translate --parquet coding_scores.parquet reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate --parquet coding_scores.parquet reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the coding nucleotides to a fasta
@@ -73,7 +69,7 @@ By default, only the coding *peptides* are output. If you'd like to also output
 the underlying *nucleotide* sequence, then use the flag `--coding-nucleotide-fasta`
 
 ```
-sencha translate --coding-nucleotide-fasta coding_nucleotides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate --coding-nucleotide-fasta coding_nucleotides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the *non*-coding nucleotides to a fasta
@@ -82,7 +78,7 @@ To see the sequence of reads which were deemed non-coding, use the flag
 `--noncoding-nucleotide-fasta`.
 
 ```
-sencha translate --noncoding-nucleotide-fasta noncoding_nucleotides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate --noncoding-nucleotide-fasta noncoding_nucleotides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the low complexity nucleotides to a fasta
@@ -98,7 +94,7 @@ would be considered low complexity. While this sequence has many nucleotide
 k-mers, it is likely a result of a sequencing error and we ignore it.
 
 ```
-sencha translate --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate --low-complexity-nucleotide-fasta low_complexity_nucleotides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 
 #### Save the low complexity peptides to a fasta
@@ -121,6 +117,6 @@ sequence of low-complexity peptides to a fasta, use the flag
 `--low-complexity-peptides-fasta`.
 
 ```
-sencha translate --low-complexity-peptides-fasta low_complexity_peptides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
+orpheum translate --low-complexity-peptides-fasta low_complexity_peptides.fasta reference-proteome.fa.gz *.fastq.gz > coding_peptides.fasta
 ```
 

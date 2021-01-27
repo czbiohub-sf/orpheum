@@ -1,4 +1,4 @@
-# Releasing a new version of sencha
+# Releasing a new version of orpheum
 
 
 These are adapted from the khmer release docs, originally written by
@@ -14,10 +14,10 @@ Remember to update release numbers/RC in:
  1\. The below should be done in a clean checkout:
 ```
 cd $(mktemp -d)
-git clone https://github.com/czbiohub/sencha.git
-cd sencha
+git clone https://github.com/czbiohub/orpheum.git
+cd orpheum
 ```
-2\. Set your new version number and release candidate (you might want to check https://github.com/czbiohub/sencha/releases for next version number):
+2\. Set your new version number and release candidate (you might want to check https://github.com/czbiohub/orpheum/releases for next version number):
 ```
 new_version=1.0.0
 rc=rc1
@@ -26,7 +26,7 @@ rc=rc1
    the letter 'v':
 ```
 git tag -a v${new_version}${rc}
-git push --tags https://github.com/czbiohub/sencha.git
+git push --tags https://github.com/czbiohub/orpheum.git
 ```
 3\. Test the release candidate. Bonus: repeat on Mac OS X:
 ```
@@ -40,8 +40,8 @@ python3 -m venv testenv4
 
 cd testenv1
 source bin/activate
-git clone --depth 1 --branch v${new_version}${rc} https://github.com/czbiohub/sencha.git
-cd sencha
+git clone --depth 1 --branch v${new_version}${rc} https://github.com/czbiohub/orpheum.git
+cd orpheum
 pip install -r requirements.txt
 make test
 
@@ -51,11 +51,11 @@ cd ../../testenv2
 deactivate
 source bin/activate
 pip install -U setuptools
-pip install -e "git+https://github.com/czbiohub/sencha.git@v${new_version}${rc}#egg=sencha[test]"
-cd src/sencha
+pip install -e "git+https://github.com/czbiohub/orpheum.git@v${new_version}${rc}#egg=orpheum[test]"
+cd src/orpheum
 make test
 make dist
-cp dist/sencha*tar.gz ../../../testenv3/
+cp dist/orpheum*tar.gz ../../../testenv3/
 
 # Is the distribution in testenv2 complete enough to build another
 # functional distribution?
@@ -64,10 +64,10 @@ cd ../../../testenv3/
 deactivate
 source bin/activate
 pip install -U setuptools
-pip install sencha*tar.gz
+pip install orpheum*tar.gz
 pip install pytest
-tar xzf sencha-${new_version}${rc}.tar.gz
-cd sencha-${new_version}${rc}
+tar xzf orpheum-${new_version}${rc}.tar.gz
+cd orpheum-${new_version}${rc}
 pip install -r requirements.txt
 make dist
 make test
@@ -81,7 +81,7 @@ make test
 
 ```
 pip install twine
-twine upload --repository-url https://test.pypi.org/legacy/ dist/sencha-${new_version}${rc}.tar.gz
+twine upload --repository-url https://test.pypi.org/legacy/ dist/orpheum-${new_version}${rc}.tar.gz
 ```
    Test the PyPI release in a new virtualenv:
 ```
@@ -91,8 +91,8 @@ source bin/activate
 pip install -U setuptools
 # install as much as possible from non-test server!
 pip install sbiopython click httmock khmer networkx numpy pandas scikit-learn seaborn sourmash tqdm ipykernel joblib notebook pyarrow s3fs fastparquet
-pip install -i https://test.pypi.org/simple --pre sencha
-sencha info  # should print "sencha version ${new_version}${rc}"
+pip install -i https://test.pypi.org/simple --pre orpheum
+orpheum info  # should print "orpheum version ${new_version}${rc}"
 ```
 5\. Do any final testing:
 
@@ -107,19 +107,19 @@ so:
 `git log --oneline v2.1.0..v2.2.0`
 
 ```
-cd ../sencha
+cd ../orpheum
 git tag -a v${new_version}
 ```
 2. Publish the new release on PyPI (requires an authorized account).
 ```
 make dist
-twine upload dist/sencha-${new_version}.tar.gz
+twine upload dist/orpheum-${new_version}.tar.gz
 ```
 3. Delete the release candidate tag and push the tag updates to GitHub:
 ```
 git tag -d v${new_version}${rc}
-git push --tags https://github.com/czbiohub/sencha.git
-git push --delete https://github.com/czbiohub/sencha.git v${new_version}${rc}
+git push --tags https://github.com/czbiohub/orpheum.git
+git push --delete https://github.com/czbiohub/orpheum.git v${new_version}${rc}
 ```
 4. Add the release on GitHub, using the tag you just pushed.  Name it 'version X.Y.Z'
 
@@ -141,5 +141,5 @@ https://twitter.com/luizirber/status/1108846466502520832
 
 ```
 apt-cache update && apt-get -y install python-dev libfreetype6-dev && libbz2-dev && libcurl4-openssl-dev && libssl-dev && \
-pip install sencha[test]
+pip install orpheum[test]
 ```

@@ -12,17 +12,17 @@ import click
 import numpy as np
 import screed
 from sourmash._minhash import hash_murmur
-from sencha.log_utils import get_logger
-from sencha.sequence_encodings import encode_peptide
-from sencha.compare_kmer_content import kmerize
-from sencha.create_save_summary import CreateSaveSummary
-from sencha.index import (
+from orpheum.log_utils import get_logger
+from orpheum.sequence_encodings import encode_peptide
+from orpheum.compare_kmer_content import kmerize
+from orpheum.create_save_summary import CreateSaveSummary
+from orpheum.index import (
     maybe_make_peptide_bloom_filter,
     maybe_save_peptide_bloom_filter,
 )
-import sencha.constants_index as constants_index
-import sencha.constants_translate as constants_translate
-from sencha.translate_single_seq import TranslateSingleSeq
+import orpheum.constants_index as constants_index
+import orpheum.constants_translate as constants_translate
+from orpheum.translate_single_seq import TranslateSingleSeq
 
 
 logger = get_logger(__file__)

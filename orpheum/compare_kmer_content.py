@@ -14,7 +14,7 @@ from sourmash.logging import notify
 
 # Divergence time estimates in millions of years
 # from http://www.timetree.org/ on 2019-08-26
-from sencha.sequence_encodings import (
+from orpheum.sequence_encodings import (
     amino_keto_ize,
     weak_strong_ize,
     purine_pyrimidize,

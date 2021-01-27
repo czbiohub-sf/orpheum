@@ -5,12 +5,12 @@ import os
 from collections import Counter
 
 import numpy as np
-from sencha.constants_translate import (
+from orpheum.constants_translate import (
     LOW_COMPLEXITY_CATEGORIES,
     PROTEIN_CODING_CATEGORIES,
     SCORING_DF_COLUMNS,
 )
-from sencha.log_utils import get_logger
+from orpheum.log_utils import get_logger
 
 logger = get_logger(__file__)
 

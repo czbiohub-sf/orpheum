@@ -1,6 +1,6 @@
 include LICENSE Makefile README.md HISTORY.md CONTRIBUTING.md AUTHORS.md requirements.txt
 
-recursive-include sencha/tests *
+recursive-include orpheum/tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 

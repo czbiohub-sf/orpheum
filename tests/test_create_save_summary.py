@@ -2,8 +2,8 @@ import os
 import warnings
 import pytest
 import pandas as pd
-from sencha.create_save_summary import CreateSaveSummary
-from sencha.constants_translate import (
+from orpheum.create_save_summary import CreateSaveSummary
+from orpheum.constants_translate import (
     DEFAULT_JACCARD_THRESHOLD,
     LOW_COMPLEXITY_CATEGORIES,
 )
@@ -137,7 +137,7 @@ def test_get_n_per_coding_category(
     peptide_ksize,
     jaccard_threshold,
 ):
-    from sencha.sequence_encodings import ALIAS_TO_ALPHABET
+    from orpheum.sequence_encodings import ALIAS_TO_ALPHABET
 
     data = [
         ["read1", 0.9, 0, "Non-coding", 0, ""],

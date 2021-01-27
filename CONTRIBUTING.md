@@ -10,7 +10,7 @@ Types of Contributions
 
 ### Report Bugs
 
-Report bugs at <https://github.com/>czbiohub/sencha/issues.
+Report bugs at <https://github.com/>czbiohub/orpheum/issues.
 
 If you are reporting a bug, please include:
 
@@ -34,7 +34,7 @@ even on the web in blog posts, articles, and such.
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at <https://github.com/>czbiohub/sencha/issues.
+The best way to send feedback is to file an issue at <https://github.com/>czbiohub/orpheum/issues.
 
 If you are proposing a feature:
 
@@ -45,18 +45,18 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up sencha for
+Ready to contribute? Here's how to set up orpheum for
 local development.
 
-1.  Fork the sencha repo on GitHub.
+1.  Fork the orpheum repo on GitHub.
 2.  Clone your fork locally:
 
-        $ git clone git@github.com:your_name_here/sencha.git
+        $ git clone git@github.com:your_name_here/orpheum.git
 
 3.  Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
 
-        $ mkvirtualenv sencha
-        $ cd sencha/
+        $ mkvirtualenv orpheum
+        $ cd orpheum/
         $ python setup.py develop
 
 4.  Create a branch for local development:
@@ -72,7 +72,7 @@ local development.
         $ py.test
         $ tox
 
-    To get black and tox, just pip install them into your virtualenv. Note: run formatting commands from the top sencha directory.
+    To get black and tox, just pip install them into your virtualenv. Note: run formatting commands from the top orpheum directory.
 
 6.  Commit your changes and push your branch to GitHub:
 
@@ -90,7 +90,7 @@ Before you submit a pull request, check that it meets these guidelines:
 1.  The pull request should include tests.
 2.  If the pull request adds functionality, the docs should be updated. Put your new functionality into a function with a docstring, and add the feature to the list in README.rst.
 3.  The pull request should work for Python 3.6 and 3.7. Check
-    <https://travis-ci.org/>czbiohub/sencha/pull\_requests and make sure that the tests pass
+    <https://travis-ci.org/>czbiohub/orpheum/pull\_requests and make sure that the tests pass
     for all supported Python versions.
 
 Tips

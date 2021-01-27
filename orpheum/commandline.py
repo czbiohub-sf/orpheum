@@ -9,9 +9,9 @@ from functools import partial
 import click
 
 # Within-module imports
-from sencha.compare_kmer_content import cli as compare_kmers
-from sencha.translate import cli as translate
-from sencha.index import cli as index
+from orpheum.compare_kmer_content import cli as compare_kmers
+from orpheum.translate import cli as translate
+from orpheum.index import cli as index
 
 click.option = partial(click.option, show_default=True)
 

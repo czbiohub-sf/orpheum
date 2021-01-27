@@ -1,5 +1,5 @@
 import pytest
-from sencha.translate_single_seq import TranslateSingleSeq
+from orpheum.translate_single_seq import TranslateSingleSeq
 
 
 class TestTranslateSingleSeq:

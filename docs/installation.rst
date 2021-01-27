@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ easy_install sencha
+    $ easy_install orpheum
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv sencha
-    $ pip install sencha
+    $ mkvirtualenv orpheum
+    $ pip install orpheum

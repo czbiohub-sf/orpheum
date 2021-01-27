@@ -20,13 +20,13 @@ with open("requirements.txt") as requirements_file:
 test_requirements = ["pytest", "coverage", "flake8"]
 
 setup(
-    name="sencha",
+    name="orpheum",
     description="Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
     long_description=readme + "\n\n" + history,
     long_description_content_type="text/markdown",
     author="Olga Botvinnik",
     author_email="olga.botvinnik@czbiohub.org",
-    url="https://github.com/czbiohub/sencha",
+    url="https://github.com/czbiohub/orpheum",
     packages=find_packages(
         exclude=["tests", "*.tests", "*.tests.*", "tests.*", "test_*"]
     ),
@@ -34,7 +34,7 @@ setup(
     install_requires=requirements,
     license="MIT",
     zip_safe=False,
-    keywords="sencha",
+    keywords="orpheum",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -49,8 +49,8 @@ setup(
         "setuptools_scm",
         "setuptools_scm_git_archive",
     ],
-    entry_points={"console_scripts": ["sencha = sencha.commandline:cli"]},
-    use_scm_version={"write_to": "sencha/version.py"},
+    entry_points={"console_scripts": ["orpheum = orpheum.commandline:cli"]},
+    use_scm_version={"write_to": "orpheum/version.py"},
     test_suite="tests",
     tests_require=test_requirements,
 )
