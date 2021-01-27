@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ easy_install orpheum
+    $ pip install orpheum
 
-Or, if you have virtualenvwrapper installed::
+Or, if you have conda or [Anaconda](https://www.anaconda.com/products/individual) installed::
 
-    $ mkvirtualenv orpheum
+    $ conda create -n orpheum python=3.7
     $ pip install orpheum
