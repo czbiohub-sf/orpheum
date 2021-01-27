@@ -7,7 +7,7 @@ orpheum
 What is orpheum?
 -------------------------------------
 
-Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.
+Orpheum which used to be called sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.
 
 -   Free software: MIT license
 -   Documentation: https://czbiohub.github.io/orpheum
