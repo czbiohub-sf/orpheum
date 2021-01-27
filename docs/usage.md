@@ -1,4 +1,4 @@
-========
+
 Usage
 ========
 
@@ -13,12 +13,6 @@ To create a protein index::
 To translate RNA-seq reads into coding peptides using the protein index::
 
     orpheum translate -- SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled.fq.gz Homo_sapiens.GRCh38.pep.all.fa.gz
-
-To create the index and translate the reads in one step::
-
-    orpheum partition  ~/code/kmer-hashing/extract_kmers/test-data/SRR306838_GSM752691_hsa_br_F_1_trimmed_subsampled.fq.gz ~/Downloads/Homo_sapiens.GRCh38.pep.all.fa.gz
-
-
 
 
 ## Best K-mer size for each alphabet
