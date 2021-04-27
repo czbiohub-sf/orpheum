@@ -2,7 +2,7 @@
 
 __author__ = "Olga Botvinnik"
 __email__ = "olga.botvinnik@czbiohub.org"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 from . import common
