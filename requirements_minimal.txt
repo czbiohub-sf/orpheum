@@ -3,7 +3,6 @@ tqdm
 numpy
 pandas
 sourmash>=3.5.0
-
 khmer
 httmock
 seaborn
