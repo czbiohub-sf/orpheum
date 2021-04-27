@@ -134,9 +134,9 @@ def peptide_bloom_filter(
     try:
         return load_nodegraph(peptide_bloom_filter_path)
     except (OSError):
-        from orpheum.index import make_peptide_bloom_filter
+        from orpheum.index import make_peptide_index
 
-        bloom_filter = make_peptide_bloom_filter(
+        bloom_filter = make_peptide_index(
             peptide_fasta, peptide_ksize, alphabet, tablesize=1e6
         )
         bloom_filter.save(peptide_bloom_filter_path)

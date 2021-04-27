@@ -68,7 +68,8 @@ def per_read_false_positive_coding_rate(
 
 
 def load_nodegraph(*args, **kwargs):
-    """Wrapper to load khmer-style bloom filter called a 'nodegraph'"""
+    """Wrapper to load the peptide index, stored as a
+    khmer-style bloom filter called a 'nodegraph'"""
     try:
         # khmer 2.1.1
         return khmer.load_nodegraph(*args, **kwargs)
@@ -89,7 +90,7 @@ def maybe_read_peptide_file(peptide_file):
     return records
 
 
-def make_peptide_bloom_filter(
+def make_peptide_index(
     peptides,
     peptide_ksize,
     molecule,
@@ -97,8 +98,8 @@ def make_peptide_bloom_filter(
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     index_dir=None,
 ):
-    """Create a bloom filter out of peptide sequences"""
-    peptide_bloom_filter = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
+    """Create an index using a bloom filter out of peptide sequences"""
+    peptide_index = khmer.Nodegraph(peptide_ksize, tablesize, n_tables=n_tables)
     if not index_dir:
         # if not a directory, should be single file. Convert to list to use for loop below.
         peptides = [peptides]
@@ -116,17 +117,17 @@ def make_peptide_bloom_filter(
 
                     # .add can take the hashed integer so we can hash the
                     #  peptide kmer and add it directly
-                    peptide_bloom_filter.add(hashed)
+                    peptide_index.add(hashed)
             except ValueError:
                 # Sequence length is smaller than k-mer size
                 continue
-    return peptide_bloom_filter
+    return peptide_index
 
 
 def make_peptide_set(peptide_fasta_files, peptide_ksize, molecule):
     """Create a python set out of peptide sequence k-mers
 
-    For comparing to the bloom filter in storage and performance
+    For comparing to the index bloom filter data structure in storage and performance
     """
     peptide_set = set([])
     for peptide_fasta in peptide_fasta_files:
@@ -144,47 +145,47 @@ def make_peptide_set(peptide_fasta_files, peptide_ksize, molecule):
     return peptide_set
 
 
-def maybe_make_peptide_bloom_filter(
+def maybe_make_peptide_index(
     peptides,
     peptide_ksize,
     molecule,
-    peptides_are_bloom_filter,
+    peptides_are_index,
     n_tables=constants_index.DEFAULT_N_TABLES,
     tablesize=constants_index.DEFAULT_MAX_TABLESIZE,
     index_dir=None,
 ):
-    if peptides_are_bloom_filter:
+    if peptides_are_index:
         logger.info(
-            f"Loading existing bloom filter from {peptides} and "
+            f"Loading existing index from {peptides} and "
             f"making sure the ksizes match"
         )
-        peptide_bloom_filter = load_nodegraph(peptides)
+        peptide_index = load_nodegraph(peptides)
         if peptide_ksize is not None:
             try:
-                assert peptide_ksize == peptide_bloom_filter.ksize()
+                assert peptide_ksize == peptide_index.ksize()
             except AssertionError:
                 raise ValueError(
                     f"Given peptide ksize ({peptide_ksize}) and "
-                    f"ksize found in bloom filter "
-                    f"({peptide_bloom_filter.ksize()}) are not"
+                    f"ksize found in index "
+                    f"({peptide_index.ksize()}) are not"
                     f"equal"
                 )
     else:
         peptide_ksize = get_peptide_ksize(molecule, peptide_ksize)
         if not index_dir:
             logger.info(
-                f"Creating peptide bloom filter with file: {peptides}\n"
+                f"Creating peptide index with file: {peptides}\n"
                 f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
                 f"..."
             )
         else:
             logger.info(
-                f"Creating peptide bloom filter from files in directory: {index_dir}\n"
+                f"Creating peptide index from files in directory: {index_dir}\n"
                 f"Using ksize: {peptide_ksize} and alphabet: {molecule} "
                 f"..."
             )
 
-        peptide_bloom_filter = make_peptide_bloom_filter(
+        peptide_index = make_peptide_index(
             peptides,
             peptide_ksize,
             molecule=molecule,
@@ -192,20 +193,20 @@ def maybe_make_peptide_bloom_filter(
             tablesize=tablesize,
             index_dir=index_dir,
         )
-    return peptide_bloom_filter
+    return peptide_index
 
 
-def maybe_save_peptide_bloom_filter(
-    peptides, peptide_bloom_filter, molecule, save_peptide_bloom_filter, index_dir=None
+def maybe_save_peptide_index(
+    peptides, peptide_index, molecule, save_peptide_index, index_dir=None
 ):
-    if save_peptide_bloom_filter:
-        ksize = peptide_bloom_filter.ksize()
+    if save_peptide_index:
+        ksize = peptide_index.ksize()
 
-        if isinstance(save_peptide_bloom_filter, str):
-            filename = save_peptide_bloom_filter
-            peptide_bloom_filter.save(save_peptide_bloom_filter)
+        if isinstance(save_peptide_index, str):
+            filename = save_peptide_index
+            peptide_index.save(save_peptide_index)
         else:
-            suffix = f".alphabet-{molecule}_ksize-{ksize}.bloomfilter.nodegraph"
+            suffix = f".alphabet-{molecule}_ksize-{ksize}.orpheum-index"
             if not index_dir:
                 filename = os.path.splitext(peptides)[0] + suffix
             else:
@@ -214,8 +215,8 @@ def maybe_save_peptide_bloom_filter(
                 )  # user index dir name as basename
                 filename = os.path.join(index_dir, basename + suffix)
 
-        logger.info(f"Writing peptide bloom filter to {filename}")
-        peptide_bloom_filter.save(filename)
+        logger.info(f"Writing peptide index to {filename}")
+        peptide_index.save(filename)
         logger.info("\tDone!")
         return filename
 
@@ -243,26 +244,26 @@ def maybe_save_peptide_bloom_filter(
 @click.option(
     "--save-as",
     default=None,
-    help="If provided, save peptide bloom filter as this filename. "
+    help="If provided, save peptide index as this filename. "
     "Otherwise, add ksize and alphabet name to input filename.",
 )
 @click.option(
     "--tablesize",
     type=constants_index.BASED_INT,
     default="1e8",
-    help="Size of the bloom filter table to use",
+    help="Size of the bloom filter table to use for the index",
 )
 @click.option(
     "--n-tables",
     type=int,
     default=constants_index.DEFAULT_N_TABLES,
-    help="Size of the bloom filter table to use",
+    help="Size of the bloom filter table to use for hte index",
 )
 @click.option(
     "--index-from-dir",
     is_flag=True,
     default=False,
-    help="Build peptide bloom filter from a directory of peptide fasta files",
+    help="Build peptide index from a directory of peptide fasta files",
 )
 def cli(
     peptides,
@@ -302,7 +303,7 @@ def cli(
         peptides = (os.path.join(index_dir, p) for p in os.listdir(index_dir))
 
     peptide_ksize = get_peptide_ksize(alphabet, peptide_ksize)
-    peptide_bloom_filter = make_peptide_bloom_filter(
+    peptide_index = make_peptide_index(
         peptides,
         peptide_ksize,
         alphabet,
@@ -312,12 +313,12 @@ def cli(
     )
     logger.info("\tDone!")
 
-    save_peptide_bloom_filter = save_as if save_as is not None else True
-    maybe_save_peptide_bloom_filter(
+    save_peptide_index = save_as if save_as is not None else True
+    maybe_save_peptide_index(
         peptides,
-        peptide_bloom_filter,
+        peptide_index,
         alphabet,
-        save_peptide_bloom_filter=save_peptide_bloom_filter,
+        save_peptide_index=save_peptide_index,
         index_dir=index_dir,
     )
 
