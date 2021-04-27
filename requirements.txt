@@ -6,7 +6,7 @@ numpy
 pandas
 scikit-learn
 seaborn
-sourmash
+sourmash>=3.5.0
 tqdm
 ipykernel
 joblib
