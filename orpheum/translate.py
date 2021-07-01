@@ -11,7 +11,7 @@ import functools
 import click
 import numpy as np
 import screed
-from sourmash._minhash import hash_murmur
+from sourmash.minhash import hash_murmur
 from orpheum.log_utils import get_logger
 from orpheum.sequence_encodings import encode_peptide
 from orpheum.compare_kmer_content import kmerize
