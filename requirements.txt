@@ -12,6 +12,5 @@ ipykernel
 joblib
 notebook
 pyarrow
-s3fs
 fastparquet
 pytest
