@@ -24,9 +24,7 @@ __all__ = [
     "idf",
     "jaccard_utils",
     "jupyter_utils",
-    "knn",
     "os_utils",
-    "s3_utils",
     "sourmash_compare_utils",
     "sourmash_utils",
 ]
