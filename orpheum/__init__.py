@@ -11,9 +11,7 @@ from . import extract_metadata
 from . import idf
 from . import jaccard_utils
 from . import jupyter_utils
-from . import knn
 from . import os_utils
-from . import s3_utils
 from . import sourmash_compare_utils
 from . import sourmash_utils
 
