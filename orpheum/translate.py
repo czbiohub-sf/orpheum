@@ -436,18 +436,18 @@ class Translate:
 )
 @click.option(
     "--csv",
-    default=False,
+    default=None,
     help="Name of csv file to write with all sequence reads and " "their coding scores",
 )
 @click.option(
     "--parquet",
-    default=False,
+    default=None,
     help="Name of parquet file to write with all sequence reads and "
     "their coding scores",
 )
 @click.option(
     "--json-summary",
-    default=False,
+    default=None,
     help="Name of json file to write summarization of coding/"
     "noncoding/other categorizations, the "
     "min/max/mean/median/stddev of Jaccard scores, and other",
@@ -496,9 +496,9 @@ def cli(
     peptides_are_bloom_filter=False,
     jaccard_threshold=None,
     alphabet="protein",
-    csv=False,
-    parquet=False,
-    json_summary=False,
+    csv=None,
+    parquet=None,
+    json_summary=None,
     coding_nucleotide_fasta=None,
     noncoding_nucleotide_fasta=None,
     low_complexity_nucleotide_fasta=None,
