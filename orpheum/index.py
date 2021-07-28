@@ -4,7 +4,7 @@ import os
 import click
 import khmer
 import screed
-from sourmash._minhash import hash_murmur
+from sourmash.minhash import hash_murmur
 from tqdm import tqdm
 
 from orpheum.compare_kmer_content import kmerize
