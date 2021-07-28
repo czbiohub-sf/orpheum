@@ -248,7 +248,7 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         if type(value) is str:
             assert value == true_summary[key]
         else:
-            assert_almost_equal(value, true_summary[key], decimals=15)
+            assert_almost_equal(value, true_summary[key], decimal=15)
 
 
 def test_maybe_write_csv(reads, single_alphabet_ksize_true_scores, true_scores_path):
