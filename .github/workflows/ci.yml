@@ -19,12 +19,15 @@ jobs:
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
+          activate-environment: testenv
+          environment-file: environment_minimal.yml
+          auto-activate-base: false
           auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
+          miniconda-version: 'latest'
       - name: Install Dependencies with Python ${{ matrix.python-version }}
         shell: bash -l {0}
+        python-version: ${{ matrix.python-version }}
         run: |
-          conda env create -n testenv --file environment_minimal.yml
           conda activate testenv
           pip install .
       - name: Run tests with coverage
