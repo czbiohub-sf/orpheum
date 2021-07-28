@@ -247,8 +247,10 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
     for key, value in test_summary.items():
         if type(value) is str:
             assert value == true_summary[key]
-        else:
+        elif type(value) is float:
             assert_almost_equal(value, true_summary[key], decimal=15)
+        else:
+            assert value == true_summary[key]
 
 
 def test_maybe_write_csv(reads, single_alphabet_ksize_true_scores, true_scores_path):
