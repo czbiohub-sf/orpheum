@@ -2,6 +2,8 @@ import os
 import warnings
 import pytest
 import pandas as pd
+from numpy.testing import assert_almost_equal
+
 from orpheum.create_save_summary import CreateSaveSummary
 from orpheum.constants_translate import (
     DEFAULT_JACCARD_THRESHOLD,
@@ -242,8 +244,11 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         "peptide_ksize": 7,
         "jaccard_threshold": 0.5,
     }
-    print(test_summary)
-    assert test_summary == true_summary
+    for key, value in test_summary.items():
+        if type(value) is str:
+            assert value == true_summary[key]
+        else:
+            assert_almost_equal(value, true_summary[key], decimals=15)
 
 
 def test_maybe_write_csv(reads, single_alphabet_ksize_true_scores, true_scores_path):
