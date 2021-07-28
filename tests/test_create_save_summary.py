@@ -210,7 +210,7 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
             "min": 0.0,
             "25%": 0.0,
             "50%": 0.0,
-            "75%": 0.0588235294117647,
+            "75%": 0.05882352941176471,
             "max": 1.0,
         },
         "categorization_counts": {
@@ -242,7 +242,7 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         "peptide_ksize": 7,
         "jaccard_threshold": 0.5,
     }
-
+    print(test_summary)
     assert test_summary == true_summary
 
 
