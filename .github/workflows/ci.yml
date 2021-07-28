@@ -24,9 +24,9 @@ jobs:
           auto-activate-base: false
           auto-update-conda: true
           miniconda-version: 'latest'
+          python-version: ${{ matrix.python-version }}
       - name: Install Dependencies with Python ${{ matrix.python-version }}
         shell: bash -l {0}
-        python-version: ${{ matrix.python-version }}
         run: |
           conda activate testenv
           pip install .
