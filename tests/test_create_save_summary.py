@@ -248,7 +248,7 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         if type(value) is str:
             assert value == true_summary[key]
         elif type(value) is float:
-            assert_almost_equal(value, true_summary[key], decimal=15)
+            assert_almost_equal(value, true_summary[key], decimal=13)
         else:
             assert value == true_summary[key]
 
