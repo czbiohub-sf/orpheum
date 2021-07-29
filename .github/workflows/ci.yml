@@ -37,7 +37,6 @@ jobs:
           pip install -r requirements_testing.txt
           make coverage
       - name: Send coverage to codecov.io
-        shell: bash -l {0}
-        run: |
-          pip install codecov
-          codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
