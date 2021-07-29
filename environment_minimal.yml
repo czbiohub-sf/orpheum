@@ -12,6 +12,8 @@ dependencies:
   - notebook
   - numpy
   - pandas
+  - pytest
+  - pytest-cov
   - pip
   - pyarrow
   - scikit-learn
