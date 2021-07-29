@@ -253,7 +253,9 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
                     assert value_value == true_summary[key][key_value]
                 else:
                     assert_almost_equal(
-                        float(value_value), float(true_summary[key][key_value]), decimal=13
+                        float(value_value),
+                        float(true_summary[key][key_value]),
+                        decimal=13,
                     )
         else:
             assert value == true_summary[key]
