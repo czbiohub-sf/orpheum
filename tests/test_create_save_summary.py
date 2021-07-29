@@ -250,7 +250,9 @@ def test_generate_coding_summary(reads, data_folder, single_alphabet_ksize_true_
         elif type(value) is dict:
             for key_value, value_value in value.items():
                 if type(value_value) is float:
-                    assert_almost_equal(value_value, true_summary[key][key_value], decimal=13)
+                    assert_almost_equal(
+                        value_value, true_summary[key][key_value], decimal=13
+                    )
                 else:
                     assert value_value == true_summary[key][key_value]
         else:
