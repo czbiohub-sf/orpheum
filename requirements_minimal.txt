@@ -8,3 +8,5 @@ httmock
 seaborn
 scikit-learn
 networkx
+pytest-cov
+pytest

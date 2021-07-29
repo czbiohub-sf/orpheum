@@ -1,15 +1,34 @@
+PYTHON ?= python
+
 help:
 	@echo "lint - check code style with flake8"
+	@echo "code_format - check code style with black"
 	@echo "test - run tests only"
 	@echo "coverage - run tests and check code coverage"
 	@echo "conda_install (recommended) - Install requirements "
 
+clean:
+	$(PYTHON) setup.py clean --all
+
+install:
+	pip install -r requirements.txt
+	pip install .
+
+dist: FORCE
+	$(PYTHON) setup.py sdist
+
 test:
-	py.test
+	pip install -e '.[test]'
+	$(PYTHON) -m pytest
 
 coverage:
-	coverage run --source orpheum --omit="*/test*" --module py.test
-	coverage report --show-missing
+	$(PYTHON) setup.py clean --all
+	$(PYTHON) -m pytest --cov=. --cov-report term-missing
+
+FORCE:
+
+code_format:
+	black .
 
 lint:
 	# ignore:
@@ -22,11 +41,3 @@ conda_install:
 	pip install -r requirements.txt
 	pip install .
 
-install:
-	pip install -r requirements.txt
-	pip install .
-
-dist: FORCE
-	python setup.py sdist
-
-FORCE:
