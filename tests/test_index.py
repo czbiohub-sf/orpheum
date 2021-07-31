@@ -23,9 +23,9 @@ def test_per_read_false_positive_coding_rate():
 
 
 def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksize):
-    from orpheum.index import make_peptide_bloom_filter
+    from orpheum.index import make_peptide_index
 
-    test = make_peptide_bloom_filter(
+    test = make_peptide_index(
         variable_peptide_fasta, peptide_ksize, alphabet, n_tables=4, tablesize=1e6
     )
     if "first1000lines" in variable_peptide_fasta:
@@ -57,10 +57,10 @@ def test_make_peptide_bloom_filter(variable_peptide_fasta, alphabet, peptide_ksi
 def test_make_peptide_bloom_filter_index_from_dir(
     peptides_dir, alphabet, peptide_ksize
 ):
-    from orpheum.index import make_peptide_bloom_filter
+    from orpheum.index import make_peptide_index
 
     peptides = (os.path.join(peptides_dir, p) for p in os.listdir(peptides_dir))
-    test = make_peptide_bloom_filter(
+    test = make_peptide_index(
         peptides,
         peptide_ksize,
         alphabet,
@@ -85,13 +85,13 @@ def test_make_peptide_bloom_filter_index_from_dir(
 def test_maybe_make_peptide_bloom_filter(
     peptide_bloom_filter_path, alphabet, peptide_ksize
 ):
-    from orpheum.index import maybe_make_peptide_bloom_filter
+    from orpheum.index import maybe_make_peptide_index
 
-    maybe_make_peptide_bloom_filter(
+    maybe_make_peptide_index(
         peptide_bloom_filter_path,
         peptide_ksize,
         alphabet,
-        peptides_are_bloom_filter=True,
+        peptides_are_index=True,
     )
     # No assertion, just check that it ran
     # assert isinstance(test, khmer.Nodegraph)
