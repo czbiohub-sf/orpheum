@@ -22,8 +22,8 @@ from orpheum.index import (
 )
 import orpheum.constants_index as constants_index
 import orpheum.constants_translate as constants_translate
+from orpheum.read_parser import ReadParser
 from orpheum.translate_single_seq import TranslateSingleSeq
-
 
 logger = get_logger(__file__)
 
@@ -339,9 +339,15 @@ class Translate:
             line = [description, jaccard, n_kmers, "Non-coding", frame]
         return line
 
-    def score_reads_per_record(self, reads_path, record):
-        description = record["name"]
-        sequence = record["sequence"]
+    def score_reads_per_record(self, reads_path, read_name_seq):
+        """Score all possible translations of each read
+
+        :param reads_path:
+        :param read_name_seq: tuple
+            Tuple of two strings: (read_name, read_sequence)
+        :return:
+        """
+        description, sequence = read_name_seq
         if self.verbose:
             logger.info(description)
         lines = []
@@ -366,9 +372,9 @@ class Translate:
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
-        func = functools.partial(self.score_reads_per_record, reads)
-        with screed.open(reads) as records:
-            scoring_lines = list(itertools.chain.from_iterable(map(func, records)))
+        parsed_reads = ReadParser(reads)
+        # func = functools.partial(self.score_reads_per_record, read_name, read_seq)
+        scoring_lines = list(itertools.chain.from_iterable(map(self.score_reads_per_record, reads, parsed_reads)))
         return scoring_lines
 
     def set_coding_scores_all_files(self):
@@ -390,8 +396,8 @@ class Translate:
     default=None,
     type=int,
     help="K-mer size of the peptide sequence to use. Defaults for"
-    " different alphabets are, "
-    "protein: {}, dayhoff {}, hydrophobic-polar {}".format(
+         " different alphabets are, "
+         "protein: {}, dayhoff {}, hydrophobic-polar {}".format(
         constants_index.DEFAULT_PROTEIN_KSIZE,
         constants_index.DEFAULT_DAYHOFF_KSIZE,
         constants_index.DEFAULT_HP_KSIZE,
@@ -402,8 +408,8 @@ class Translate:
     is_flag=True,
     default=False,
     help="If specified, save the peptide bloom filter. "
-    "Default filename is the name of the fasta file plus a "
-    "suffix denoting the protein encoding and peptide ksize",
+         "Default filename is the name of the fasta file plus a "
+         "suffix denoting the protein encoding and peptide ksize",
 )
 @click.option(
     "--peptides-are-bloom-filter",
@@ -417,13 +423,13 @@ class Translate:
     type=click.FLOAT,
     callback=validate_jaccard,
     help="Minimum fraction of peptide k-mers from read in the "
-    "peptide database for this read to be called a "
-    "'coding read'.'"
-    "Default:"
-    "{}".format(constants_translate.DEFAULT_JACCARD_THRESHOLD)
-    + " for protein and dayhoff encodings, and "  # noqa
-    + "{}".format(constants_translate.DEFAULT_HP_JACCARD_THRESHOLD)  # noqa
-    + "for hydrophobic-polar (hp) encoding",  # noqa
+         "peptide database for this read to be called a "
+         "'coding read'.'"
+         "Default:"
+         "{}".format(constants_translate.DEFAULT_JACCARD_THRESHOLD)
+         + " for protein and dayhoff encodings, and "  # noqa
+         + "{}".format(constants_translate.DEFAULT_HP_JACCARD_THRESHOLD)  # noqa
+         + "for hydrophobic-polar (hp) encoding",  # noqa
 )
 @click.option(
     "--alphabet",
@@ -431,8 +437,8 @@ class Translate:
     "--molecule",
     default="protein",
     help="The type of amino acid encoding to use. Default is "
-    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-    "used",
+         "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+         "used",
 )
 @click.option(
     "--csv",
@@ -443,14 +449,15 @@ class Translate:
     "--parquet",
     default=None,
     help="Name of parquet file to write with all sequence reads and "
-    "their coding scores",
+         "their coding scores. Parquet is a compressed version of csv, and is "
+         "recommended for larger datasets",
 )
 @click.option(
     "--json-summary",
     default=None,
     help="Name of json file to write summarization of coding/"
-    "noncoding/other categorizations, the "
-    "min/max/mean/median/stddev of Jaccard scores, and other",
+         "noncoding/other categorizations, the "
+         "min/max/mean/median/stddev of Jaccard scores, and other",
 )
 @click.option(
     "--coding-nucleotide-fasta",
@@ -484,8 +491,8 @@ class Translate:
     "--long-reads",
     is_flag=True,
     help="If set, then only considers reading frames starting with "
-    "start codon (ATG) and ending in a stop codon "
-    "(TAG, TAA, TGA)",
+         "start codon (ATG) and ending in a stop codon "
+         "(TAG, TAA, TGA)",
 )
 @click.option("--verbose", is_flag=True, help="Print more output")
 def cli(
