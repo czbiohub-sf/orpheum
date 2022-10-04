@@ -374,7 +374,11 @@ class Translate:
         """Assign a coding score to each read. Where the magic happens."""
         parsed_reads = ReadParser(reads)
         # func = functools.partial(self.score_reads_per_record, read_name, read_seq)
-        scoring_lines = list(itertools.chain.from_iterable(map(self.score_reads_per_record, reads, parsed_reads)))
+        scoring_lines = list(
+            itertools.chain.from_iterable(
+                map(self.score_reads_per_record, reads, parsed_reads)
+            )
+        )
         return scoring_lines
 
     def set_coding_scores_all_files(self):
@@ -396,8 +400,8 @@ class Translate:
     default=None,
     type=int,
     help="K-mer size of the peptide sequence to use. Defaults for"
-         " different alphabets are, "
-         "protein: {}, dayhoff {}, hydrophobic-polar {}".format(
+    " different alphabets are, "
+    "protein: {}, dayhoff {}, hydrophobic-polar {}".format(
         constants_index.DEFAULT_PROTEIN_KSIZE,
         constants_index.DEFAULT_DAYHOFF_KSIZE,
         constants_index.DEFAULT_HP_KSIZE,
@@ -408,8 +412,8 @@ class Translate:
     is_flag=True,
     default=False,
     help="If specified, save the peptide bloom filter. "
-         "Default filename is the name of the fasta file plus a "
-         "suffix denoting the protein encoding and peptide ksize",
+    "Default filename is the name of the fasta file plus a "
+    "suffix denoting the protein encoding and peptide ksize",
 )
 @click.option(
     "--peptides-are-bloom-filter",
@@ -423,13 +427,13 @@ class Translate:
     type=click.FLOAT,
     callback=validate_jaccard,
     help="Minimum fraction of peptide k-mers from read in the "
-         "peptide database for this read to be called a "
-         "'coding read'.'"
-         "Default:"
-         "{}".format(constants_translate.DEFAULT_JACCARD_THRESHOLD)
-         + " for protein and dayhoff encodings, and "  # noqa
-         + "{}".format(constants_translate.DEFAULT_HP_JACCARD_THRESHOLD)  # noqa
-         + "for hydrophobic-polar (hp) encoding",  # noqa
+    "peptide database for this read to be called a "
+    "'coding read'.'"
+    "Default:"
+    "{}".format(constants_translate.DEFAULT_JACCARD_THRESHOLD)
+    + " for protein and dayhoff encodings, and "  # noqa
+    + "{}".format(constants_translate.DEFAULT_HP_JACCARD_THRESHOLD)  # noqa
+    + "for hydrophobic-polar (hp) encoding",  # noqa
 )
 @click.option(
     "--alphabet",
@@ -437,8 +441,8 @@ class Translate:
     "--molecule",
     default="protein",
     help="The type of amino acid encoding to use. Default is "
-         "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
-         "used",
+    "'protein', but 'dayhoff' or 'hydrophobic-polar' can be "
+    "used",
 )
 @click.option(
     "--csv",
@@ -449,15 +453,15 @@ class Translate:
     "--parquet",
     default=None,
     help="Name of parquet file to write with all sequence reads and "
-         "their coding scores. Parquet is a compressed version of csv, and is "
-         "recommended for larger datasets",
+    "their coding scores. Parquet is a compressed version of csv, and is "
+    "recommended for larger datasets",
 )
 @click.option(
     "--json-summary",
     default=None,
     help="Name of json file to write summarization of coding/"
-         "noncoding/other categorizations, the "
-         "min/max/mean/median/stddev of Jaccard scores, and other",
+    "noncoding/other categorizations, the "
+    "min/max/mean/median/stddev of Jaccard scores, and other",
 )
 @click.option(
     "--coding-nucleotide-fasta",
@@ -491,8 +495,8 @@ class Translate:
     "--long-reads",
     is_flag=True,
     help="If set, then only considers reading frames starting with "
-         "start codon (ATG) and ending in a stop codon "
-         "(TAG, TAA, TGA)",
+    "start codon (ATG) and ending in a stop codon "
+    "(TAG, TAA, TGA)",
 )
 @click.option("--verbose", is_flag=True, help="Print more output")
 def cli(
