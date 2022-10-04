@@ -16,3 +16,4 @@ s3fs
 fastparquet
 pytest
 pytest-cov
+pysam

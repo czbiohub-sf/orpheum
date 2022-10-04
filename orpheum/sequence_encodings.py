@@ -468,7 +468,7 @@ def encode_peptide(peptide_sequence, molecule):
         )
 
 
-def get_best_kmer_size(sigma, n_items=20 ** 7):
+def get_best_kmer_size(sigma, n_items=20**7):
     """Get the best k-mer size for a particular alphabet
 
     This is going off of the fact that 7 is empirically the "best" k-mer

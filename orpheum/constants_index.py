@@ -22,7 +22,7 @@ class BasedIntParamType(click.ParamType):
                 sigfig, exponent = value.split("e")
                 sigfig = float(sigfig)
                 exponent = int(exponent)
-                return int(sigfig * 10 ** exponent)
+                return int(sigfig * 10**exponent)
             return int(value, 10)
         except TypeError:
             self.fail(

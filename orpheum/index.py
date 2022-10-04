@@ -49,7 +49,7 @@ def per_read_false_positive_coding_rate(
     appears in the database"""
 
     alphabet_size = ALPHABET_SIZES[alphabet]
-    n_kmers_of_size = min(n_total_kmers, alphabet_size ** peptide_ksize)
+    n_kmers_of_size = min(n_total_kmers, alphabet_size**peptide_ksize)
 
     false_positive_rate = 0
     for frame in range(3):

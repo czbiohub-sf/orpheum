@@ -55,8 +55,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"Kmer-hashing tools"
-copyright = u"2019, Chan Zuckerberg Biohub"
+project = "Kmer-hashing tools"
+copyright = "2019, Chan Zuckerberg Biohub"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -209,8 +209,8 @@ latex_documents = [
     (
         "index",
         "orpheum.tex",
-        u"orpheum Documentation",
-        u"Chan Zuckerberg Biohub",
+        "orpheum Documentation",
+        "Chan Zuckerberg Biohub",
         "manual",
     ),
 ]
@@ -241,7 +241,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ("index", "orpheum", u"Sencha Documentation", [u"Chan Zuckerberg Biohub"], 1)
+    ("index", "orpheum", "Sencha Documentation", ["Chan Zuckerberg Biohub"], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -257,8 +257,8 @@ texinfo_documents = [
     (
         "index",
         "orpheum",
-        u"Sencha Documentation",
-        u"Chan Zuckerberg Biohub",
+        "Sencha Documentation",
+        "Chan Zuckerberg Biohub",
         "orpheum",
         "Sencha is a Python package for directly translating RNA-seq reads into coding protein sequence.",
         "Miscellaneous",

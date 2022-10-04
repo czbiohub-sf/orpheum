@@ -22,8 +22,8 @@ from orpheum.index import (
 )
 import orpheum.constants_index as constants_index
 import orpheum.constants_translate as constants_translate
+from orpheum.read_parser import ReadParser
 from orpheum.translate_single_seq import TranslateSingleSeq
-
 
 logger = get_logger(__file__)
 
@@ -339,9 +339,15 @@ class Translate:
             line = [description, jaccard, n_kmers, "Non-coding", frame]
         return line
 
-    def score_reads_per_record(self, reads_path, record):
-        description = record["name"]
-        sequence = record["sequence"]
+    def score_reads_per_record(self, reads_path, read_name_seq):
+        """Score all possible translations of each read
+
+        :param reads_path:
+        :param read_name_seq: tuple
+            Tuple of two strings: (read_name, read_sequence)
+        :return:
+        """
+        description, sequence = read_name_seq
         if self.verbose:
             logger.info(description)
         lines = []
@@ -366,9 +372,13 @@ class Translate:
 
     def score_reads_per_file(self, reads):
         """Assign a coding score to each read. Where the magic happens."""
-        func = functools.partial(self.score_reads_per_record, reads)
-        with screed.open(reads) as records:
-            scoring_lines = list(itertools.chain.from_iterable(map(func, records)))
+        parsed_reads = ReadParser(reads)
+        # func = functools.partial(self.score_reads_per_record, read_name, read_seq)
+        scoring_lines = list(
+            itertools.chain.from_iterable(
+                map(self.score_reads_per_record, reads, parsed_reads)
+            )
+        )
         return scoring_lines
 
     def set_coding_scores_all_files(self):
@@ -443,7 +453,8 @@ class Translate:
     "--parquet",
     default=None,
     help="Name of parquet file to write with all sequence reads and "
-    "their coding scores",
+    "their coding scores. Parquet is a compressed version of csv, and is "
+    "recommended for larger datasets",
 )
 @click.option(
     "--json-summary",
